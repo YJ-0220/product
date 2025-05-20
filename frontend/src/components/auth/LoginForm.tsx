@@ -1,4 +1,13 @@
+import { useLogin } from "@/hooks/useLogin";
+
 export default function LoginForm() {
+  const { login, error } = useLogin();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await login(username, password);
+  };
+
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="relative w-[400px] h-[500px] items-center border-2 border-[#00fcfc] rounded-2xl">
@@ -19,7 +28,7 @@ export default function LoginForm() {
               className="w-full bg-gray-900 border border-white rounded-md p-2 mt-2"
               required={true}
             />
-            <button type="submit" className="w-full bg-white text-black rounded-md p-2 mt-6">
+            <button onClick={handleSubmit} className="w-full bg-white text-black rounded-md p-2 mt-6">
               로그인
             </button>
             <div className="mt-4">

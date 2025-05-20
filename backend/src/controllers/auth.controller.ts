@@ -1,0 +1,121 @@
+import { Request, Response } from "express";
+import pool from "../db/db";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// 회원가입
+export const register = async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: "빈 칸을 입력해주세요." });
+    }
+
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!emailRegex.test(email)) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "이메일 형식이 올바르지 않습니다." });
+    // }
+
+    const passwordRegex =
+      /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message: "비밀번호는 8자 이상, 영문과 숫자를 포함해야 합니다.",
+      });
+    }
+
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ message: "이미 존재하는 아이디입니다." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      "INSERT INTO users (username, password) VALUES ($1, $2, $3) RETURNING *",
+      [username, hashedPassword]
+    );
+
+    res.status(201).json({
+      message: "회원가입이 완료되었습니다.",
+      user: result.rows[0].id,
+      username: result.rows[0].username,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "서버 오류" });
+  }
+};
+
+// 로그인
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ message: "아이디와 비밀번호를 입력해주세요." });
+    }
+
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "아이디 또는 비밀번호가 일치하지 않습니다." });
+    }
+
+    const user = result.rows[0];
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res
+        .status(400)
+        .json({ message: "아이디 또는 비밀번호가 일치하지 않습니다." });
+    }
+
+    const token = jwt.sign({ id: user.id }, JWT_SECRET as string, {
+      expiresIn: "1h",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 1 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      message: "로그인이 완료되었습니다.",
+      user: {
+        id: user.id,
+        username: user.username,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "서버 오류" });
+  }
+};
+
+// 로그아웃
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ message: "로그아웃이 완료되었습니다." });
+  } catch (e) {
+    res.status(500).json({ message: "서버 오류" });
+  }
+};
+

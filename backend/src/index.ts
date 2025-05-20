@@ -11,15 +11,6 @@ dotenv.config({ path: envFile });
 const app = express();
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.send(`DB 연결 성공! 현재 시간: ${result.rows[0].now}`);
-  } catch (error) {
-    res.status(500).send("DB 연결 실패: " + (error as Error).message);
-  }
-});
-
 app.use("/auth", authRouter);
 
 app.listen(process.env.PORT, () => {

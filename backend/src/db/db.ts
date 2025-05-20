@@ -3,11 +3,13 @@ import pkg from "pg";
 const { Pool } = pkg;
 
 const pool = new Pool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  port: Number(process.env.DB_PORT),
+  connectionString: process.env.DATABASE_URL,
+});
+
+pool.query("SELECT 1").then(() => {
+  console.log("Connected to the database");
+}).catch((err) => {
+  console.error("Error connecting to the database", err);
 });
 
 export default pool;

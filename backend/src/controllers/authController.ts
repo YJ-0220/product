@@ -1,12 +1,10 @@
-import { Request, Response } from "express";
+import { Request, Response, RequestHandler } from "express";
 import pool from "../db/db";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET;
+import { generateToken } from "../utils/jwt";
 
 // 회원가입
-export const register = async (req: Request, res: Response) => {
+export const register = (async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
@@ -41,7 +39,7 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      "INSERT INTO users (username, password) VALUES ($1, $2, $3) RETURNING *",
+      "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
       [username, hashedPassword]
     );
 
@@ -54,10 +52,10 @@ export const register = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: "서버 오류" });
   }
-};
+}) as RequestHandler;
 
 // 로그인
-export const login = async (req: Request, res: Response) => {
+export const login = (async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
@@ -86,9 +84,8 @@ export const login = async (req: Request, res: Response) => {
         .json({ message: "아이디 또는 비밀번호가 일치하지 않습니다." });
     }
 
-    const token = jwt.sign({ id: user.id }, JWT_SECRET as string, {
-      expiresIn: "1h",
-    });
+    // 토큰 생성
+    const token = generateToken(user.id);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -107,15 +104,14 @@ export const login = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "서버 오류" });
   }
-};
+}) as RequestHandler;
 
 // 로그아웃
-export const logout = async (req: Request, res: Response) => {
+export const logout = (async (req: Request, res: Response) => {
   try {
     res.clearCookie("token");
     res.status(200).json({ message: "로그아웃이 완료되었습니다." });
   } catch (e) {
     res.status(500).json({ message: "서버 오류" });
   }
-};
-
+}) as RequestHandler;

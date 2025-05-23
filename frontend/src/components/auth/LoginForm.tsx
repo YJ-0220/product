@@ -1,34 +1,54 @@
-import { useLogin } from "@/hooks/useLogin";
+import { useLogin } from "@/hooks/useAuth";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const { login, error } = useLogin();
+  const navigate = useNavigate();
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(username, password);
+    try {
+      await login(username, password);
+      navigate("/");
+    } catch (error) {
+      console.log({ message: error });
+    }
   };
 
   return (
     <div className="flex items-center justify-center h-screen">
-      <div className="relative w-[400px] h-[500px] items-center border-2 border-[#00fcfc] rounded-2xl">
+      <div className="relative w-[400px] pb-10 items-center border-2 border-[#00fcfc] rounded-2xl">
         <div className="flex flex-col items-center justify-center">
           <h1 className="items-center justify-center py-10 font-black text-2xl">
             홈페이지 제목이요
           </h1>
-          <form className="w-full px-8">
+          <form onSubmit={handleSubmit} className="w-full px-8">
+            {error && (
+              <div className="text-red-500 mb-4 text-center">{error}</div>
+            )}
             <input
               type="text"
               placeholder="아이디를 입력해주세요"
               className="w-full bg-gray-900 border border-white rounded-md p-2 "
-              required={true}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
             />
             <input
               type="password"
               placeholder="비밀번호를 입력해주세요"
               className="w-full bg-gray-900 border border-white rounded-md p-2 mt-2"
-              required={true}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
-            <button onClick={handleSubmit} className="w-full bg-white text-black rounded-md p-2 mt-6">
+            <button
+              type="submit"
+              className="w-full bg-white text-black rounded-md p-2 mt-6"
+            >
               로그인
             </button>
             <div className="mt-4">

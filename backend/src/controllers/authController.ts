@@ -28,7 +28,7 @@ export const register = (async (req: Request, res: Response) => {
     }
 
     const existingUser = await pool.query(
-      "SELECT * FROM users WHERE username = $1",
+      "SELECT * FROM auth.users WHERE username = $1",
       [username]
     );
 
@@ -39,7 +39,7 @@ export const register = (async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
+      "INSERT INTO auth.users (username, password) VALUES ($1, $2) RETURNING *",
       [username, hashedPassword]
     );
 
@@ -65,9 +65,10 @@ export const login = (async (req: Request, res: Response) => {
         .json({ message: "아이디와 비밀번호를 입력해주세요." });
     }
 
-    const result = await pool.query("SELECT * FROM users WHERE username = $1", [
-      username,
-    ]);
+    const result = await pool.query(
+      "SELECT * FROM auth.users WHERE username = $1",
+      [username]
+    );
 
     if (result.rows.length === 0) {
       return res

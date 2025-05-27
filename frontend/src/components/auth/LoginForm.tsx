@@ -1,20 +1,29 @@
-import { useLogin } from "@/hooks/useAuth";
 import { useState } from "react";
+import { useLogin } from "@/hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const { login, error } = useLogin();
   const navigate = useNavigate();
+
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     try {
-      await login(username, password);
-      navigate("/");
+      const data = await login(username, password);
+
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else if (data.role === "seller") {
+        navigate("/seller");
+      } else if (data.role === "buyer") {
+        navigate("/home");
+      }
     } catch (error) {
-      console.log({ message: error });
+      console.error(error);
     }
   };
 
@@ -26,9 +35,6 @@ export default function LoginForm() {
             홈페이지 제목이요
           </h1>
           <form onSubmit={handleSubmit} className="w-full px-8">
-            {error && (
-              <div className="text-red-500 mb-4 text-center">{error}</div>
-            )}
             <input
               type="text"
               placeholder="아이디를 입력해주세요"
@@ -51,6 +57,9 @@ export default function LoginForm() {
             >
               로그인
             </button>
+            {error && (
+              <div className="text-red-500 mb-4 text-center">{error}</div>
+            )}
             <div className="mt-4">
               <input type="checkbox" name="로그인 유지" />
               <label className="pl-2">

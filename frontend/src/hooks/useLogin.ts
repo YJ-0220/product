@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginRequest } from "../api/auth";
+import { loginRequest } from "@/api/auth";
 
 export const useLogin = () => {
   const [error, setError] = useState<string | null>(null);
@@ -9,11 +9,13 @@ export const useLogin = () => {
       const data = await loginRequest(username, password);
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
 
+      setError(null);
       return data;
-    } catch (error) {
+    } catch (e) {
       setError("로그인에 실패했습니다.");
-      throw error;
+      throw e;
     }
   };
 

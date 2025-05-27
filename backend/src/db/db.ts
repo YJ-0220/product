@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config({ path: `.env.${process.env.NODE_ENV || "development"}` });
-
 import { Pool } from "pg";
 
 const databaseUrl = process.env.DATABASE_URL;

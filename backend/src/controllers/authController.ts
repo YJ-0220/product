@@ -6,7 +6,9 @@ import { generateToken } from "../utils/jwt";
 // 회원가입
 export const register = (async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
+
+    const membership_level = role === "buyer" ? "bronze" : null;
 
     if (!username || !password) {
       return res.status(400).json({ message: "빈 칸을 입력해주세요." });
@@ -18,6 +20,10 @@ export const register = (async (req: Request, res: Response) => {
     //     .status(400)
     //     .json({ message: "이메일 형식이 올바르지 않습니다." });
     // }
+
+    if (role !== "buyer" && role !== "seller") {
+      return res.status(400).json({ message: "올바른 역할을 선택해주세요." });
+    }
 
     const passwordRegex =
       /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -38,10 +44,18 @@ export const register = (async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      "INSERT INTO auth.users (username, password) VALUES ($1, $2) RETURNING *",
-      [username, hashedPassword]
-    );
+    let result = { rows: [{ id: 0, username: '' }] };
+    if (role === "buyer") {
+      result = await pool.query(
+        "INSERT INTO auth.users (username, password, role, membership_level) VALUES ($1, $2, $3, $4) RETURNING *",
+        [username, hashedPassword, role, membership_level]
+      );
+    } else {
+      result = await pool.query(
+        "INSERT INTO auth.users (username, password, role) VALUES ($1, $2, $3) RETURNING *",
+        [username, hashedPassword, role]
+      );
+    }
 
     res.status(201).json({
       message: "회원가입이 완료되었습니다.",
@@ -50,7 +64,7 @@ export const register = (async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "서버 오류" });
+    res.status(500).json({ message: "아이디 생성에 실패했습니다." });
   }
 }) as RequestHandler;
 
@@ -71,21 +85,16 @@ export const login = (async (req: Request, res: Response) => {
     );
 
     if (result.rows.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "아이디 또는 비밀번호가 일치하지 않습니다." });
+      return res.status(400).json({ message: "아이디가 일치하지 않습니다." });
     }
 
     const user = result.rows[0];
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res
-        .status(400)
-        .json({ message: "아이디 또는 비밀번호가 일치하지 않습니다." });
+      return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
     }
 
-    // 토큰 생성
     const token = generateToken(user.id);
 
     res.cookie("token", token, {
@@ -97,13 +106,16 @@ export const login = (async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: "로그인이 완료되었습니다.",
+      token: token,
       user: {
         id: user.id,
         username: user.username,
+        role: user.role,
+        membership_level: user.membership_level,
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "서버 오류" });
+    res.status(500).json({ message: "로그인에 실패했습니다." });
   }
 }) as RequestHandler;
 

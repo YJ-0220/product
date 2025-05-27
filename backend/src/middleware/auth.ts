@@ -4,15 +4,6 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Request 타입 확장
-declare global {
-  namespace Express {
-    interface Request {
-      username?: string;
-    }
-  }
-}
-
 const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // 1. 토큰 가져오기
@@ -20,7 +11,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
 
     if (!token) {
       return res.status(401).json({ 
-        message: "인증이 필요합니다." 
+        message: "로그인이 필요합니다." 
       });
     }
 
@@ -40,7 +31,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     // 4. 사용자 정보를 request에 추가
-    req.username = result.rows[0].username;
+    req.user = result.rows[0];
     next();
 
   } catch (error) {

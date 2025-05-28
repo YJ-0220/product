@@ -1,29 +1,22 @@
 import { useState } from "react";
 import { useLogin } from "@/hooks/useLogin";
-import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const { login, error } = useLogin();
-  const navigate = useNavigate();
 
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      const data = await login(username, password);
 
-      if (data.role === "admin") {
-        navigate("/admin");
-      } else if (data.role === "seller") {
-        navigate("/seller");
-      } else if (data.role === "buyer") {
-        navigate("/home");
-      }
+    try {
+      await login(username, password);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,9 +46,12 @@ export default function LoginForm() {
             />
             <button
               type="submit"
-              className="w-full bg-white text-black rounded-md p-2 mt-6"
+              disabled={loading}
+              className={`w-full mt-4 py-2 px-4 rounded-md text-white font-semibold
+                ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-600 hover:bg-gray-700"}
+                transition-colors duration-200`}
             >
-              로그인
+              {loading ? "로그인 중..." : "로그인"}
             </button>
             {error && (
               <div className="text-red-500 mb-4 text-center">{error}</div>

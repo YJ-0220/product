@@ -13,7 +13,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth는 AuthProvider 내부에서 사용해야 합니다.");
   }
   return context;
 }

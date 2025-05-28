@@ -1,20 +1,33 @@
 import { useState } from "react";
 import { loginRequest } from "@/api/auth";
+import { useNavigate } from "react-router-dom";
 
 export const useLogin = () => {
+  const navigate = useNavigate();
+  
   const [error, setError] = useState<string | null>(null);
 
   const login = async (username: string, password: string) => {
     try {
       const data = await loginRequest(username, password);
+      const { token, user } = data;
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role);
+
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "seller") {
+        navigate("/seller");
+      } else if (user.role === "buyer") {
+        navigate("/home");
+      }
 
       setError(null);
-      return data;
+
+      return user;
     } catch (e) {
-      setError("로그인에 실패했습니다.");
+      setError("아이디 또는 비밀번호가 올바르지 않습니다.");
       throw e;
     }
   };

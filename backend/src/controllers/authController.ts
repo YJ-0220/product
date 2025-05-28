@@ -44,7 +44,7 @@ export const register = (async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let result = { rows: [{ id: 0, username: '' }] };
+    let result;
     if (role === "buyer") {
       result = await pool.query(
         "INSERT INTO auth.users (username, password, role, membership_level) VALUES ($1, $2, $3, $4) RETURNING *",
@@ -61,6 +61,7 @@ export const register = (async (req: Request, res: Response) => {
       message: "회원가입이 완료되었습니다.",
       user: result.rows[0].id,
       username: result.rows[0].username,
+      role: result.rows[0].role,
     });
   } catch (error) {
     console.error(error);

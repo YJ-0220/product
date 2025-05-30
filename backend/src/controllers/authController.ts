@@ -96,7 +96,7 @@ export const login = (async (req: Request, res: Response) => {
       return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
     }
 
-    const token = generateToken(user.id);
+    const token = generateToken(user.id, user.role);
 
     res.cookie("token", token, {
       httpOnly: true,

@@ -2,27 +2,39 @@ import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [role, setRole] = useState<string | null>(null);
-
-  useEffect(() => {
+  // 초기 상태를 localStorage에서 가져오도록 수정
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const token = localStorage.getItem("token");
     const savedRole = localStorage.getItem("role");
-    if (token && savedRole) {
-      setIsAuthenticated(true);
-      setRole(savedRole);
+    return !!(token && savedRole);
+  });
+  
+  const [role, setRole] = useState<string | null>(() => {
+    return localStorage.getItem("role");
+  });
+
+  useEffect(() => {
+    if (isAuthenticated && role) {
+      localStorage.setItem("role", role);
     }
-  }, []);
+  }, [isAuthenticated, role]);
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    localStorage.clear();
     setIsAuthenticated(false);
     setRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, role, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        isAuthenticated, 
+        role, 
+        logout,
+        setIsAuthenticated,
+        setRole
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

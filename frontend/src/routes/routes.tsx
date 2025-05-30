@@ -4,6 +4,9 @@ import Home from "@/pages/Home";
 import Seller from "@/pages/Seller";
 import Admin from "@/pages/Admin";
 import LoginForm from "@/components/LoginForm";
+import AdminLayout from "@/components/layout/AdminLayout";
+import SellerLayout from "@/components/layout/SellerLayout";
+import BuyerLayout from "@/components/layout/BuyerLayout";
 
 export const router = createBrowserRouter([
   {
@@ -16,14 +19,41 @@ export const router = createBrowserRouter([
   },
   {
     element: <RequireAuth allowedRoles={["admin"]} />,
-    children: [{ path: "/admin", element: <Admin /> }],
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { path: "/admin", element: <Admin /> },
+          { path: "/admin/users", element: <div>사용자 관리</div> },
+          { path: "/admin/settings", element: <div>설정</div> },
+        ],
+      },
+    ],
   },
   {
     element: <RequireAuth allowedRoles={["seller"]} />,
-    children: [{ path: "/seller", element: <Seller /> }],
+    children: [
+      {
+        element: <SellerLayout />,
+        children: [
+          { path: "/seller", element: <Seller /> },
+          { path: "/seller/products", element: <div>상품 관리</div> },
+          { path: "/seller/orders", element: <div>주문 관리</div> },
+        ],
+      },
+    ],
   },
   {
     element: <RequireAuth allowedRoles={["buyer"]} />,
-    children: [{ path: "/home", element: <Home /> }],
+    children: [
+      {
+        element: <BuyerLayout />,
+        children: [
+          { path: "/home", element: <Home /> },
+          { path: "/orders", element: <div>주문 내역</div> },
+          { path: "/cart", element: <div>장바구니</div> },
+        ],
+      },
+    ],
   },
 ]);

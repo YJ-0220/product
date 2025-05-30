@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { loginRequest } from "@/api/auth";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useLogin = () => {
   const navigate = useNavigate();
+  const { setIsAuthenticated, setRole } = useAuth();
   
   const [error, setError] = useState<string | null>(null);
 
@@ -14,6 +16,9 @@ export const useLogin = () => {
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", user.role);
+      
+      setIsAuthenticated(true);
+      setRole(user.role);
 
       if (user.role === "admin") {
         navigate("/admin");

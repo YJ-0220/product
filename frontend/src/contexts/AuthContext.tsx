@@ -4,16 +4,18 @@ interface AuthContextType {
   isAuthenticated: boolean;
   role: string | null;
   logout: () => void;
+  setIsAuthenticated: (value: boolean) => void;
+  setRole: (role: string | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth는 AuthProvider 내부에서 사용해야 합니다.");
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

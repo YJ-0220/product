@@ -25,7 +25,7 @@ export const useLogin = () => {
       } else if (user.role === "seller") {
         navigate("/seller");
       } else if (user.role === "buyer") {
-        navigate("/home");
+        navigate("/buyer");
       }
 
       setError(null);

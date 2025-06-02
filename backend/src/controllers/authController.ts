@@ -80,6 +80,7 @@ export const login = (async (req: Request, res: Response) => {
         .json({ message: "아이디와 비밀번호를 입력해주세요." });
     }
 
+    // 아이디 조회
     const result = await pool.query(
       "SELECT * FROM auth.users WHERE username = $1",
       [username]

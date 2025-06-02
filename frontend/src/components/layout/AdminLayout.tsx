@@ -1,18 +1,19 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import Header from "@/components/layout/Header";
 
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-[#5745f8]">
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
       />
       <div className="flex-1 flex flex-col">
-        <header className="lg:hidden p-4 border-b border-gray-200">
+        <div className="lg:hidden p-4 border-b border-gray-200">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -31,8 +32,9 @@ export default function AdminLayout() {
               />
             </svg>
           </button>
-        </header>
-        <main className="flex-1 overflow-auto p-6">
+        </div>
+        <main className="flex-1 overflow-auto">
+          <Header />
           <Outlet />
         </main>
       </div>

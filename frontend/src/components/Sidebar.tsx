@@ -10,41 +10,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const { role, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   const handleMenuClick = (path: string) => {
     navigate(path);
     if (onClose) onClose();
-  };
-
-  const renderProfileSection = () => {
-    const membershipLevel = role === "buyer" ? "GOLD" : null;
-    
-    return (
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
-            <span className="text-xl">👤</span>
-          </div>
-          <div>
-            <h2 className="text-white font-semibold">홍길동</h2>
-            <p className="text-gray-400 text-sm">
-              {role === "admin" && "관리자"}
-              {role === "seller" && "판매자"}
-              {role === "buyer" && "구매자"}
-            </p>
-          </div>
-        </div>
-        {membershipLevel && (
-          <div className="bg-gray-800 rounded-lg p-2 text-center">
-            <span className="text-yellow-400 font-semibold">{membershipLevel} 멤버십</span>
-          </div>
-        )}
-      </div>
-    );
   };
 
   const renderMenuItems = () => {
@@ -157,27 +125,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           onClick={onClose}
         />
       )}
-      
+
       <aside
         className={`
           fixed lg:static
           top-0 left-0
           h-full
           w-64
-          bg-black
+          bg-[#5745f8]
           border-r border-gray-700
           z-30
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        {renderProfileSection()}
         <nav className="py-4">
           <ul className="space-y-2">
             {renderMenuItems()}
-            <li className="mt-8">
+            <li className="mt-4">
               <button
-                onClick={handleLogout}
+                onClick={logout}
                 className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-900"
               >
                 로그아웃

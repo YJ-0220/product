@@ -1,26 +1,22 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
-import { getUserProfile } from "@/api/user";
+import { getUserProfile } from "@/api/users";
 
 interface User {
   id: string;
   name: string;
+  role: string;
   membershipLevel?: string;
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // 초기 상태를 localStorage에서 가져오도록 수정
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const token = localStorage.getItem("token");
-    const savedRole = localStorage.getItem("role");
-    return !!(token && savedRole);
-  });
-
-  const [role, setRole] = useState<string | null>(() => {
-    return localStorage.getItem("role");
+    return !!(token && localStorage.getItem("role"));
   });
 
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -30,18 +26,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(res.user);
         } catch (error) {
           console.error("사용자 정보를 가져오는데 실패했습니다:", error);
+          localStorage.clear();
+          setIsAuthenticated(false);
         }
       }
+      setLoading(false);
     };
 
     fetchUserInfo();
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated && role) {
-      localStorage.setItem("role", role);
+    if (isAuthenticated) {
+      localStorage.setItem("role", user?.role || "");
     }
-  }, [isAuthenticated, role]);
+  }, [isAuthenticated, user]);
 
   const logout = () => {
     localStorage.clear();
@@ -53,11 +52,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         isAuthenticated,
-        role,
         user,
+        loading,
         logout,
         setIsAuthenticated,
-        setRole,
         setUser,
       }}
     >

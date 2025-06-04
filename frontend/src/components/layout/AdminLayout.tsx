@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
-import Header from "@/components/layout/Header";
 
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -34,7 +33,6 @@ export default function AdminLayout() {
           </button>
         </div>
         <main className="flex-1 overflow-auto">
-          <Header />
           <Outlet />
         </main>
       </div>

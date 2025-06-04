@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RequireAuth from "@/components/RequireAuth";
+import RequireNoAuth from "@/components/RequireNoAuth";
 import Buyer from "@/pages/Buyer";
 import Seller from "@/pages/Seller";
 import Admin from "@/pages/Admin";
@@ -7,6 +8,7 @@ import LoginForm from "@/components/LoginForm";
 import AdminLayout from "@/components/layout/AdminLayout";
 import SellerLayout from "@/components/layout/SellerLayout";
 import BuyerLayout from "@/components/layout/BuyerLayout";
+import NotFound from "@/pages/common/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -15,7 +17,12 @@ export const router = createBrowserRouter([
   },
   {
     path: "login",
-    element: <LoginForm />,
+    element: <RequireNoAuth />,
+    children: [
+      {
+        element: <LoginForm />,
+      },
+    ],
   },
   {
     element: <RequireAuth allowedRoles={["admin"]} />,
@@ -29,6 +36,8 @@ export const router = createBrowserRouter([
             children: [
               { path: "users", element: <div>사용자 관리</div> },
               { path: "settings", element: <div>설정</div> },
+              { path: "work", element: <div>작업 주문</div> },
+              { path: "content", element: <div>콘텐츠 관리</div> },
             ],
           },
         ],
@@ -70,5 +79,9 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: "not-found",
+    element: <NotFound />,
   },
 ]);

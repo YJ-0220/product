@@ -3,16 +3,16 @@ import { createContext, useContext } from "react";
 interface User {
   id: string;
   name: string;
+  role: string;
   membershipLevel?: string;
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  role: string | null;
   user: User | null;
+  loading: boolean;
   logout: () => void;
   setIsAuthenticated: (value: boolean) => void;
-  setRole: (role: string | null) => void;
   setUser: (user: User | null) => void;
 }
 

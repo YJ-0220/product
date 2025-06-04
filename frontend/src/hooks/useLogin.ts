@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export const useLogin = () => {
   const navigate = useNavigate();
-  const { setIsAuthenticated, setRole } = useAuth();
+  const { setIsAuthenticated } = useAuth();
   
   const [error, setError] = useState<string | null>(null);
 
@@ -13,18 +13,18 @@ export const useLogin = () => {
     try {
       const data = await loginRequest(username, password);
       const { token, user } = data;
+      const role = user.role;
 
       localStorage.setItem("token", token);
-      localStorage.setItem("role", user.role);
-      
-      setIsAuthenticated(true);
-      setRole(user.role);
+      localStorage.setItem("role", role);
 
-      if (user.role === "admin") {
+      setIsAuthenticated(true);
+
+      if (role === "admin") {
         navigate("/admin");
-      } else if (user.role === "seller") {
+      } else if (role === "seller") {
         navigate("/seller");
-      } else if (user.role === "buyer") {
+      } else if (role === "buyer") {
         navigate("/buyer");
       }
 

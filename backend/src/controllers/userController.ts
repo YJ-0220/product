@@ -14,7 +14,7 @@ export const getUserProfile: RequestHandler = async (
       return;
     }
 
-    const decoded = verifyToken(token) as { userId: number };
+    const decoded = verifyToken(token) as { userId: string };
     const userId = decoded.userId;
 
     const result = await pool.query(
@@ -30,7 +30,7 @@ export const getUserProfile: RequestHandler = async (
     const userData = result.rows[0];
 
     const user = {
-      id: userData.id as number,
+      id: userData.id as string,
       name: userData.username as string,
       role: userData.role as string,
       membershipLevel: userData.membership_level as string

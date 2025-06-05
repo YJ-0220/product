@@ -12,9 +12,10 @@ export const authenticate = async (
     const token = req.cookies.token;
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         message: "로그인이 필요합니다.",
       });
+      return;
     }
 
     // 2. 토큰 검증
@@ -22,14 +23,15 @@ export const authenticate = async (
 
     // 3. 사용자 정보 조회
     const result = await pool.query(
-      "SELECT id, username FROM users WHERE id = $1",
+      "SELECT id, username, role FROM auth.users WHERE id = $1",
       [decoded.userId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({
+      res.status(401).json({
         message: "유효하지 않은 사용자입니다.",
       });
+      return;
     }
 
     // 4. 사용자 정보를 request에 추가

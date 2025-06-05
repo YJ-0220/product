@@ -20,6 +20,7 @@ export const router = createBrowserRouter([
     element: <RequireNoAuth />,
     children: [
       {
+        index: true,
         element: <LoginForm />,
       },
     ],

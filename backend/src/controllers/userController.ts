@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
-import pool from "../db/db";
 import { verifyToken } from "../utils/jwt";
+import pool from "../db/db";
 
 export const getUserProfile: RequestHandler = async (
   req: Request,

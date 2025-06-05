@@ -277,7 +277,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           top-0 left-0
           h-full
           w-64
-          bg-[#5745f8]
+          bg-[#302c47]
           border-r border-gray-700
           z-30
           transform transition-transform duration-300 ease-in-out

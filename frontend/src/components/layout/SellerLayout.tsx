@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
 
 export default function SellerLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

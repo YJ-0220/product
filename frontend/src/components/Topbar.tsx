@@ -15,7 +15,7 @@ export default function Topbar() {
       case "admin":
         return (
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-blue-100">
+            <span className="text-2xl font-bold text-black">
               환영합니다, 관리자님
             </span>
           </div>
@@ -23,7 +23,7 @@ export default function Topbar() {
       case "seller":
         return (
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-blue-100">
+            <span className="text-2xl font-bold text-black">
               환영합니다, {userName}님
             </span>
           </div>
@@ -31,7 +31,7 @@ export default function Topbar() {
       case "buyer":
         return (
           <div className="flex flex-col">
-            <span className="text-2xl font-bold text-blue-100">
+            <span className="text-2xl font-bold text-black">
               환영합니다, {userName}님
             </span>
           </div>
@@ -41,7 +41,6 @@ export default function Topbar() {
     }
   };
 
-  // 실제 api 연동 필요
   const getNotifications = () => {
     switch (role) {
       case "admin":
@@ -143,7 +142,6 @@ export default function Topbar() {
   };
 
   const handleRefresh = () => {
-    console.log("새로고침 실행");
     window.location.reload();
   };
 
@@ -152,8 +150,8 @@ export default function Topbar() {
   const profileMenuItems = getProfileMenuItems();
 
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4 shadow-sm rounded-lg p-4">
+    <div className="sticky top-0 z-10 bg-[#f2f7fb]">
+      <div className="flex items-center justify-between shadow-sm p-4">
         <div className="flex items-center">{getUserGreeting()}</div>
 
         <div className="flex items-center space-x-2">
@@ -177,7 +175,6 @@ export default function Topbar() {
             </svg>
           </button>
 
-          {/* 알림 버튼 */}
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
@@ -234,7 +231,6 @@ export default function Topbar() {
             )}
           </div>
 
-          {/* 환경설정 버튼 */}
           <div className="relative">
             <button
               onClick={() => setShowSettings(!showSettings)}
@@ -282,7 +278,6 @@ export default function Topbar() {
             )}
           </div>
 
-          {/* 사용자 설정 버튼 */}
           <div className="relative">
             <button
               onClick={() => setShowProfile(!showProfile)}

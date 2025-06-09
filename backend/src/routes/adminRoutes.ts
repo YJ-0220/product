@@ -6,7 +6,7 @@ import {
   createAdmin,
 } from "../controllers/adminController";
 import { authenticate } from "../middleware/auth";
-import { requireAdmin } from "../middleware/users";
+import { requireAdmin } from "../middleware/admin";
 
 const router = express.Router();
 

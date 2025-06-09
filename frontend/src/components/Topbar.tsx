@@ -268,7 +268,7 @@ export default function Topbar() {
                     <button
                       key={index}
                       onClick={item.action}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-900 text-sm"
                     >
                       {item.label}
                     </button>
@@ -322,7 +322,7 @@ export default function Topbar() {
                     <button
                       key={index}
                       onClick={item.action}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900"
                     >
                       {item.label}
                     </button>

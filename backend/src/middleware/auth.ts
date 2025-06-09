@@ -19,7 +19,7 @@ export const authenticate = async (
     }
 
     // 2. 토큰 검증
-    const decoded = verifyToken(token) as { userId: number };
+    const decoded = verifyToken(token) as { userId: string; role: string };
 
     // 3. 사용자 정보 조회
     const result = await pool.query(

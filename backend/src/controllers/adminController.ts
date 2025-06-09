@@ -7,12 +7,10 @@ import { QueryResult } from "pg";
 // 관리자 대시보드
 export const getAdminDashboard: RequestHandler = async (req: Request, res: Response) => {
   try {
-    // 사용자 수 조회
     const userCountResult: QueryResult = await pool.query(
       "SELECT COUNT(*) FROM auth.users WHERE role IN ('buyer', 'seller')"
     );
 
-    // 통계 데이터
     const stats = {
       totalUsers: Number(userCountResult.rows[0].count),
     };

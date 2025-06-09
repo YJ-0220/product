@@ -8,8 +8,7 @@ export default function Admin() {
     <div className="min-h-screen">
       <Topbar />
       <div className="p-6">
-        {/* 실제 api 연동 필요 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 max-md:hidden lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -38,7 +37,7 @@ export default function Admin() {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">활성 회원</p>
+                <p className="text-sm font-medium text-gray-600">총 상품수</p>
                 <p className="text-3xl font-bold text-gray-900">856</p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
@@ -63,7 +62,7 @@ export default function Admin() {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">총 상품수</p>
+                <p className="text-sm font-medium text-gray-600"></p>
                 <p className="text-3xl font-bold text-gray-900">2,567</p>
               </div>
               <div className="p-3 bg-purple-100 rounded-full">

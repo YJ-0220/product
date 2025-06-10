@@ -1,14 +1,15 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RequireAuth from "@/components/RequireAuth";
 import RequireNoAuth from "@/components/RequireNoAuth";
-import Buyer from "@/pages/Buyer";
-import Seller from "@/pages/Seller";
-import Admin from "@/pages/Admin";
 import LoginForm from "@/components/LoginForm";
 import AdminLayout from "@/components/layout/AdminLayout";
 import SellerLayout from "@/components/layout/SellerLayout";
 import BuyerLayout from "@/components/layout/BuyerLayout";
+import Buyer from "@/pages/Buyer";
+import Seller from "@/pages/Seller";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/common/NotFound";
+import Order from "@/pages/buyer/order";
 
 export const router = createBrowserRouter([
   {
@@ -67,16 +68,13 @@ export const router = createBrowserRouter([
     element: <RequireAuth allowedRoles={["buyer"]} />,
     children: [
       {
+        path: "buyer",
         element: <BuyerLayout />,
         children: [
-          {
-            path: "buyer",
-            element: <Buyer />,
-            children: [
-              { path: "orders", element: <div>주문 내역</div> },
-              { path: "cart", element: <div>장바구니</div> },
-            ],
-          },
+          { index: true, element: <Buyer /> },
+          { path: "order-request", element: <Order /> },
+          { path: "order-history", element: <div>주문내역 페이지입니다.</div> },
+          { path: "membership", element: <div>멤버십 페이지입니다.</div> },
         ],
       },
     ],

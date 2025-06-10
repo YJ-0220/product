@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface SidebarProps {
@@ -7,14 +7,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const role = user?.role || "";
-
-  const handleMenuClick = (path: string) => {
-    navigate(path);
-    if (onClose) onClose();
-  };
 
   const renderMenuItems = () => {
     switch (role) {
@@ -22,8 +16,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         return (
           <>
             <li>
-              <button
-                onClick={() => handleMenuClick("/admin")}
+              <Link
+                to="/admin"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -40,11 +34,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>대시보드</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/admin/users")}
+              <Link
+                to="/admin/users"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -61,11 +55,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>사용자 관리</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/admin/work")}
+              <Link
+                to="/admin/work"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -88,15 +82,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>작업 현황</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/admin/content")}
+              <Link
+                to="/admin/content"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <span>콘텐츠 관리</span>
-              </button>
+              </Link>
             </li>
           </>
         );
@@ -104,8 +98,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         return (
           <>
             <li>
-              <button
-                onClick={() => handleMenuClick("/seller")}
+              <Link
+                to="/seller"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -122,11 +116,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>판매 현황</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/seller/products")}
+              <Link
+                to="/seller/products"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -143,11 +137,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>상품 관리</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/seller/orders")}
+              <Link
+                to="/seller/orders"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -164,7 +158,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>주문 관리</span>
-              </button>
+              </Link>
             </li>
           </>
         );
@@ -172,8 +166,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         return (
           <>
             <li>
-              <button
-                onClick={() => handleMenuClick("/buyer")}
+              <Link
+                to="/buyer"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -190,11 +184,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>홈</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/buyer/orders")}
+              <Link
+                to="/buyer/order-request"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -211,11 +205,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>주문하기</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/buyer/orders")}
+              <Link
+                to="/buyer/order-history"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -232,11 +226,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>주문내역</span>
-              </button>
+              </Link>
             </li>
             <li>
-              <button
-                onClick={() => handleMenuClick("/membership")}
+              <Link
+                to="/membership"
                 className="w-full flex items-center space-x-3 p-4 text-white hover:bg-gray-900 transition-colors"
               >
                 <svg
@@ -253,7 +247,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   />
                 </svg>
                 <span>멤버십</span>
-              </button>
+              </Link>
             </li>
           </>
         );
@@ -264,9 +258,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
+    {/* 모바일 최적화다만 나중에 해야지... */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-white bg-opacity-50 z-20 lg:hidden"
           onClick={onClose}
         />
       )}

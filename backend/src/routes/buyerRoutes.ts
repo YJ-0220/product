@@ -1,9 +1,12 @@
 import express from "express";
-import { createOrderRequest } from "../controllers/orderRequestController";
-import { authenticate } from "../middleware/auth";
+import {
+  createOrderRequest,
+  getCategories,
+} from "../controllers/orderRequestController";
 
 const router = express.Router();
 
-router.post("/order-request", authenticate, createOrderRequest);
+router.post("/order-request", createOrderRequest);
+router.get("/categories", getCategories);
 
 export default router;

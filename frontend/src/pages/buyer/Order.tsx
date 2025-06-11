@@ -1,9 +1,9 @@
-import OrderForm from "../../components/OrderForm";
+import OrderRequestForm from "@/components/OrderRequestForm";
 
 export default function Order() {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <OrderForm />
+    <div className="h-full flex flex-col items-center justify-center">
+      <OrderRequestForm />
     </div>
   );
 }

@@ -274,6 +274,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           w-64
           bg-[#302c47]
           border-r border-gray-700
+          rounded-r-4xl
           z-30
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}

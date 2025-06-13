@@ -18,17 +18,29 @@ export function useOrderRequestForm() {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev: OrderRequestData) => ({
-      ...prev,
-      [name]: [
-        "desired_quantity",
-        "budget",
-        "category_id",
-        "subcategory_id",
-      ].includes(name)
-        ? Number(value)
-        : value,
-    }));
+
+    setFormData((prev: OrderRequestData) => {
+      // category_id가 바뀌면 subcategory_id 초기화
+      if (name === "category_id") {
+        return {
+          ...prev,
+          category_id: Number(value),
+          subcategory_id: 0, // 초기화
+        };
+      }
+
+      return {
+        ...prev,
+        [name]: [
+          "category_id",
+          "subcategory_id",
+          "desired_quantity",
+          "budget",
+        ].includes(name)
+          ? Number(value)
+          : value,
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

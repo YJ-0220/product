@@ -5,6 +5,7 @@ interface User {
   name: string;
   role: string;
   membershipLevel?: string;
+  points?: number;
 }
 
 interface AuthContextType {

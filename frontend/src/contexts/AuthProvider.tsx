@@ -7,6 +7,7 @@ interface User {
   name: string;
   role: string;
   membershipLevel?: string;
+  points?: number;
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -23,7 +24,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (isAuthenticated) {
         try {
           const res = await getUserProfile();
-          setUser(res.user);
+          setUser({
+            ...res.user,
+            points: res.points.toLocaleString(),
+          });
         } catch (error) {
           console.error("사용자 정보를 가져오는데 실패했습니다:", error);
           localStorage.clear();

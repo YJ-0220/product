@@ -307,14 +307,14 @@ export default function Topbar() {
             {showProfile && (
               <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border z-50">
                 <div className="p-3 border-b">
-                  <p className="font-semibold text-gray-900">
-                    {user?.name || "사용자"}
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {user?.name}님
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    등급: {user?.membershipLevel}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {role === "admin" && "관리자"}
-                    {role === "seller" && "판매자"}
-                    {role === "buyer" &&
-                      `구매자 (${user?.membershipLevel || "bronze"})`}
+                    보유 포인트: {user?.points?.toLocaleString() ?? 0}P
                   </p>
                 </div>
                 <div className="py-1">

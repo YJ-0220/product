@@ -1,4 +1,5 @@
 import api from "./axios";
+import { type OrderCategory } from "../types/orderCategory";
 
 export interface OrderRequestData {
   category_id: number;
@@ -12,5 +13,15 @@ export interface OrderRequestData {
 
 export const createOrderRequest = async (data: OrderRequestData) => {
   const res = await api.post("/buyer/order-request", data);
+  return res.data;
+}
+
+export const getCategories = async (): Promise<OrderCategory[]> => {
+  const res = await api.get("/order-categories");
+  return res.data;
+}
+
+export const getSubCategories = async (parentId: number): Promise<OrderCategory[]> => {
+  const res = await api.get(`/order-categories/${parentId}/children`);
   return res.data;
 }

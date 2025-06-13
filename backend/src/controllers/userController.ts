@@ -22,6 +22,11 @@ export const getUserProfile: RequestHandler = async (
       [userId]
     );
 
+    const pointResult = await pool.query(
+      "SELECT balance FROM app.points WHERE user_id = $1",
+      [userId]
+    );
+
     if (result.rows.length === 0) {
       res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
       return;
@@ -33,12 +38,15 @@ export const getUserProfile: RequestHandler = async (
       id: userData.id as string,
       name: userData.username as string,
       role: userData.role as string,
-      membershipLevel: userData.membership_level as string
+      membershipLevel: userData.membership_level as string,
     };
+
+    const points = pointResult.rows[0]?.balance ?? 0;
 
     res.status(200).json({
       user,
-      message: "프로필 조회 성공"
+      points,
+      message: "프로필 조회 성공",
     });
   } catch (error) {
     console.error("프로필 조회 오류 상세:", error);

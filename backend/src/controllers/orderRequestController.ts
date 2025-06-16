@@ -11,9 +11,12 @@ export const createOrderRequest = async (req: Request, res: Response) => {
       title,
       description,
       desired_quantity,
-      deadline,
       required_points,
+      deadline,
     } = req.body;
+
+    console.log("요청 body:", req.body);
+    console.log("req.user:", req.user);
 
     const buyerId = req.user?.id;
 
@@ -26,13 +29,15 @@ export const createOrderRequest = async (req: Request, res: Response) => {
 
     await client.query("BEGIN");
 
+    // 포인트 조회
     const pointResult = await client.query(
       "SELECT balance FROM app.points WHERE user_id = $1",
       [buyerId]
     );
 
-    const currentPoint = pointResult.rows[0].balance || 0;
+    const currentPoint = pointResult.rows[0].balance;
 
+    // 포인트 부족 시 예외 처리
     if (currentPoint < required_points) {
       await client.query("ROLLBACK");
       res.status(400).json({
@@ -41,7 +46,8 @@ export const createOrderRequest = async (req: Request, res: Response) => {
       return;
     }
 
-    const result = await client.query(
+    // 주문 요청 생성
+    const order = await client.query(
       `INSERT INTO app.order_requests 
       (buyer_id, category_id, subcategory_id, title, description, desired_quantity, deadline, required_points) 
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
@@ -56,7 +62,6 @@ export const createOrderRequest = async (req: Request, res: Response) => {
         required_points,
       ]
     );
-
     // 포인트 차감
     await client.query(
       "UPDATE app.points SET balance = balance - $1 WHERE user_id = $2",
@@ -67,14 +72,14 @@ export const createOrderRequest = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "주문 요청이 성공적으로 생성되었습니다.",
-      order: result.rows[0],
+      order: order.rows[0],
       remainingPoint: currentPoint - required_points,
     });
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("주문 요청 오류:", error);
     res.status(500).json({
-      message: "주문 요청 오류가 발생했습니다.",
+      message: "주문 요청 오류가 발생했다.",
+      error: error,
     });
   } finally {
     client.release();

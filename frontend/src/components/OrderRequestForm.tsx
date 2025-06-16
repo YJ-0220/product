@@ -1,6 +1,53 @@
 import { useOrderRequestForm } from "@/hooks/useOrderRequestForm";
 import { useCategories } from "@/hooks/useCategories";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+
+interface FormInputProps {
+  label: string;
+  name: string;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  type?: string;
+  rows?: number;
+  options?: Array<{ id: number; name: string }>;
+}
+
+const FormInput = ({ label, name, value, onChange, type = "text", rows, options }: FormInputProps) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-semibold text-gray-900">{label}</label>
+    {type === "textarea" ? (
+      <textarea
+        name={name}
+        value={value}
+        onChange={onChange}
+        rows={rows}
+        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+      />
+    ) : type === "select" ? (
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+      >
+        <option value={0}>선택</option>
+        {options?.map((opt) => (
+          <option key={opt.id} value={opt.id}>
+            {opt.name}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+      />
+    )}
+  </div>
+);
 
 export default function OrderRequestForm() {
   const { formData, handleChange, handleSubmit } = useOrderRequestForm();
@@ -20,97 +67,63 @@ export default function OrderRequestForm() {
         <h2 className="text-3xl font-bold mb-8 text-gray-900">주문 요청</h2>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                상위 카테고리
-              </label>
-              <select
-                name="category_id"
-                value={formData.category_id}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              >
-                <option value={0}>선택</option>
-                {parentCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                하위 카테고리
-              </label>
-              <select
-                name="subcategory_id"
-                value={formData.subcategory_id}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              >
-                <option value={0}>선택</option>
-                {subcategories.map((sub) => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-900">
-              설명
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
+            <FormInput
+              label="상위 카테고리"
+              name="category_id"
+              value={formData.category_id}
               onChange={handleChange}
-              rows={4}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              type="select"
+              options={parentCategories}
+            />
+            <FormInput
+              label="하위 카테고리"
+              name="subcategory_id"
+              value={formData.subcategory_id}
+              onChange={handleChange}
+              type="select"
+              options={subcategories}
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-900">
-              제목
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-            />
-          </div>
+          <FormInput
+            label="설명"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            type="textarea"
+            rows={4}
+          />
+
+          <FormInput
+            label="제목"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+          />
+
+          <FormInput
+            label="수량"
+            name="desired_quantity"
+            value={formData.desired_quantity}
+            onChange={handleChange}
+            type="number"
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                수량
-              </label>
-              <input
-                type="number"
-                name="desired_quantity"
-                value={formData.desired_quantity}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                마감일
-              </label>
-              <input
-                type="date"
-                name="deadline"
-                value={formData.deadline}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              />
-            </div>
+            <FormInput
+              label="가격"
+              name="required_points"
+              value={formData.required_points}
+              onChange={handleChange}
+              type="number"
+            />
+            <FormInput
+              label="마감일"
+              name="deadline"
+              value={formData.deadline}
+              onChange={handleChange}
+              type="date"
+            />
           </div>
 
           <div className="max-w-2xl mx-auto">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCategories } from "@/api/orderRequest";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { type OrderCategory } from "@/types/orderCategory";
 
 export function useCategories() {

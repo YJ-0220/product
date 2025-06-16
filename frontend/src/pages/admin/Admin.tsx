@@ -1,5 +1,5 @@
 import Topbar from "@/components/Topbar";
-import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useDashboardStats } from "@/hooks/useAdminDashboardStats";
 
 export default function Admin() {
   const { stats } = useDashboardStats();

@@ -1,22 +1,12 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function NotFound() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   return (
     <div>
       <h1>존재하지 않는 페이지입니다.</h1>
       <button
-        onClick={() =>
-          navigate(
-            user?.role === "admin"
-              ? "/admin"
-              : user?.role === "seller"
-              ? "/seller"
-              : "/buyer"
-          )
-        }
+        onClick={() => navigate("/")}
       >
         홈으로 가기
       </button>

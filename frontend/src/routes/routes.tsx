@@ -1,86 +1,62 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import RequireAuth from "@/components/RequireAuth";
 import RequireNoAuth from "@/components/RequireNoAuth";
-import LoginForm from "@/components/LoginForm";
-import AdminLayout from "@/components/layout/AdminLayout";
-import SellerLayout from "@/components/layout/SellerLayout";
-import BuyerLayout from "@/components/layout/BuyerLayout";
-import Buyer from "@/pages/Buyer";
-import Seller from "@/pages/Seller";
-import Admin from "@/pages/Admin";
+import { Home } from "@/pages/Home";
+import LoginForm from "@/pages/common/Login";
 import NotFound from "@/pages/common/NotFound";
-import Order from "@/pages/buyer/order";
+import OrderSuccess from "@/pages/buyer/OrderSuccess";
+import OrderHistory from "@/pages/common/OrderHistory";
+import OrderBoard from "@/pages/common/OrderBoard";
+import OrderList from "@/components/OrderList";
+import OrderDetail from "@/components/OrderDetail";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
-  },
-  {
-    path: "login",
-    element: <RequireNoAuth />,
+    element: (
+      <RequireAuth allowedRoles={["admin", "seller", "buyer"]}>
+        <Home />
+      </RequireAuth>
+    ),
     children: [
       {
-        index: true,
-        element: <LoginForm />,
-      },
-    ],
-  },
-  {
-    element: <RequireAuth allowedRoles={["admin"]} />,
-    children: [
-      {
-        element: <AdminLayout />,
+        path: "order",
+        element: (
+          <RequireAuth allowedRoles={["buyer", "seller"]}>
+            <OrderBoard />
+          </RequireAuth>
+        ),
         children: [
           {
-            path: "admin",
-            element: <Admin />,
-            children: [
-              { path: "users", element: <div>사용자 관리</div> },
-              { path: "settings", element: <div>설정</div> },
-              { path: "work", element: <div>작업 주문</div> },
-              { path: "content", element: <div>콘텐츠 관리</div> },
-            ],
+            index: true,
+            element: <OrderList />,
+          },
+          {
+            path: ":id",
+            element: <OrderDetail />,
+          },
+          {
+            path: "success",
+            element: <OrderSuccess />,
+          },
+          {
+            path: "history",
+            element: <OrderHistory />,
           },
         ],
       },
-    ],
+    ]
   },
   {
-    element: <RequireAuth allowedRoles={["seller"]} />,
-    children: [
-      {
-        element: <SellerLayout />,
-        children: [
-          {
-            path: "seller",
-            element: <Seller />,
-            children: [
-              { path: "products", element: <div>상품 관리</div> },
-              { path: "orders", element: <div>주문 관리</div> },
-            ],
-          },
-        ],
-      },
-    ],
+    path: "/login",
+    element: (
+      <RequireNoAuth>
+        <LoginForm />
+      </RequireNoAuth>
+    ),
   },
   {
-    element: <RequireAuth allowedRoles={["buyer"]} />,
-    children: [
-      {
-        path: "buyer",
-        element: <BuyerLayout />,
-        children: [
-          { index: true, element: <Buyer /> },
-          { path: "order-request", element: <Order /> },
-          { path: "order-history", element: <div>주문내역 페이지입니다.</div> },
-          { path: "membership", element: <div>멤버십 페이지입니다.</div> },
-        ],
-      },
-    ],
-  },
-  {
-    path: "not-found",
+    path: "/not-found",
     element: <NotFound />,
   },
 ]);

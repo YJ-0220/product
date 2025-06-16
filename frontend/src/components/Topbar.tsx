@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Topbar() {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -314,7 +314,7 @@ export default function Topbar() {
                     등급: {user?.membershipLevel}
                   </p>
                   <p className="text-sm text-gray-500">
-                    보유 포인트: {user?.points?.toLocaleString() ?? 0}P
+                    보유 포인트: {user?.points != null ? Math.floor(user.points).toLocaleString() : 0}P
                   </p>
                 </div>
                 <div className="py-1">

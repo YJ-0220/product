@@ -1,6 +1,6 @@
 import OrderRequestForm from "@/components/OrderRequestForm";
 
-export default function Order() {
+export default function OrderRequest() {
   return (
     <div className="h-full flex flex-col items-center justify-center">
       <OrderRequestForm />

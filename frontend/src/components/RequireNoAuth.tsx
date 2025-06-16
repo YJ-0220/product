@@ -1,7 +1,12 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { Navigate } from "react-router-dom";
+import type { ReactNode } from "react";
 
-export default function RequireNoAuth() {
+interface RequireNoAuthProps {
+  children: ReactNode;
+}
+
+export default function RequireNoAuth({ children }: RequireNoAuthProps) {
   const { isAuthenticated, user, loading } = useAuth();
 
   const roleHomeMap: Record<string, string> = {
@@ -19,5 +24,5 @@ export default function RequireNoAuth() {
     return <Navigate to={redirectPath} replace />;
   }
 
-  return <Outlet />;
+  return children;
 }

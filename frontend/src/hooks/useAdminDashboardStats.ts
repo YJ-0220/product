@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAdminDashboard } from "@/api/dashboard";
+import { getAdminDashboard } from "@/api/admin";
 
 interface DashboardStats {
   totalUsers: number;

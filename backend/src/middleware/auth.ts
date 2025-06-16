@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import pool from "../db/db";
 import { verifyToken } from "../utils/jwt";
 
@@ -43,4 +43,47 @@ export const authenticate = async (
       message: "인증에 실패했습니다.",
     });
   }
+};
+
+export const requiredAdmin: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const user = req.user as { role?: string };
+  if (!user || user.role !== "admin") {
+    res.status(403).json({ message: "관리자 권한이 필요합니다." });
+    return;
+  }
+  next();
+};
+
+export const requiredBuyer: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const user = req.user as { role?: string };
+  if (!user || user.role !== "buyer") {
+    res.status(403).json({
+      message: "구매자는 접근할 수 있는 기능입니다.",
+    });
+    return;
+  }
+  next();
+};
+
+export const requiredSeller: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const user = req.user as { role?: string };
+  if (!user || user.role !== "seller") {
+    res.status(403).json({
+      message: "판매자는 접근할 수 있는 기능입니다.",
+    });
+    return;
+  }
+  next();
 };

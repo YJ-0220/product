@@ -7,7 +7,7 @@ export interface OrderRequestData {
   title: string;
   description: string;
   desired_quantity: number;
-  budget: number;
+  required_points: number;
   deadline: string;
 }
 

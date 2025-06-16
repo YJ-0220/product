@@ -1,13 +1,15 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import type { ReactNode } from "react";
 
 interface RequireAuthProps {
   allowedRoles: string[];
+  children: ReactNode;
 }
 
 export default function RequireAuth({
   allowedRoles,
+  children,
 }: RequireAuthProps): ReactNode {
   const { isAuthenticated, user, loading } = useAuth();
 
@@ -23,5 +25,5 @@ export default function RequireAuth({
     return <Navigate to="/not-found" replace />;
   }
 
-  return <Outlet />;
+  return children;
 }

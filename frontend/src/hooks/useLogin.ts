@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { loginRequest } from "@/api/auth";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 export const useLogin = () => {
   const navigate = useNavigate();
@@ -20,13 +20,7 @@ export const useLogin = () => {
 
       setIsAuthenticated(true);
 
-      if (role === "admin") {
-        navigate("/admin");
-      } else if (role === "seller") {
-        navigate("/seller");
-      } else if (role === "buyer") {
-        navigate("/buyer");
-      }
+      navigate("/");
 
       setError(null);
 

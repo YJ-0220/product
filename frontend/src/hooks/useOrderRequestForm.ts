@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { createOrderRequest, type OrderRequestData } from "@/api/orderRequest";
+import { useNavigate } from "react-router-dom";
 
 export function useOrderRequestForm() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState<OrderRequestData>({
     category_id: 0,
     subcategory_id: 0,
     title: "",
     description: "",
     desired_quantity: 0,
-    budget: 0,
+    required_points: 0,
     deadline: "",
   });
 
@@ -35,7 +38,7 @@ export function useOrderRequestForm() {
           "category_id",
           "subcategory_id",
           "desired_quantity",
-          "budget",
+          "required_points",
         ].includes(name)
           ? Number(value)
           : value,
@@ -47,14 +50,14 @@ export function useOrderRequestForm() {
     e.preventDefault();
     try {
       await createOrderRequest(formData);
-      alert("주문 요청이 등록되었습니다!");
+      navigate("/order-success");
       setFormData({
         category_id: 0,
         subcategory_id: 0,
         title: "",
         description: "",
         desired_quantity: 0,
-        budget: 0,
+        required_points: 0,
         deadline: "",
       });
     } catch {

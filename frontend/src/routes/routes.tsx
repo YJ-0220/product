@@ -9,6 +9,8 @@ import OrderHistory from "@/pages/common/OrderHistory";
 import OrderBoard from "@/pages/common/OrderBoard";
 import OrderList from "@/components/OrderList";
 import OrderDetail from "@/components/OrderDetail";
+import PointChargePage from "@/pages/buyer/PointCharge";
+import OrderRequest from "@/pages/buyer/OrderRequest";
 
 export const router = createBrowserRouter([
   {
@@ -29,21 +31,53 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <OrderList />,
+            element: (
+              <RequireAuth allowedRoles={["buyer", "seller"]}>
+                <OrderList />
+              </RequireAuth>
+            ),
+          },
+          {
+            path: "request",
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <OrderRequest />
+              </RequireAuth>
+            ),
           },
           {
             path: ":id",
-            element: <OrderDetail />,
+            element: (
+              <RequireAuth allowedRoles={["buyer", "seller"]}>
+                <OrderDetail />
+              </RequireAuth>
+            ),
           },
           {
             path: "success",
-            element: <OrderSuccess />,
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <OrderSuccess />
+              </RequireAuth>
+            ),
           },
           {
             path: "history",
-            element: <OrderHistory />,
+            element: (
+              <RequireAuth allowedRoles={["buyer", "seller"]}>
+                <OrderHistory />
+              </RequireAuth>
+            ),
           },
         ],
+      },
+      {
+        path: "point/charge",
+        element: (
+          <RequireAuth allowedRoles={["buyer"]}>
+            <PointChargePage />
+          </RequireAuth>
+        ),
       },
     ]
   },

@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const res = await getUserProfile();
           setUser({
             ...res.user,
-            points: res.points.toLocaleString(),
+            points: Number(res.points),
           });
         } catch (error) {
           console.error("사용자 정보를 가져오는데 실패했습니다:", error);

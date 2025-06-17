@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import pool from "../db/db";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 export const chargePoint = async (req: Request, res: Response) => {
   const { amount } = req.body;
@@ -12,53 +13,72 @@ export const chargePoint = async (req: Request, res: Response) => {
     return;
   }
 
-  const client = await pool.connect();
   try {
-    await client.query("BEGIN");
+    await prisma.$transaction(async (tx) => {
 
-    // 포인트 조회
-    const pointResult = await client.query(
-      "SELECT balance FROM app.points WHERE user_id = $1",
-      [userId]
-    );
+      // 포인트 조회
+      const pointResult = await tx.point.findUnique({
+        where: {
+          userId: userId,
+        },
+      });
 
-    if (pointResult.rows.length === 0) {
-      await client.query(
-        "INSERT INTO app.points (user_id, balance) VALUES ($1, $2)",
-        [userId, amount]
-      );
-    } else {
-      await client.query(
-        "UPDATE app.points SET balance = balance + $1 WHERE user_id = $2",
-        [amount, userId]
-      );
-    }
+      if (!pointResult) {
+        await tx.point.create({
+          data: {
+            userId: userId!,
+            balance: amount,
+          },
+        });
+      } else {
+        await tx.point.update({
+          where: {
+            userId: userId,
+          },
+          data: {
+            balance: { increment: amount },
+          },
+        });
+      }
 
-    const newBalanceResult = await client.query(
-      "SELECT balance FROM app.points WHERE user_id = $1",
-      [userId]
-    );
-    const newBalance = newBalanceResult.rows[0].balance;
-    const formattedBalance = parseFloat(newBalance.toString()).toFixed(0);
+      const newBalanceResult = await tx.point.findUnique({
+        where: {
+          userId: userId,
+        },
+      });
+      const newBalance = newBalanceResult?.balance;
+      const formattedBalance = newBalance ? parseFloat(newBalance.toString()).toFixed(0) : 0;
 
-    await client.query("COMMIT");
-    res.status(200).json({
-      message: "포인트 충전이 완료되었습니다.",
-      newBalance: formattedBalance,
+      res.status(200).json({
+        message: "포인트 충전이 완료되었습니다.",
+        newBalance: formattedBalance,
+      });
     });
   } catch (error) {
-    await client.query("ROLLBACK");
     console.error("포인트 충전 오류:", error);
     res.status(500).json({
       message: "포인트 충전에 실패했습니다.",
     });
-  } finally {
-    client.release();
   }
 };
 
 export const getPointHistory = async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
-  if (!userId) {}
-}
+  if (!userId) {
+    res.status(401).json({
+      message: "인증이 필요합니다.",
+    });
+    return;
+  }
+
+  const pointHistory = await prisma.point.findMany({
+    where: {
+      userId: userId,
+    },
+  });
+
+  res.status(200).json({
+    pointHistory: pointHistory,
+  });
+};

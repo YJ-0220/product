@@ -1,5 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import pool from "../db/db";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 import { verifyToken } from "../utils/jwt";
 
 export const authenticate = async (
@@ -22,12 +23,12 @@ export const authenticate = async (
     const decoded = verifyToken(token) as { userId: string; role: string };
 
     // 3. 사용자 정보 조회
-    const result = await pool.query(
-      "SELECT id, username, role FROM auth.users WHERE id = $1",
-      [decoded.userId]
-    );
+    const result = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, username: true, role: true, membershipLevel: true },
+    });
 
-    if (result.rows.length === 0) {
+    if (!result) {
       res.status(401).json({
         message: "유효하지 않은 사용자입니다.",
       });
@@ -35,7 +36,7 @@ export const authenticate = async (
     }
 
     // 4. 사용자 정보를 request에 추가
-    req.user = result.rows[0];
+    req.user = result;
     next();
   } catch (error) {
     console.error("인증 에러:", error);

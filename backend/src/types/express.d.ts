@@ -4,10 +4,10 @@ export declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: number;
+        id: string;
         username: string;
         role: string;
-        membership_level: string;
+        membershipLevel: string | null;
       };
     }
   }

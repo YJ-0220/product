@@ -1,0 +1,57 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["app"]
+}
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+model User {
+  @@schema("app")
+  @@map("user")
+  id               String   @id       @default(dbgenerated("gen_random_uuid()"))
+  username         String   @unique
+  password         String
+  role             String
+  membershipLevel  String?  @map("membership_level")
+}
+
+model Point {
+  @@schema("app")
+  @@map("point")
+  userId  String @id @map("user_id")
+  balance Int
+}
+
+model OrderRequest {
+  @@schema("app")
+  @@map("orderRequest")
+  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  buyerId         String
+  categoryId      String
+  subcategoryId   String
+  title           String
+  description     String?
+  desiredQuantity Int
+  deadline        DateTime
+  requiredPoints  Int
+}
+
+model Category {
+  @@schema("app")
+  @@map("category")
+  id       String   @id @default(dbgenerated("gen_random_uuid()"))
+  name     String
+  parentId String?
+}
+
+model Subcategory {
+  @@schema("app")
+  @@map("subCategory")
+  id       String   @id @default(dbgenerated("gen_random_uuid()"))
+  name     String
+  parentId String
+}

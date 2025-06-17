@@ -1,18 +1,21 @@
 import { Request, Response } from "express";
-import pool from "../db/db";
+import { prisma } from "../index";
 import bcrypt from "bcrypt";
 import { RequestHandler } from "express";
-import { QueryResult } from "pg";
 
 // 관리자 대시보드
 export const getAdminDashboard: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const userCountResult: QueryResult = await pool.query(
-      "SELECT COUNT(*) FROM auth.users WHERE role IN ('buyer', 'seller')"
-    );
+    const userCountResult = await prisma.user.count({
+      where: {
+        role: {
+          in: ["buyer", "seller"],
+        },
+      },
+    });
 
     const stats = {
-      totalUsers: Number(userCountResult.rows[0].count),
+      totalUsers: userCountResult,
     };
 
     res.json(stats);
@@ -55,36 +58,46 @@ export const adminRegister: RequestHandler = async (req: Request, res: Response)
       return;
     }
 
-    const existingUser = await pool.query(
-      "SELECT * FROM auth.users WHERE username = $1",
-      [username]
-    );
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
 
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       res.status(400).json({ message: "이미 존재하는 아이디입니다." });
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 비밀번호 해싱
+    const hashedPassword = await bcrypt.hash(password, 8);
 
     let result;
     if (role === "buyer") {
-      result = await pool.query(
-        "INSERT INTO auth.users (username, password, role, membership_level) VALUES ($1, $2, $3, $4) RETURNING *",
-        [username, hashedPassword, role, membership_level]
-      );
+      result = await prisma.user.create({
+        data: {
+          username: username,
+          password: hashedPassword,
+          role: role,
+          membershipLevel: membership_level,
+        },
+      });
     } else {
-      result = await pool.query(
-        "INSERT INTO auth.users (username, password, role) VALUES ($1, $2, $3) RETURNING *",
-        [username, hashedPassword, role]
-      );
+      result = await prisma.user.create({
+        data: {
+          username: username,
+          password: hashedPassword,
+          role: role,
+        },
+      });
     }
 
     res.status(201).json({
       message: "회원가입이 완료되었습니다.",
-      user: result.rows[0].id,
-      username: result.rows[0].username,
-      role: result.rows[0].role,
+      id: result.id,
+      username: result.username,
+      role: result.role,
+      membershipLevel: result.membershipLevel,
     });
   } catch (error) {
     console.error(error);
@@ -101,19 +114,20 @@ export const AdminDeleteUser = async (req: Request, res: Response) => {
     return;
   }
   try {
-    const result = await pool.query(
-      "DELETE FROM auth.users WHERE username = $1 RETURNING *",
-      [username]
-    );
+    const result = await prisma.user.delete({
+      where: {
+        username: username,
+      },
+    });
 
-    if (result.rowCount === 0) {
+    if (!result) {
       res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
       return;
     }
 
     res.status(200).json({
       message: "사용자가 삭제되었습니다.",
-      deletedUser: result.rows[0],
+      deletedUser: result,
     });
   } catch (error) {
     console.error(error);
@@ -129,12 +143,13 @@ export const createAdmin = async (req: Request, res: Response) => {
     res.status(400).json({ message: "아이디와 비밀번호를 입력해주세요." });
     return;
   }
-  const existingAdmin = await pool.query(
-    "SELECT * FROM auth.users WHERE username = $1",
-    [username]
-  );
+  const existingAdmin = await prisma.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
 
-  if (existingAdmin.rows.length > 0) {
+  if (existingAdmin) {
     res.status(400).json({ message: "이미 존재하는 관리자 아이디입니다." });
     return;
   }
@@ -142,17 +157,18 @@ export const createAdmin = async (req: Request, res: Response) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      `INSERT INTO auth.users (username, password, role)
-       VALUES ($1, $2, 'admin')
-       RETURNING *`,
-      [username, hashedPassword]
-    );
+    const result = await prisma.user.create({
+      data: {
+        username: username,
+        password: hashedPassword,
+        role: "admin",
+      },
+    });
 
-    console.log("관리자 계정 생성 완료:", result.rows[0]);
+    console.log("관리자 계정 생성 완료:", result);
     res.status(201).json({
       message: "관리자 계정이 생성되었습니다.",
-      admin: result.rows[0],
+      admin: result,
     });
   } catch (error) {
     console.error("관리자 생성 실패:", error);

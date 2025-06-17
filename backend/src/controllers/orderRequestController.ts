@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import pool from "../db/db";
+import { prisma } from "../index";
 
-// 주문 요청 생성
 export const createOrderRequest = async (req: Request, res: Response) => {
-  const client = await pool.connect();
   try {
     const {
       category_id,
@@ -15,101 +13,87 @@ export const createOrderRequest = async (req: Request, res: Response) => {
       deadline,
     } = req.body;
 
-    console.log("요청 body:", req.body);
-    console.log("req.user:", req.user);
-
     const buyerId = req.user?.id;
 
     if (!buyerId) {
-      res.status(401).json({
-        message: "인증이 필요합니다.",
-      });
+      res.status(401).json({ message: "인증이 필요합니다." });
       return;
     }
 
-    await client.query("BEGIN");
-
-    // 포인트 조회
-    const pointResult = await client.query(
-      "SELECT balance FROM app.points WHERE user_id = $1",
-      [buyerId]
-    );
-
-    const currentPoint = pointResult.rows[0].balance;
-
-    // 포인트 부족 시 예외 처리
-    if (currentPoint < required_points) {
-      await client.query("ROLLBACK");
-      res.status(400).json({
-        message: "포인트가 부족합니다.",
+    // 트랜잭션으로 처리
+    const result = await prisma.$transaction(async (tx) => {
+      // 현재 포인트 조회
+      const pointRecord = await tx.point.findUnique({
+        where: { userId: buyerId },
       });
-      return;
-    }
 
-    // 주문 요청 생성
-    const order = await client.query(
-      `INSERT INTO app.order_requests 
-      (buyer_id, category_id, subcategory_id, title, description, desired_quantity, deadline, required_points) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [
-        buyerId,
-        category_id,
-        subcategory_id,
-        title,
-        description,
-        desired_quantity,
-        deadline,
-        required_points,
-      ]
-    );
-    // 포인트 차감
-    await client.query(
-      "UPDATE app.points SET balance = balance - $1 WHERE user_id = $2",
-      [required_points, buyerId]
-    );
+      if (!pointRecord || pointRecord.balance < required_points) {
+        throw new Error("포인트가 부족합니다.");
+      }
 
-    await client.query("COMMIT");
+      // 주문 요청 생성
+      const order = await tx.orderRequest.create({
+        data: {
+          buyerId: buyerId,
+          categoryId: category_id,
+          subcategoryId: subcategory_id,
+          title,
+          description,
+          desiredQuantity: desired_quantity,
+          deadline: new Date(deadline),
+          requiredPoints: required_points,
+        },
+      });
+
+      // 포인트 차감
+      await tx.point.update({
+        where: { userId: buyerId },
+        data: { balance: { decrement: required_points } },
+      });
+
+      return { order, remainingPoint: pointRecord.balance - required_points };
+    });
 
     res.status(201).json({
       message: "주문 요청이 성공적으로 생성되었습니다.",
-      order: order.rows[0],
-      remainingPoint: currentPoint - required_points,
+      order: result.order,
+      remainingPoint: result.remainingPoint,
     });
-  } catch (error) {
-    await client.query("ROLLBACK");
-    res.status(500).json({
-      message: "주문 요청 오류가 발생했다.",
-      error: error,
-    });
-  } finally {
-    client.release();
+  } catch (error: any) {
+    if (error.message === "포인트가 부족합니다.") {
+      res.status(400).json({ message: error.message });
+      return;
+    }
+    res.status(500).json({ message: "주문 요청 오류가 발생했다.", error });
+    return;
   }
 };
 
-// 카테고리 조회
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const { rows } = await pool.query(
-      "SELECT id, name, parent_id FROM app.categories"
-    );
-    res.json(rows);
+    const categories = await prisma.category.findMany();
+    res.status(200).json(categories);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "카테고리 조회 실패" });
   }
 };
 
-// 하위 카테고리 조회
 export const getSubCategories = async (req: Request, res: Response) => {
-  const { parent_id } = req.query;
+  const parent_id = req.query.parent_id as string;
   try {
-    const { rows } = await pool.query(
-      "SELECT id, name, parent_id FROM app.subcategories WHERE parent_id = $1",
-      [parent_id]
-    );
-    res.json(rows);
+    if (!parent_id) {
+      res.status(400).json({ error: "parent_id 쿼리 파라미터가 필요합니다." });
+      return;
+    }
+
+    const subcategories = await prisma.subcategory.findMany({
+      where: { parentId: parent_id },
+    });
+    res.status(200).json(subcategories);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "하위 카테고리 조회 실패" });
+    return;
   }
 };

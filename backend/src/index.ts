@@ -2,12 +2,16 @@ import "./config/env";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import buyerRoutes from "./routes/buyerRoutes";
 import orderCategoriesRoutes from "./routes/orderCategoriesRoutes";
 import pointRoutes from "./routes/common/pointRoutes";
+
+// Prisma Client 초기화
+export const prisma = new PrismaClient();
 
 const app = express();
 
@@ -27,8 +31,23 @@ app.use("/api/buyer", buyerRoutes);
 app.use("/api/order-categories", orderCategoriesRoutes);
 app.use("/api/points", pointRoutes);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-  console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`process.env.DATABASE_URL: ${process.env.DATABASE_URL}`);
+// 서버 시작 시 Prisma 연결 확인
+prisma.$connect()
+  .then(() => {
+    console.log("Successfully connected to database");
+    app.listen(process.env.PORT, () => {
+      console.log(`Server is running on port ${process.env.PORT}`);
+      console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
+      console.log(`process.env.DATABASE_URL: ${process.env.DATABASE_URL}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to database:", error);
+    process.exit(1);
+  });
+
+// 서버 종료 시 Prisma 연결 종료
+process.on("SIGINT", async () => {
+  await prisma.$disconnect();
+  process.exit(0);
 });

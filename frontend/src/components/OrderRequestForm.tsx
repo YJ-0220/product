@@ -1,6 +1,7 @@
 import { useOrderRequestForm } from "@/hooks/useOrderRequestForm";
 import { useCategories } from "@/hooks/useCategories";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 interface FormInputProps {
   label: string;
@@ -51,13 +52,14 @@ const FormInput = ({ label, name, value, onChange, type = "text", rows, options 
 
 export default function OrderRequestForm() {
   const { formData, handleChange, handleSubmit } = useOrderRequestForm();
-  const { categories } = useCategories();
+  const { categories, subcategories, fetchSubcategories } = useCategories();
   const { loading } = useAuth();
 
-  const parentCategories = categories.filter((cat) => cat.parent_id === null);
-  const subcategories = categories.filter(
-    (cat) => cat.parent_id === formData.category_id
-  );
+  useEffect(() => {
+    if (formData.categoryId) {
+      fetchSubcategories(formData.categoryId);
+    }
+  }, [formData.categoryId]);
 
   if (loading) return <p className="text-center text-gray-800 font-medium">로딩 중...</p>;
 
@@ -69,19 +71,19 @@ export default function OrderRequestForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormInput
               label="상위 카테고리"
-              name="category_id"
-              value={formData.category_id}
+              name="categoryId"
+              value={formData.categoryId}
               onChange={handleChange}
               type="select"
-              options={parentCategories}
+              options={categories}
             />
             <FormInput
               label="하위 카테고리"
-              name="subcategory_id"
-              value={formData.subcategory_id}
+              name="subcategoryId"
+              value={formData.subcategoryId}
               onChange={handleChange}
               type="select"
-              options={subcategories}
+              options={formData.categoryId ? subcategories : []}
             />
           </div>
 
@@ -103,8 +105,8 @@ export default function OrderRequestForm() {
 
           <FormInput
             label="수량"
-            name="desired_quantity"
-            value={formData.desired_quantity}
+            name="desiredQuantity"
+            value={formData.desiredQuantity}
             onChange={handleChange}
             type="number"
           />
@@ -112,8 +114,8 @@ export default function OrderRequestForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormInput
               label="가격"
-              name="required_points"
-              value={formData.required_points}
+              name="requiredPoints"
+              value={formData.requiredPoints}
               onChange={handleChange}
               type="number"
             />

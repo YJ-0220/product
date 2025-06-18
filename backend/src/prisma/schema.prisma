@@ -11,47 +11,58 @@ generator client {
 
 model User {
   @@schema("app")
-  @@map("user")
+
   id               String   @id       @default(dbgenerated("gen_random_uuid()"))
   username         String   @unique
   password         String
   role             String
   membershipLevel  String?  @map("membership_level")
+
+  orderRequests   OrderRequest[] @relation("UserOrderRequests")
 }
 
 model Point {
   @@schema("app")
-  @@map("point")
-  userId  String @id @map("user_id")
+
+  userId  String @id @default(dbgenerated("gen_random_uuid()"))
   balance Int
 }
 
 model OrderRequest {
   @@schema("app")
-  @@map("orderRequest")
+
   id              String   @id @default(dbgenerated("gen_random_uuid()"))
   buyerId         String
-  categoryId      String
-  subcategoryId   String
+  categoryId      Int
+  subcategoryId   Int
   title           String
   description     String?
   desiredQuantity Int
   deadline        DateTime
   requiredPoints  Int
+
+  buyer           User        @relation("UserOrderRequests", fields: [buyerId], references: [id])
+  category        Category    @relation(fields: [categoryId], references: [id])
+  subcategory     Subcategory @relation(fields: [subcategoryId], references: [id])
 }
 
 model Category {
   @@schema("app")
-  @@map("category")
-  id       String   @id @default(dbgenerated("gen_random_uuid()"))
-  name     String
-  parentId String?
+
+  id            Int           @id @default(autoincrement())
+  name          String
+
+  subcategories Subcategory[] @relation("CategoryToSub")
+  orderRequests OrderRequest[]
 }
 
 model Subcategory {
   @@schema("app")
-  @@map("subCategory")
-  id       String   @id @default(dbgenerated("gen_random_uuid()"))
-  name     String
-  parentId String
+
+  id        Int      @id @default(autoincrement())
+  name      String
+  parentId  Int
+
+  parent    Category @relation("CategoryToSub", fields: [parentId], references: [id])
+  orderRequests OrderRequest[]
 }

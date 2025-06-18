@@ -1,13 +1,13 @@
 import { useAuth } from "@/context/AuthContext";
 import Layout from "@/components/layout/Layout";
-import Admin from "@/pages/admin/Admin";
-import Buyer from "@/pages/buyer/Buyer";
-import Seller from "@/pages/seller/Seller";
+import AdminHome from "@/pages/admin/AdminHome";
+import BuyerHome from "@/pages/buyer/BuyerHome";
+import SellerHome from "@/pages/seller/SellerHome";
 
 const HomeContent: Record<string, React.ReactNode> = {
-  admin: <Admin />,
-  buyer: <Buyer />,
-  seller: <Seller />,
+  admin: <AdminHome />,
+  buyer: <BuyerHome />,
+  seller: <SellerHome />,
 };
 
 export const Home = () => {

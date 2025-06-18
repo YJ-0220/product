@@ -4,19 +4,20 @@ import { prisma } from "../index";
 export const createOrderRequest = async (req: Request, res: Response) => {
   try {
     const {
-      category_id,
-      subcategory_id,
+      categoryId,
+      subcategoryId,
       title,
       description,
-      desired_quantity,
-      required_points,
+      desiredQuantity,
+      requiredPoints,
       deadline,
     } = req.body;
 
+    // 현재 로그인한 사용자의 ID
     const buyerId = req.user?.id;
 
     if (!buyerId) {
-      res.status(401).json({ message: "인증이 필요합니다." });
+      res.status(401).json({ message: "구매자 인증이 필요합니다." });
       return;
     }
 
@@ -27,7 +28,7 @@ export const createOrderRequest = async (req: Request, res: Response) => {
         where: { userId: buyerId },
       });
 
-      if (!pointRecord || pointRecord.balance < required_points) {
+      if (!pointRecord || pointRecord.balance < requiredPoints) {
         throw new Error("포인트가 부족합니다.");
       }
 
@@ -35,23 +36,23 @@ export const createOrderRequest = async (req: Request, res: Response) => {
       const order = await tx.orderRequest.create({
         data: {
           buyerId: buyerId,
-          categoryId: category_id,
-          subcategoryId: subcategory_id,
+          categoryId,
+          subcategoryId,
           title,
           description,
-          desiredQuantity: desired_quantity,
+          desiredQuantity,
           deadline: new Date(deadline),
-          requiredPoints: required_points,
+          requiredPoints,
         },
       });
 
       // 포인트 차감
       await tx.point.update({
         where: { userId: buyerId },
-        data: { balance: { decrement: required_points } },
+        data: { balance: { decrement: requiredPoints } },
       });
 
-      return { order, remainingPoint: pointRecord.balance - required_points };
+      return { order, remainingPoint: pointRecord.balance - requiredPoints };
     });
 
     res.status(201).json({
@@ -60,18 +61,23 @@ export const createOrderRequest = async (req: Request, res: Response) => {
       remainingPoint: result.remainingPoint,
     });
   } catch (error: any) {
+    console.error(error);
     if (error.message === "포인트가 부족합니다.") {
       res.status(400).json({ message: error.message });
       return;
     }
-    res.status(500).json({ message: "주문 요청 오류가 발생했다.", error });
+    res.status(500).json({ message: "주문 요청 오류가 발생했습니다.", error });
     return;
   }
 };
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const categories = await prisma.category.findMany();
+    const categories = await prisma.category.findMany({
+      include: {
+        subcategories: true,
+      },
+    });
     res.status(200).json(categories);
   } catch (error) {
     console.error(error);
@@ -80,15 +86,17 @@ export const getCategories = async (req: Request, res: Response) => {
 };
 
 export const getSubCategories = async (req: Request, res: Response) => {
-  const parent_id = req.query.parent_id as string;
+  const parentId = Number(req.params.parentId);
   try {
-    if (!parent_id) {
-      res.status(400).json({ error: "parent_id 쿼리 파라미터가 필요합니다." });
+    if (isNaN(parentId)) {
+      res.status(400).json({ error: "유효하지 않은 카테고리 ID입니다." });
       return;
     }
 
     const subcategories = await prisma.subcategory.findMany({
-      where: { parentId: parent_id },
+      where: {
+        parentId: parentId,
+      },
     });
     res.status(200).json(subcategories);
   } catch (error) {

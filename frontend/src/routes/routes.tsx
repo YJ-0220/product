@@ -6,8 +6,8 @@ import LoginForm from "@/pages/common/Login";
 import NotFound from "@/pages/common/NotFound";
 import OrderSuccess from "@/pages/buyer/OrderSuccess";
 import OrderHistory from "@/pages/common/OrderHistory";
-import OrderBoard from "@/pages/common/OrderBoard";
-import OrderList from "@/components/OrderList";
+import Order from "@/pages/common/Order";
+import OrderBoard from "@/components/OrderBoard";
 import OrderDetail from "@/components/OrderDetail";
 import PointChargePage from "@/pages/buyer/PointCharge";
 import OrderRequest from "@/pages/buyer/OrderRequest";
@@ -24,50 +24,30 @@ export const router = createBrowserRouter([
       {
         path: "order",
         element: (
-          <RequireAuth allowedRoles={["buyer", "seller"]}>
-            <OrderBoard />
+          <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
+            <Order />
           </RequireAuth>
         ),
         children: [
           {
             index: true,
-            element: (
-              <RequireAuth allowedRoles={["buyer", "seller"]}>
-                <OrderList />
-              </RequireAuth>
-            ),
+            element: <OrderBoard />,
           },
           {
             path: "request",
-            element: (
-              <RequireAuth allowedRoles={["buyer"]}>
-                <OrderRequest />
-              </RequireAuth>
-            ),
+            element: <OrderRequest />,
           },
           {
             path: ":id",
-            element: (
-              <RequireAuth allowedRoles={["buyer", "seller"]}>
-                <OrderDetail />
-              </RequireAuth>
-            ),
+            element: <OrderDetail />,
           },
           {
             path: "success",
-            element: (
-              <RequireAuth allowedRoles={["buyer"]}>
-                <OrderSuccess />
-              </RequireAuth>
-            ),
+            element: <OrderSuccess />,
           },
           {
             path: "history",
-            element: (
-              <RequireAuth allowedRoles={["buyer", "seller"]}>
-                <OrderHistory />
-              </RequireAuth>
-            ),
+            element: <OrderHistory />,
           },
         ],
       },
@@ -79,7 +59,7 @@ export const router = createBrowserRouter([
           </RequireAuth>
         ),
       },
-    ]
+    ],
   },
   {
     path: "/login",

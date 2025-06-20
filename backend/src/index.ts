@@ -6,8 +6,7 @@ import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import adminRoutes from "./routes/adminRoutes";
-import buyerRoutes from "./routes/buyerRoutes";
-import orderCategoriesRoutes from "./routes/orderCategoriesRoutes";
+import orderRoutes from "./routes/orderRoutes";
 import pointRoutes from "./routes/common/pointRoutes";
 
 // Prisma Client 초기화
@@ -27,8 +26,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/buyer", buyerRoutes);
-app.use("/api/order-categories", orderCategoriesRoutes);
+app.use("/api/order", orderRoutes);
 app.use("/api/points", pointRoutes);
 
 // 서버 시작 시 Prisma 연결 확인

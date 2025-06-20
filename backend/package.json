@@ -5,7 +5,11 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only --watch src/prisma/schema.prisma src/index.ts",
+    "dev:studio": "prisma studio",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
     "postinstall": "prisma generate",
     "start": "cross-env NODE_ENV=production node dist/index.js"
   },

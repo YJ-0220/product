@@ -150,7 +150,7 @@ export default function Topbar() {
   const profileMenuItems = getProfileMenuItems();
 
   return (
-    <div className="sticky top-0 z-10">
+    <div className="sticky bg-[#f2f7fb] top-0 z-10">
       <div className="flex items-center justify-between shadow-sm p-4">
         <div className="flex items-center">{getUserGreeting()}</div>
 

@@ -74,10 +74,12 @@ export const register = (async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "회원가입이 완료되었습니다.",
-      user: result.id,
-      username: result.username,
-      role: result.role,
-      membershipLevel: result.membershipLevel,
+      userId: result.id,
+      user: {
+        username: result.username,
+        role: result.role,
+        membershipLevel: result.membershipLevel,
+      },
     });
   } catch (error) {
     console.error("Register error:", error);

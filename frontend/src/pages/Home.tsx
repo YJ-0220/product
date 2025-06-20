@@ -1,5 +1,4 @@
 import { useAuth } from "@/context/AuthContext";
-import Layout from "@/components/layout/Layout";
 import AdminHome from "@/pages/admin/AdminHome";
 import BuyerHome from "@/pages/buyer/BuyerHome";
 import SellerHome from "@/pages/seller/SellerHome";
@@ -22,9 +21,5 @@ export const Home = () => {
 
   const content = HomeContent[user.role];
 
-  return (
-    <Layout>
-      {content}
-    </Layout>
-  );
+  return <>{content}</>;
 };

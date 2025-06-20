@@ -7,7 +7,6 @@ interface OrderStats {
   pending: number;
   inProgress: number;
   completed: number;
-  cancelled: number;
 }
 
 export default function BuyerHome() {
@@ -17,7 +16,6 @@ export default function BuyerHome() {
     pending: 0,
     inProgress: 0,
     completed: 0,
-    cancelled: 0,
   });
 
   useEffect(() => {
@@ -26,13 +24,12 @@ export default function BuyerHome() {
         const result = await getOrders();
         setOrders(result.orders);
 
-        // 주문 통계 계산
         const newStats = result.orders.reduce(
           (acc: OrderStats, order: OrderData) => {
             acc[order.status.toLowerCase() as keyof OrderStats]++;
             return acc;
           },
-          { pending: 0, inProgress: 0, completed: 0, cancelled: 0 }
+          { pending: 0, inProgress: 0, completed: 0 }
         );
         setStats(newStats);
       } catch (error) {
@@ -51,8 +48,6 @@ export default function BuyerHome() {
         return "bg-blue-100 text-blue-800";
       case "COMPLETED":
         return "bg-green-100 text-green-800";
-      case "CANCELLED":
-        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -66,27 +61,14 @@ export default function BuyerHome() {
         return "진행중";
       case "COMPLETED":
         return "완료";
-      case "CANCELLED":
-        return "취소";
       default:
         return status;
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* 환영 메시지 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          안녕하세요, {user?.name}님!
-        </h1>
-        <p className="mt-2 text-gray-600">
-          오늘도 좋은 하루 되세요.
-        </p>
-      </div>
-
-      {/* 포인트 정보 */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div className="px-8">
+      <div className="bg-white rounded-lg shadow-md p-6 my-8">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">보유 포인트</h2>
@@ -103,8 +85,7 @@ export default function BuyerHome() {
         </div>
       </div>
 
-      {/* 주문 현황 요약 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900">대기중</h3>
           <p className="text-3xl font-bold text-yellow-600 mt-2">{stats.pending}</p>
@@ -117,13 +98,8 @@ export default function BuyerHome() {
           <h3 className="text-lg font-semibold text-gray-900">완료</h3>
           <p className="text-3xl font-bold text-green-600 mt-2">{stats.completed}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900">취소</h3>
-          <p className="text-3xl font-bold text-red-600 mt-2">{stats.cancelled}</p>
-        </div>
       </div>
 
-      {/* 최근 주문 목록 */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">최근 주문</h2>
@@ -135,7 +111,7 @@ export default function BuyerHome() {
           </Link>
         </div>
         <div className="space-y-4">
-          {orders.slice(0, 5).map((order) => (
+          {orders.slice(0, 3).map((order) => (
             <div
               key={order.id}
               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"

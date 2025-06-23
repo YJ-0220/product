@@ -22,7 +22,7 @@ export const getCategories = async (): Promise<OrderCategory[]> => {
 }
 
 export const getSubCategories = async (parentId: number): Promise<OrderCategory[]> => {
-  const res = await api.get(`/order/categories/${parentId}/children`);
+  const res = await api.get(`/order/categories/${parentId}/subcategories`);
   return res.data;
 }
 
@@ -99,6 +99,11 @@ export interface CreateApplicationData {
 
 export const createApplication = async (orderRequestId: string, data: CreateApplicationData): Promise<ApplicationData> => {
   const res = await api.post(`/order/${orderRequestId}/applications`, data);
+  return res.data.application;
+};
+
+export const updateApplication = async (applicationId: string, data: CreateApplicationData): Promise<ApplicationData> => {
+  const res = await api.put(`/order/applications/${applicationId}`, data);
   return res.data.application;
 };
 

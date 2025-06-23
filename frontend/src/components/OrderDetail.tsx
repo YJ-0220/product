@@ -1,174 +1,35 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getOrderById, updateOrderStatus, type OrderData, createApplication, getApplicationsByOrder, updateApplicationStatus, type ApplicationData } from "@/api/order";
-import { useAuth } from "@/context/AuthContext";
+import { useOrderRequestDetail } from "@/hooks/useOrderRequestDetail";
 
 export default function OrderDetail() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  
-  const [order, setOrder] = useState<OrderData | null>(null);
-  const [applications, setApplications] = useState<ApplicationData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
-  const [updating, setUpdating] = useState(false);
-  const [showApplicationForm, setShowApplicationForm] = useState(false);
-  const [applicationForm, setApplicationForm] = useState({
-    message: "",
-    proposedPrice: "",
-    estimatedDelivery: "",
-  });
-
-  useEffect(() => {
-    if (!id) {
-      setError("주문 ID가 없습니다.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        const [orderData, applicationsData] = await Promise.all([
-          getOrderById(id),
-          getApplicationsByOrder(id),
-        ]);
-        setOrder(orderData);
-        setApplications(applicationsData.applications);
-      } catch (error: any) {
-        setError(error?.response?.data?.error || "데이터를 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id]);
-
-  const handleStatusUpdate = async (newStatus: string) => {
-    if (!order || !id) return;
-
-    try {
-      setUpdating(true);
-      const updatedOrder = await updateOrderStatus(id, newStatus);
-      setOrder(updatedOrder);
-    } catch (error: any) {
-      setError(error?.response?.data?.error || "상태 변경에 실패했습니다.");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleApplicationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id) return;
-
-    try {
-      setUpdating(true);
-      const data = {
-        message: applicationForm.message || undefined,
-        proposedPrice: applicationForm.proposedPrice ? Number(applicationForm.proposedPrice) : undefined,
-        estimatedDelivery: applicationForm.estimatedDelivery || undefined,
-      };
-      
-      await createApplication(id, data);
-      
-      // 신청 목록 새로고침
-      const applicationsData = await getApplicationsByOrder(id);
-      setApplications(applicationsData.applications);
-      
-      // 폼 초기화 및 닫기
-      setApplicationForm({ message: "", proposedPrice: "", estimatedDelivery: "" });
-      setShowApplicationForm(false);
-    } catch (error: any) {
-      setError(error?.response?.data?.error || "신청 제출에 실패했습니다.");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleApplicationStatusUpdate = async (applicationId: string, newStatus: string) => {
-    try {
-      setUpdating(true);
-      await updateApplicationStatus(applicationId, newStatus);
-      
-      // 신청 목록 새로고침
-      if (id) {
-        const applicationsData = await getApplicationsByOrder(id);
-        setApplications(applicationsData.applications);
-      }
-    } catch (error: any) {
-      setError(error?.response?.data?.error || "신청 상태 변경에 실패했습니다.");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
-      case "IN_PROGRESS":
-        return "bg-blue-100 text-blue-800";
-      case "COMPLETED":
-        return "bg-green-100 text-green-800";
-      case "CANCELLED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "대기중";
-      case "IN_PROGRESS":
-        return "진행중";
-      case "COMPLETED":
-        return "완료";
-      case "CANCELLED":
-        return "취소";
-      default:
-        return status;
-    }
-  };
-
-  const getApplicationStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
-      case "ACCEPTED":
-        return "bg-green-100 text-green-800";
-      case "REJECTED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getApplicationStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "검토중";
-      case "ACCEPTED":
-        return "수락됨";
-      case "REJECTED":
-        return "거절됨";
-      default:
-        return status;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const {
+    // 상태
+    order,
+    applications,
+    loading,
+    error,
+    updating,
+    showApplicationForm,
+    editingApplicationId,
+    applicationForm,
+    user,
+    
+    // 액션
+    handleStatusUpdate,
+    handleApplicationSubmit,
+    handleEditApplication,
+    handleCancelEdit,
+    handleApplicationStatusUpdate,
+    setShowApplicationForm,
+    setApplicationForm,
+    navigate,
+    
+    // 유틸리티
+    getStatusBadgeClass,
+    getStatusText,
+    getApplicationStatusBadgeClass,
+    getApplicationStatusText,
+    formatDate,
+  } = useOrderRequestDetail();
 
   if (loading) {
     return (
@@ -269,21 +130,6 @@ export default function OrderDetail() {
             </div>
           </div>
 
-          {/* 카테고리 정보 */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">카테고리 정보</h2>
-            <div className="space-y-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">상위 카테고리</label>
-                <p className="text-gray-900">{order.category.name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">하위 카테고리</label>
-                <p className="text-gray-900">{order.subcategory.name}</p>
-              </div>
-            </div>
-          </div>
-
           {/* 판매자 신청 목록 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
@@ -301,6 +147,9 @@ export default function OrderDetail() {
             {/* 신청 폼 */}
             {showApplicationForm && (
               <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {editingApplicationId ? "신청 수정" : "신청하기"}
+                </h3>
                 <form onSubmit={handleApplicationSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">메시지</label>
@@ -312,19 +161,21 @@ export default function OrderDetail() {
                       placeholder="구매자에게 전달할 메시지를 입력하세요..."
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">제안 가격 (선택)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">제안 가격 (선택사항)</label>
                       <input
                         type="number"
                         value={applicationForm.proposedPrice}
                         onChange={(e) => setApplicationForm(prev => ({ ...prev, proposedPrice: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="제안 가격"
+                        placeholder="제안 가격을 입력하세요"
+                        min="0"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">예상 배송일 (선택)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">예상 배송일 (선택사항)</label>
                       <input
                         type="date"
                         value={applicationForm.estimatedDelivery}
@@ -333,10 +184,11 @@ export default function OrderDetail() {
                       />
                     </div>
                   </div>
+                  
                   <div className="flex justify-end space-x-3">
                     <button
                       type="button"
-                      onClick={() => setShowApplicationForm(false)}
+                      onClick={handleCancelEdit}
                       className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
                     >
                       취소
@@ -346,7 +198,7 @@ export default function OrderDetail() {
                       disabled={updating}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                     >
-                      {updating ? "제출 중..." : "신청 제출"}
+                      {updating ? "제출 중..." : editingApplicationId ? "수정 완료" : "신청 제출"}
                     </button>
                   </div>
                 </form>
@@ -367,14 +219,25 @@ export default function OrderDetail() {
                           {getApplicationStatusText(application.status)}
                         </span>
                       </div>
-                      <span className="text-sm text-gray-500">{formatDate(application.createdAt)}</span>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">{formatDate(application.createdAt)}</span>
+                        {/* 판매자가 자신의 PENDING 신청을 수정할 수 있음 */}
+                        {user?.role === "seller" && user?.id === application.sellerId && application.status === "PENDING" && order?.status === "PENDING" && (
+                          <button
+                            onClick={() => handleEditApplication(application)}
+                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                          >
+                            수정
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     {application.message && (
                       <p className="text-gray-700 mb-3 whitespace-pre-wrap">{application.message}</p>
                     )}
                     
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-1 text-sm">
                       {application.proposedPrice && (
                         <div>
                           <span className="text-gray-600">제안 가격:</span>
@@ -428,6 +291,21 @@ export default function OrderDetail() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">구매자 ID</label>
                 <p className="text-gray-900 text-sm">{order.buyerId}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 카테고리 정보 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">카테고리 정보</h2>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">상위 카테고리</label>
+                <p className="text-gray-900">{order.category.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">하위 카테고리</label>
+                <p className="text-gray-900">{order.subcategory.name}</p>
               </div>
             </div>
           </div>

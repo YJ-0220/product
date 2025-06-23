@@ -62,7 +62,6 @@ export function useOrderRequestForm() {
       { condition: !formData.subcategoryId, message: "하위 카테고리를 선택해주세요." },
       { condition: !formData.title.trim(), message: "제목을 입력해주세요." },
       { condition: formData.desiredQuantity <= 0, message: "수량을 입력해주세요." },
-      { condition: formData.requiredPoints <= 0, message: "포인트를 입력해주세요." },
       { condition: !formData.deadline, message: "마감일을 선택해주세요." },
     ];
 

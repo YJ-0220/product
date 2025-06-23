@@ -11,6 +11,9 @@ import OrderDetail from "@/components/OrderDetail";
 import PointChargePage from "@/pages/buyer/PointCharge";
 import OrderRequest from "@/pages/buyer/OrderRequest";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import MyPage from "@/pages/common/MyPage";
+import Membership from "@/pages/common/Membership";
+import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 
 export const router = createBrowserRouter([
   {
@@ -89,6 +92,30 @@ export const router = createBrowserRouter([
     element: (
       <LayoutWrapper allowedRoles={["buyer"]}>
         <PointChargePage />
+      </LayoutWrapper>
+    ),
+  },
+  {
+    path: "/point/history",
+    element: (
+      <LayoutWrapper allowedRoles={["buyer"]}>
+        <PointChargeHistory />
+      </LayoutWrapper>
+    ),
+  },
+  {
+    path: "/mypage",
+    element: (
+      <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
+        <MyPage />
+      </LayoutWrapper>
+    ),
+  },
+  {
+    path: "/membership",
+    element: (
+      <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
+        <Membership />
       </LayoutWrapper>
     ),
   },

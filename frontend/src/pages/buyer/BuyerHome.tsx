@@ -76,12 +76,20 @@ export default function BuyerHome() {
               {user?.points?.toLocaleString() || 0}P
             </p>
           </div>
-          <Link
-            to="/point/charge"
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            포인트 충전
-          </Link>
+          <div className="flex space-x-3">
+            <Link
+              to="/point/charge"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              포인트 충전 신청
+            </Link>
+            <Link
+              to="/point/history"
+              className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              충전 내역
+            </Link>
+          </div>
         </div>
       </div>
 

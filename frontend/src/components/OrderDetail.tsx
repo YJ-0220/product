@@ -1,4 +1,5 @@
 import { useOrderRequestDetail } from "@/hooks/useOrderRequestDetail";
+import { useOrderApplicationForm } from "@/hooks/useOrderApplicationForm";
 
 export default function OrderDetail() {
   const {
@@ -8,28 +9,41 @@ export default function OrderDetail() {
     loading,
     error,
     updating,
-    showApplicationForm,
-    editingApplicationId,
-    applicationForm,
     user,
     
     // 액션
-    handleStatusUpdate,
-    handleApplicationSubmit,
-    handleEditApplication,
-    handleCancelEdit,
+    handleOrderStatusUpdate,
     handleApplicationStatusUpdate,
-    setShowApplicationForm,
-    setApplicationForm,
+    refreshData,
     navigate,
     
     // 유틸리티
     getStatusBadgeClass,
     getStatusText,
-    getApplicationStatusBadgeClass,
-    getApplicationStatusText,
     formatDate,
   } = useOrderRequestDetail();
+
+  const {
+    // 상태
+    applicationForm,
+    editingApplicationId,
+    showApplicationForm,
+    submitting,
+    
+    // 액션
+    setApplicationForm,
+    handleApplicationSubmit,
+    handleEditApplication,
+    handleCancelEdit,
+    resetForm,
+    setShowApplicationForm,
+    setEditingApplicationId,
+    
+    // 유틸리티
+    isFormValid,
+    getApplicationStatusBadgeClass,
+    getApplicationStatusText,
+  } = useOrderApplicationForm();
 
   if (loading) {
     return (
@@ -150,7 +164,14 @@ export default function OrderDetail() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   {editingApplicationId ? "신청 수정" : "신청하기"}
                 </h3>
-                <form onSubmit={handleApplicationSubmit} className="space-y-4">
+                <form onSubmit={(e) => handleApplicationSubmit(e, order.id, (apps) => {
+                  // applications 상태 업데이트는 useOrderRequestDetail에서 처리
+                  // 여기서는 refreshData를 호출하여 전체 데이터를 새로고침
+                  refreshData();
+                }, (error) => {
+                  // 에러 처리
+                  console.error(error);
+                })} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">메시지</label>
                     <textarea
@@ -195,10 +216,10 @@ export default function OrderDetail() {
                     </button>
                     <button
                       type="submit"
-                      disabled={updating}
+                      disabled={submitting || !isFormValid()}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                     >
-                      {updating ? "제출 중..." : editingApplicationId ? "수정 완료" : "신청 제출"}
+                      {submitting ? "제출 중..." : editingApplicationId ? "수정 완료" : "신청 제출"}
                     </button>
                   </div>
                 </form>
@@ -318,7 +339,7 @@ export default function OrderDetail() {
                 {["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].map((status) => (
                   <button
                     key={status}
-                    onClick={() => handleStatusUpdate(status)}
+                    onClick={() => handleOrderStatusUpdate(status)}
                     disabled={updating || order.status === status}
                     className={`w-full px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       order.status === status

@@ -14,6 +14,7 @@ import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import MyPage from "@/pages/common/MyPage";
 import Membership from "@/pages/common/Membership";
 import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
+import PointWithdraw from "@/components/PointWithdraw";
 
 export const router = createBrowserRouter([
   {
@@ -100,6 +101,14 @@ export const router = createBrowserRouter([
     element: (
       <LayoutWrapper allowedRoles={["buyer"]}>
         <PointChargeHistory />
+      </LayoutWrapper>
+    ),
+  },
+  {
+    path: "/point/withdraw",
+    element: (
+      <LayoutWrapper allowedRoles={["seller"]}>
+        <PointWithdraw />
       </LayoutWrapper>
     ),
   },

@@ -70,7 +70,7 @@ export const adminRegister: RequestHandler = async (req: Request, res: Response)
     }
 
     // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(password, 8);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     let result;
     if (role === "buyer") {
@@ -173,5 +173,116 @@ export const createAdmin = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("관리자 생성 실패:", error);
     res.status(500).json({ message: "관리자 생성에 실패했습니다." });
+  }
+};
+
+// 관리자용 포인트 충전 (사용자에게 직접 충전)
+export const chargeUserPoint = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const { amount, description } = req.body;
+  const adminId = req.user?.id;
+
+  if (!adminId) {
+    res.status(401).json({
+      message: "관리자 인증이 필요합니다.",
+    });
+    return;
+  }
+
+  if (!amount || isNaN(amount) || amount <= 0) {
+    res.status(400).json({
+      message: "유효하지 않은 포인트 금액입니다.",
+    });
+    return;
+  }
+
+  try {
+    // 사용자 존재 확인
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      res.status(404).json({
+        message: "사용자를 찾을 수 없습니다.",
+      });
+      return;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 포인트 조회
+      const pointResult = await tx.point.findUnique({
+        where: {
+          userId: userId,
+        },
+      });
+
+      if (!pointResult) {
+        await tx.point.create({
+          data: {
+            userId: userId,
+            balance: amount,
+          },
+        });
+      } else {
+        await tx.point.update({
+          where: {
+            userId: userId,
+          },
+          data: {
+            balance: { increment: amount },
+          },
+        });
+      }
+
+      // 포인트 거래 내역 기록
+      await tx.pointTransaction.create({
+        data: {
+          userId: userId,
+          amount,
+          type: "admin_adjust",
+          description: description || "관리자 직접 충전",
+        },
+      });
+    });
+
+    res.status(200).json({
+      message: "포인트 충전이 완료되었습니다.",
+      amount,
+      description: description || "관리자 직접 충전",
+    });
+  } catch (error) {
+    console.error("관리자 포인트 충전 오류:", error);
+    res.status(500).json({
+      message: "포인트 충전에 실패했습니다.",
+    });
+  }
+};
+
+// 관리자용 사용자 목록 조회
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["buyer", "seller"],
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        membershipLevel: true,
+      },
+    });
+
+    res.status(200).json({
+      users,
+    });
+  } catch (error) {
+    console.error("사용자 목록 조회 오류:", error);
+    res.status(500).json({
+      message: "사용자 목록 조회에 실패했습니다.",
+    });
   }
 };

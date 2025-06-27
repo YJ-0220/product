@@ -1,60 +1,35 @@
 import api from "./axios";
-import { type OrderCategory } from "../types/orderCategory";
-
-export interface OrderRequestData {
-  categoryId: number;
-  subcategoryId: number;
-  title: string;
-  description: string;
-  desiredQuantity: number;
-  requiredPoints: number;
-  deadline: string;
-}
+import {
+  type OrderCategory,
+  type OrderRequestData,
+  type OrderData,
+  type ApplicationData,
+  type CreateApplicationData,
+} from "../types/orderTypes";
 
 export const createOrderRequest = async (data: OrderRequestData) => {
   const res = await api.post("/order/request", data);
   return res.data;
-}
+};
 
 export const getCategories = async (): Promise<OrderCategory[]> => {
   const res = await api.get("/order/categories");
   return res.data;
-}
+};
 
-export const getSubCategories = async (parentId: number): Promise<OrderCategory[]> => {
+export const getSubCategories = async (
+  parentId: number
+): Promise<OrderCategory[]> => {
   const res = await api.get(`/order/categories/${parentId}/subcategories`);
   return res.data;
-}
-
-export interface OrderData {
-  id: string;
-  categoryId: number;
-  subcategoryId: number;
-  title: string;
-  description: string;
-  desiredQuantity: number;
-  requiredPoints: number;
-  deadline: string;
-  createdAt: string;
-  buyerId: string;
-  buyer: {
-    name: string;
-  };
-  category: {
-    name: string;
-  };
-  subcategory: {
-    name: string;
-  };
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-}
+};
 
 export const getOrders = async (params?: {
   page?: number;
   limit?: number;
   categoryId?: number;
   subcategoryId?: number;
-  sortBy?: 'latest' | 'deadline' | 'points';
+  sortBy?: "latest" | "deadline" | "points";
 }): Promise<{
   orders: OrderData[];
   total: number;
@@ -70,52 +45,50 @@ export const getOrderById = async (id: string): Promise<OrderData> => {
   return res.data;
 };
 
-export const updateOrderStatus = async (id: string, status: string): Promise<OrderData> => {
-  const res = await api.patch(`/order/${id}/status`, { status });
+// 주문 상태 업데이트
+export const updateOrderStatus = async (
+  id: string,
+  status: string
+): Promise<OrderData> => {
+  const res = await api.patch(`/order/request/${id}/status`, { status });
   return res.data.order;
 };
 
-// 판매자 신청 관련 타입과 API
-export interface ApplicationData {
-  id: string;
-  orderRequestId: string;
-  sellerId: string;
-  message?: string;
-  proposedPrice?: number;
-  estimatedDelivery?: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  createdAt: string;
-  updatedAt: string;
-  seller: {
-    name: string;
-  };
-}
-
-export interface CreateApplicationData {
-  message?: string;
-  proposedPrice?: number;
-  estimatedDelivery?: string;
-}
-
-export const createApplication = async (orderRequestId: string, data: CreateApplicationData): Promise<ApplicationData> => {
+export const createApplication = async (
+  orderRequestId: string,
+  data: CreateApplicationData
+): Promise<ApplicationData> => {
   const res = await api.post(`/order/${orderRequestId}/applications`, data);
   return res.data.application;
 };
 
-export const updateApplication = async (applicationId: string, data: CreateApplicationData): Promise<ApplicationData> => {
+export const updateApplication = async (
+  applicationId: string,
+  data: CreateApplicationData
+): Promise<ApplicationData> => {
   const res = await api.put(`/order/applications/${applicationId}`, data);
   return res.data.application;
 };
 
-export const getApplicationsByOrder = async (orderRequestId: string, status?: string): Promise<{
+export const getApplicationsByOrder = async (
+  orderRequestId: string,
+  status?: string
+): Promise<{
   applications: ApplicationData[];
 }> => {
   const params = status ? { status } : {};
-  const res = await api.get(`/order/${orderRequestId}/applications`, { params });
+  const res = await api.get(`/order/${orderRequestId}/applications`, {
+    params,
+  });
   return res.data;
 };
 
-export const updateApplicationStatus = async (applicationId: string, status: string): Promise<ApplicationData> => {
-  const res = await api.patch(`/order/applications/${applicationId}/status`, { status });
+export const updateApplicationStatus = async (
+  applicationId: string,
+  status: string
+): Promise<ApplicationData> => {
+  const res = await api.patch(`/order/applications/${applicationId}/status`, {
+    status,
+  });
   return res.data.application;
 };

@@ -1,6 +1,7 @@
 import { useDashboardStats } from "@/hooks/useAdminDashboardStats";
 import { useState, useEffect } from "react";
-import { getAllPointChargeRequests, updatePointChargeRequest } from "@/api/admin";
+import { getAllPointChargeRequests, updatePointChargeRequest, getAllUsers, chargeUserPoint } from "@/api/admin";
+import { Link } from "react-router-dom";
 
 interface PointChargeRequest {
   id: string;
@@ -14,13 +15,27 @@ interface PointChargeRequest {
   };
 }
 
+interface User {
+  id: string;
+  username: string;
+  role: string;
+  membershipLevel?: string;
+}
+
 export default function AdminHome() {
   const { stats } = useDashboardStats();
   const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showChargeModal, setShowChargeModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [chargeAmount, setChargeAmount] = useState("");
+  const [chargeDescription, setChargeDescription] = useState("");
+  const [charging, setCharging] = useState(false);
 
   useEffect(() => {
     fetchChargeRequests();
+    fetchUsers();
   }, []);
 
   const fetchChargeRequests = async () => {
@@ -35,6 +50,15 @@ export default function AdminHome() {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await getAllUsers();
+      setUsers(response.users);
+    } catch (error) {
+      console.error("사용자 목록 조회 실패:", error);
+    }
+  };
+
   const handleUpdateRequest = async (requestId: string, status: 'approved' | 'rejected') => {
     try {
       await updatePointChargeRequest(requestId, status);
@@ -43,6 +67,34 @@ export default function AdminHome() {
     } catch (error) {
       console.error("포인트 충전 신청 처리 실패:", error);
       alert("처리에 실패했습니다.");
+    }
+  };
+
+  const handleChargePoint = async () => {
+    if (!selectedUser || !chargeAmount) {
+      alert("사용자와 충전 금액을 선택해주세요.");
+      return;
+    }
+
+    const amount = Number(chargeAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert("유효한 금액을 입력해주세요.");
+      return;
+    }
+
+    try {
+      setCharging(true);
+      await chargeUserPoint(selectedUser.id, amount, chargeDescription);
+      alert("포인트 충전이 완료되었습니다.");
+      setShowChargeModal(false);
+      setSelectedUser(null);
+      setChargeAmount("");
+      setChargeDescription("");
+    } catch (error) {
+      console.error("포인트 충전 실패:", error);
+      alert("포인트 충전에 실패했습니다.");
+    } finally {
+      setCharging(false);
     }
   };
 
@@ -267,9 +319,9 @@ export default function AdminHome() {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">최근 주문</h3>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <Link to="/order" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                 전체보기
-              </button>
+              </Link>
             </div>
             <div className="space-y-4">
               {[
@@ -332,7 +384,10 @@ export default function AdminHome() {
               빠른 작업
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors">
+              <button 
+                onClick={() => setShowChargeModal(true)}
+                className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
+              >
                 <div className="text-center">
                   <svg
                     className="w-6 h-6 text-blue-600 mx-auto mb-2"
@@ -344,11 +399,11 @@ export default function AdminHome() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                     />
                   </svg>
                   <span className="text-sm font-medium text-blue-700">
-                    공지사항
+                    포인트 충전
                   </span>
                 </div>
               </button>
@@ -365,11 +420,11 @@ export default function AdminHome() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
                     />
                   </svg>
                   <span className="text-sm font-medium text-green-700">
-                    쿠폰 발행
+                    공지사항
                   </span>
                 </div>
               </button>
@@ -439,6 +494,88 @@ export default function AdminHome() {
           </div>
         </div>
       </div>
+
+      {/* 포인트 충전 모달 */}
+      {showChargeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              포인트 충전
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  사용자 선택
+                </label>
+                <select
+                  value={selectedUser?.id || ""}
+                  onChange={(e) => {
+                    const user = users.find(u => u.id === e.target.value);
+                    setSelectedUser(user || null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">사용자를 선택하세요</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.username} ({user.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  충전 포인트
+                </label>
+                <input
+                  type="number"
+                  value={chargeAmount}
+                  onChange={(e) => setChargeAmount(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="충전할 포인트를 입력하세요"
+                  min="1"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  설명 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={chargeDescription}
+                  onChange={(e) => setChargeDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="충전 사유를 입력하세요"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowChargeModal(false);
+                  setSelectedUser(null);
+                  setChargeAmount("");
+                  setChargeDescription("");
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleChargePoint}
+                disabled={charging || !selectedUser || !chargeAmount}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+              >
+                {charging ? "충전 중..." : "충전하기"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

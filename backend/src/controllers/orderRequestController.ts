@@ -96,6 +96,16 @@ export const createOrderRequest = async (req: Request, res: Response) => {
         data: { balance: { decrement: requiredPoints } },
       });
 
+      // 포인트 거래 내역 기록 (사용 포인트)
+      await tx.pointTransaction.create({
+        data: {
+          userId: buyerId,
+          type: "spend",
+          amount: -requiredPoints,
+          description: `주문 요청: ${title}`,
+        },
+      });
+
       return { order, remainingPoint: pointRecord.balance - requiredPoints };
     });
 
@@ -303,7 +313,9 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       include: {
         orderRequest: {
           select: {
+            id: true,
             buyerId: true,
+            status: true,
           },
         },
       },
@@ -320,9 +332,35 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       return;
     }
 
-    const updatedApplication = await prisma.orderApplication.update({
+    // 트랜잭션으로 처리
+    await prisma.$transaction(async (tx) => {
+      // 신청 상태 업데이트
+      const updatedApplication = await tx.orderApplication.update({
+        where: { id: applicationId },
+        data: { status },
+        include: {
+          seller: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      });
+
+      // 신청이 수락되면 주문 상태를 "진행중"으로 변경
+      if (status === 'ACCEPTED' && application.orderRequest.status === 'PENDING') {
+        await tx.orderRequest.update({
+          where: { id: application.orderRequest.id },
+          data: { status: 'IN_PROGRESS' },
+        });
+      }
+
+      return updatedApplication;
+    });
+
+    // 업데이트된 신청 정보 조회
+    const updatedApplication = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
-      data: { status },
       include: {
         seller: {
           select: {
@@ -336,10 +374,10 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       message: "신청 상태가 성공적으로 변경되었습니다.",
       application: {
         ...updatedApplication,
-        seller: { name: updatedApplication.seller.username },
-        createdAt: updatedApplication.createdAt.toISOString(),
-        updatedAt: updatedApplication.updatedAt.toISOString(),
-        estimatedDelivery: updatedApplication.estimatedDelivery?.toISOString(),
+        seller: { name: updatedApplication!.seller.username },
+        createdAt: updatedApplication!.createdAt.toISOString(),
+        updatedAt: updatedApplication!.updatedAt.toISOString(),
+        estimatedDelivery: updatedApplication!.estimatedDelivery?.toISOString(),
       },
     });
   } catch (error) {

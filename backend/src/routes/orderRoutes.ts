@@ -27,12 +27,12 @@ router.get("/:id", getOrderRequestById);
 router.post("/request", authenticate, createOrderRequest);
 
 // 관리자 전용 주문 상태 변경
-router.put("/request/:id/status", authenticate, requiredAdmin, updateOrderStatus);
+router.patch("/request/:id/status", authenticate, requiredAdmin, updateOrderStatus);
 router.put("/applications/:applicationId", authenticate, requiredAdmin, updateApplication);
 
 // 판매자용 신청 관련
 router.post("/:orderRequestId/applications", authenticate, requiredSeller, createApplication);
 router.get("/:orderRequestId/applications", getApplicationsByOrder);
-router.put("/applications/:applicationId/status", authenticate, updateApplicationStatus);
+router.patch("/applications/:applicationId/status", authenticate, updateApplicationStatus);
 
 export default router;

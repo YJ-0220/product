@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   const adminPassword = "admin1234!";
-  const buyerPassword = "buyer1234!";
-  const sellerPassword = "seller1234!";
+  const buyerPassword = "test1234!";
+  const sellerPassword = "test1234!";
   const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
   const hashedBuyerPassword = await bcrypt.hash(buyerPassword, 10);
   const hashedSellerPassword = await bcrypt.hash(sellerPassword, 10);
@@ -28,7 +28,7 @@ async function main() {
     where: { username: "buyer" },
     update: { password: hashedBuyerPassword },
     create: {
-      username: "buyer",
+      username: "test",
       password: hashedBuyerPassword,
       role: "buyer",
       membershipLevel: "bronze",
@@ -39,7 +39,7 @@ async function main() {
     where: { username: "seller" },
     update: { password: hashedSellerPassword },
     create: {
-      username: "seller",
+      username: "stest",
       password: hashedSellerPassword,
       role: "seller",
     },

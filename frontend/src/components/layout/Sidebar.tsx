@@ -79,6 +79,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "콘텐츠 관리",
               "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             )}
+            {renderLink(
+              "/order",
+              "주문관리",
+              "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            )}
           </>
         );
       case "seller":
@@ -88,11 +93,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "/",
               "홈",
               "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            )}
-            {renderLink(
-              "/mypage",
-              "마이 페이지",
-              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             )}
             {renderLink(
               "/order",
@@ -105,14 +105,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             )}
             {renderLink(
-              "/membership",
-              "멤버십",
-              "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+              "/point/withdraw",
+              "포인트 환전",
+              "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             )}
             {renderLink(
-              "/membership",
-              "멤버십",
-              "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+              "/mypage",
+              "마이 페이지",
+              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             )}
           </>
         );

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getOrderById, updateOrderStatus, type OrderData, createApplication, updateApplication, getApplicationsByOrder, updateApplicationStatus, type ApplicationData } from "@/api/order";
+import { getOrderById, updateOrderStatus, getApplicationsByOrder, updateApplicationStatus } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
+import { type OrderData, type ApplicationData } from "@/types/orderTypes";
 
 export const useOrderRequestDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,13 +14,6 @@ export const useOrderRequestDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [updating, setUpdating] = useState(false);
-  const [showApplicationForm, setShowApplicationForm] = useState(false);
-  const [editingApplicationId, setEditingApplicationId] = useState<string | null>(null);
-  const [applicationForm, setApplicationForm] = useState({
-    message: "",
-    proposedPrice: "",
-    estimatedDelivery: "",
-  });
 
   // 데이터 로드
   useEffect(() => {
@@ -47,8 +41,8 @@ export const useOrderRequestDetail = () => {
     fetchData();
   }, [id]);
 
-  // 주문 상태 변경
-  const handleStatusUpdate = async (newStatus: string) => {
+  // 주문 상태 변경 (관리자용)
+  const handleOrderStatusUpdate = async (newStatus: string) => {
     if (!order || !id) return;
 
     try {
@@ -62,73 +56,50 @@ export const useOrderRequestDetail = () => {
     }
   };
 
-  // 신청 제출/수정
-  const handleApplicationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id) return;
-
-    try {
-      setUpdating(true);
-      const data = {
-        message: applicationForm.message || undefined,
-        proposedPrice: applicationForm.proposedPrice ? Number(applicationForm.proposedPrice) : undefined,
-        estimatedDelivery: applicationForm.estimatedDelivery || undefined,
-      };
-      
-      if (editingApplicationId) {
-        await updateApplication(editingApplicationId, data);
-      } else {
-        await createApplication(id, data);
-      }
-      
-      // 신청 목록 새로고침
-      const applicationsData = await getApplicationsByOrder(id);
-      setApplications(applicationsData.applications);
-      
-      // 폼 초기화 및 닫기
-      setApplicationForm({ message: "", proposedPrice: "", estimatedDelivery: "" });
-      setShowApplicationForm(false);
-      setEditingApplicationId(null);
-    } catch (error: any) {
-      setError(error?.response?.data?.error || "신청 제출에 실패했습니다.");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  // 신청 수정 모드 시작
-  const handleEditApplication = (application: ApplicationData) => {
-    setEditingApplicationId(application.id);
-    setApplicationForm({
-      message: application.message || "",
-      proposedPrice: application.proposedPrice?.toString() || "",
-      estimatedDelivery: application.estimatedDelivery ? new Date(application.estimatedDelivery).toISOString().split('T')[0] : "",
-    });
-    setShowApplicationForm(true);
-  };
-
-  // 신청 수정 모드 취소
-  const handleCancelEdit = () => {
-    setEditingApplicationId(null);
-    setApplicationForm({ message: "", proposedPrice: "", estimatedDelivery: "" });
-    setShowApplicationForm(false);
-  };
-
-  // 신청 상태 변경
+  // 신청 상태 변경 (구매자/관리자용)
   const handleApplicationStatusUpdate = async (applicationId: string, newStatus: string) => {
     try {
       setUpdating(true);
       await updateApplicationStatus(applicationId, newStatus);
       
-      // 신청 목록 새로고침
+      // 신청 목록과 주문 정보 모두 새로고침
       if (id) {
-        const applicationsData = await getApplicationsByOrder(id);
+        const [orderData, applicationsData] = await Promise.all([
+          getOrderById(id),
+          getApplicationsByOrder(id),
+        ]);
+        setOrder(orderData);
         setApplications(applicationsData.applications);
       }
+
+      // 성공 메시지 표시 후 게시판으로 돌아가기
+      setTimeout(() => {
+        alert(newStatus === 'ACCEPTED' ? '신청이 수락되었습니다. 주문이 진행중 상태로 변경되었습니다.' : '신청이 거절되었습니다.');
+        navigate('/order');
+      }, 1000);
     } catch (error: any) {
       setError(error?.response?.data?.error || "신청 상태 변경에 실패했습니다.");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  // 데이터 새로고침
+  const refreshData = async () => {
+    if (!id) return;
+    
+    try {
+      setLoading(true);
+      const [orderData, applicationsData] = await Promise.all([
+        getOrderById(id),
+        getApplicationsByOrder(id),
+      ]);
+      setOrder(orderData);
+      setApplications(applicationsData.applications);
+    } catch (error: any) {
+      setError(error?.response?.data?.error || "데이터 새로고침에 실패했습니다.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,32 +134,6 @@ export const useOrderRequestDetail = () => {
     }
   };
 
-  const getApplicationStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
-      case "ACCEPTED":
-        return "bg-green-100 text-green-800";
-      case "REJECTED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getApplicationStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "검토중";
-      case "ACCEPTED":
-        return "수락됨";
-      case "REJECTED":
-        return "거절됨";
-      default:
-        return status;
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("ko-KR", {
       year: "numeric",
@@ -206,26 +151,17 @@ export const useOrderRequestDetail = () => {
     loading,
     error,
     updating,
-    showApplicationForm,
-    editingApplicationId,
-    applicationForm,
     user,
     
     // 액션
-    handleStatusUpdate,
-    handleApplicationSubmit,
-    handleEditApplication,
-    handleCancelEdit,
+    handleOrderStatusUpdate,
     handleApplicationStatusUpdate,
-    setShowApplicationForm,
-    setApplicationForm,
+    refreshData,
     navigate,
     
     // 유틸리티
     getStatusBadgeClass,
     getStatusText,
-    getApplicationStatusBadgeClass,
-    getApplicationStatusText,
     formatDate,
   };
 };

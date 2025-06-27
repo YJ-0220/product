@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { getOrders, type OrderData } from "@/api/order";
+import { getOrders } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { type OrderData } from "@/types/orderTypes";
 
 export default function OrderBoard() {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -22,6 +24,17 @@ export default function OrderBoard() {
     };
 
     fetchOrders();
+
+    // 페이지 포커스 시 새로고침 (다른 페이지에서 돌아올 때)
+    const handleFocus = () => {
+      fetchOrders();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // 상태 텍스트 변환 함수
@@ -73,7 +86,7 @@ export default function OrderBoard() {
             <p className="text-gray-600 mt-2">생성된 주문서 목록을 확인할 수 있습니다.</p>
           </div>
           
-          {user?.role === "buyer" && (
+          {(user?.role === "buyer" || user?.role === "admin") && (
             <Link
               to="/order/request"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -136,7 +149,7 @@ export default function OrderBoard() {
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => {
                       // 주문 상세 페이지로 이동
-                      window.location.href = `/order/${order.id}`;
+                      navigate(`/order/${order.id}`);
                     }}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

@@ -35,7 +35,6 @@ export default function OrderDetail() {
     handleApplicationSubmit,
     handleEditApplication,
     handleCancelEdit,
-    resetForm,
     setShowApplicationForm,
     setEditingApplicationId,
     

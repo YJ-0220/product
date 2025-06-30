@@ -59,7 +59,7 @@ export const deleteUser = async (userId: string) => {
 
 // 관리자용 포인트 충전 (사용자에게 직접 충전)
 export const chargeUserPoint = async (userId: string, amount: number, description?: string) => {
-  const response = await api.post(`/admin/users/${userId}/charge-point`, { 
+  const response = await api.post(`/admin/users/${userId}/charge`, { 
     amount, 
     description: description || "관리자 직접 충전" 
   });

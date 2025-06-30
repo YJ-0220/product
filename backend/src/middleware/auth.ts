@@ -10,7 +10,7 @@ export const authenticate = async (
 ) => {
   try {
     // 1. 토큰 가져오기
-    const token = req.cookies.token;
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
     if (!token) {
       res.status(401).json({
@@ -67,7 +67,7 @@ export const requiredBuyer: RequestHandler = (
   const user = req.user as { role?: string };
   if (!user || user.role !== "buyer") {
     res.status(403).json({
-      message: "구매자는 접근할 수 있는 기능입니다.",
+      message: "구매자만 접근할 수 있는 기능입니다.",
     });
     return;
   }
@@ -82,7 +82,7 @@ export const requiredSeller: RequestHandler = (
   const user = req.user as { role?: string };
   if (!user || user.role !== "seller") {
     res.status(403).json({
-      message: "판매자는 접근할 수 있는 기능입니다.",
+      message: "판매자만 접근할 수 있는 기능입니다.",
     });
     return;
   }

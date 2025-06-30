@@ -3,11 +3,11 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
-import authRoutes from "./routes/authRoutes";
-import userRoutes from "./routes/userRoutes";
-import adminRoutes from "./routes/adminRoutes";
-import orderRoutes from "./routes/orderRoutes";
-import pointRoutes from "./routes/common/pointRoutes";
+import authRoutes from "./routes/auth";
+import userRoutes from "./routes/user";
+import adminRoutes from "./routes/admin";
+import orderRoutes from "./routes/order";
+import pointRoutes from "./routes/common/point";
 
 // Prisma Client 초기화
 export const prisma = new PrismaClient();

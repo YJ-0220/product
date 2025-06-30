@@ -14,7 +14,7 @@ export const createPointChargeRequest = async (amount: number) => {
 
 // 포인트 충전 신청 목록 조회
 export const getPointChargeRequests = async () => {
-  const response = await api.get("/points/charge-requests");
+  const response = await api.get("/points/charge");
   return response.data;
 };
 
@@ -30,7 +30,7 @@ export const createPointWithdrawRequest = async (data: {
 
 // 포인트 환전 신청 목록 조회
 export const getPointWithdrawRequests = async () => {
-  const response = await api.get("/points/withdraw-requests");
+  const response = await api.get("/points/withdraw");
   return response.data;
 };
 

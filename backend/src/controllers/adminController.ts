@@ -4,7 +4,10 @@ import bcrypt from "bcrypt";
 import { RequestHandler } from "express";
 
 // 관리자 대시보드
-export const getAdminDashboard: RequestHandler = async (req: Request, res: Response) => {
+export const getAdminDashboard: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const userCountResult = await prisma.user.count({
       where: {
@@ -26,7 +29,10 @@ export const getAdminDashboard: RequestHandler = async (req: Request, res: Respo
 };
 
 // 관리자 회원가입
-export const adminRegister: RequestHandler = async (req: Request, res: Response) => {
+export const adminRegister: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { username, password, role } = req.body;
 
@@ -53,7 +59,8 @@ export const adminRegister: RequestHandler = async (req: Request, res: Response)
       /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       res.status(400).json({
-        message: "비밀번호는 8자 이상, 영문과 숫자, 특수문자를 포함해야 합니다.",
+        message:
+          "비밀번호는 8자 이상, 영문과 숫자, 특수문자를 포함해야 합니다.",
       });
       return;
     }
@@ -106,7 +113,7 @@ export const adminRegister: RequestHandler = async (req: Request, res: Response)
 };
 
 // 관리자 사용자 삭제
-export const AdminDeleteUser = async (req: Request, res: Response) => {
+export const adminDeleteUser = async (req: Request, res: Response) => {
   const username = req.params.username;
 
   if (!username) {
@@ -176,91 +183,8 @@ export const createAdmin = async (req: Request, res: Response) => {
   }
 };
 
-// 관리자용 포인트 충전 (사용자에게 직접 충전)
-export const chargeUserPoint = async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const { amount, description } = req.body;
-  const adminId = req.user?.id;
-
-  if (!adminId) {
-    res.status(401).json({
-      message: "관리자 인증이 필요합니다.",
-    });
-    return;
-  }
-
-  if (!amount || isNaN(amount) || amount <= 0) {
-    res.status(400).json({
-      message: "유효하지 않은 포인트 금액입니다.",
-    });
-    return;
-  }
-
-  try {
-    // 사용자 존재 확인
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      res.status(404).json({
-        message: "사용자를 찾을 수 없습니다.",
-      });
-      return;
-    }
-
-    await prisma.$transaction(async (tx) => {
-      // 포인트 조회
-      const pointResult = await tx.point.findUnique({
-        where: {
-          userId: userId,
-        },
-      });
-
-      if (!pointResult) {
-        await tx.point.create({
-          data: {
-            userId: userId,
-            balance: amount,
-          },
-        });
-      } else {
-        await tx.point.update({
-          where: {
-            userId: userId,
-          },
-          data: {
-            balance: { increment: amount },
-          },
-        });
-      }
-
-      // 포인트 거래 내역 기록
-      await tx.pointTransaction.create({
-        data: {
-          userId: userId,
-          amount,
-          type: "admin_adjust",
-          description: description || "관리자 직접 충전",
-        },
-      });
-    });
-
-    res.status(200).json({
-      message: "포인트 충전이 완료되었습니다.",
-      amount,
-      description: description || "관리자 직접 충전",
-    });
-  } catch (error) {
-    console.error("관리자 포인트 충전 오류:", error);
-    res.status(500).json({
-      message: "포인트 충전에 실패했습니다.",
-    });
-  }
-};
-
 // 관리자용 사용자 목록 조회
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUserList = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -283,6 +207,202 @@ export const getAllUsers = async (req: Request, res: Response) => {
     console.error("사용자 목록 조회 오류:", error);
     res.status(500).json({
       message: "사용자 목록 조회에 실패했습니다.",
+    });
+  }
+};
+
+// 관리자용: 모든 포인트 충전 신청 목록 조회
+export const getAllPointChargeRequests = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const chargeRequests = await prisma.pointChargeRequest.findMany({
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
+      orderBy: {
+        requestedAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      chargeRequests: chargeRequests.map((request) => ({
+        ...request,
+        user: { name: request.user.username },
+        requestedAt: request.requestedAt.toISOString(),
+        approvedAt: request.approvedAt?.toISOString(),
+      })),
+    });
+  } catch (error) {
+    console.error("포인트 충전 신청 목록 조회 오류:", error);
+    res.status(500).json({
+      message: "포인트 충전 신청 목록 조회에 실패했습니다.",
+    });
+  }
+};
+
+// 관리자용: 포인트 충전 신청 승인/거절
+export const updatePointChargeRequestStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { requestId } = req.params;
+  const { status } = req.body; // 'approved' 또는 'rejected'
+
+  if (!["approved", "rejected"].includes(status)) {
+    res.status(400).json({
+      message: "유효하지 않은 상태값입니다.",
+    });
+    return;
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      // 충전 신청 조회
+      const chargeRequest = await tx.pointChargeRequest.findUnique({
+        where: { id: requestId },
+      });
+
+      if (!chargeRequest) {
+        throw new Error("충전 신청을 찾을 수 없습니다.");
+      }
+
+      if (chargeRequest.status !== "pending") {
+        throw new Error("이미 처리된 신청입니다.");
+      }
+
+      // 신청 상태 업데이트
+      await tx.pointChargeRequest.update({
+        where: { id: requestId },
+        data: {
+          status: status,
+          approvedAt: status === "approved" ? new Date() : null,
+        },
+      });
+
+      // 승인된 경우 포인트 충전
+      if (status === "approved") {
+        const pointRecord = await tx.point.findUnique({
+          where: { userId: chargeRequest.userId },
+        });
+
+        if (!pointRecord) {
+          await tx.point.create({
+            data: {
+              userId: chargeRequest.userId,
+              balance: chargeRequest.amount,
+            },
+          });
+        } else {
+          await tx.point.update({
+            where: { userId: chargeRequest.userId },
+            data: {
+              balance: { increment: chargeRequest.amount },
+            },
+          });
+        }
+
+        // 포인트 거래 내역 기록
+        await tx.pointTransaction.create({
+          data: {
+            userId: chargeRequest.userId,
+            type: "charge",
+            amount: chargeRequest.amount,
+            description: "관리자 승인 포인트 충전",
+          },
+        });
+      }
+    });
+
+    res.status(200).json({
+      message: `포인트 충전 신청이 ${
+        status === "approved" ? "승인" : "거절"
+      }되었습니다.`,
+    });
+  } catch (error: any) {
+    console.error("포인트 충전 신청 처리 오류:", error);
+    res.status(500).json({
+      message: error.message || "포인트 충전 신청 처리에 실패했습니다.",
+    });
+  }
+};
+
+// 관리자용: 포인트 환전 신청 승인/거절
+export const updatePointWithdrawRequestStatus = async (
+  req: Request,
+  res: Response
+) => {
+  const { requestId } = req.params;
+  const { status } = req.body;
+
+  if (!["approved", "rejected"].includes(status)) {
+    res.status(400).json({
+      message: "유효하지 않은 상태값입니다.",
+    });
+    return;
+  }
+
+  try {
+    const withdrawRequest = await prisma.pointWithdrawRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!withdrawRequest || withdrawRequest.status !== "pending") {
+      res.status(400).json({
+        message: "환전 신청을 찾을 수 없거나 이미 처리된 신청입니다.",
+      });
+      return;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      if (status === "approved") {
+        await tx.point.update({
+          where: { userId: withdrawRequest.userId },
+          data: { balance: { decrement: withdrawRequest.amount } },
+        });
+
+        await tx.pointTransaction.create({
+          data: {
+            userId: withdrawRequest.userId,
+            amount: withdrawRequest.amount,
+            type: "withdraw",
+            description: "포인트 환전 승인",
+          },
+        });
+
+        await tx.pointWithdrawRequest.update({
+          where: { id: requestId },
+          data: { status: "approved" },
+        });
+      } else if (status === "rejected") {
+        // 포인트 환전 신청 거절 시 포인트 잔액 복구
+        await tx.point.update({
+          where: { userId: withdrawRequest.userId },
+          data: { balance: { increment: withdrawRequest.amount } },
+        });
+
+        // 포인트 환전 신청 상태 업데이트
+        await tx.pointWithdrawRequest.update({
+          where: { id: requestId },
+          data: { status: "rejected" },
+        });
+      }
+    });
+
+    res.status(200).json({
+      message: `포인트 환전 신청이 ${
+        status === "approved" ? "승인" : "거절"
+      }되었습니다.`,
+    });
+  } catch (error: any) {
+    console.error("포인트 환전 신청 처리 오류:", error);
+    res.status(500).json({
+      message: error.message || "포인트 환전 신청 처리에 실패했습니다.",
     });
   }
 };

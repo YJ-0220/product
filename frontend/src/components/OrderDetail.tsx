@@ -36,7 +36,7 @@ export default function OrderDetail() {
     handleEditApplication,
     handleCancelEdit,
     setShowApplicationForm,
-    setEditingApplicationId,
+    // setEditingApplicationId,
 
     // 유틸리티
     isFormValid,
@@ -196,13 +196,10 @@ export default function OrderDetail() {
                     handleApplicationSubmit(
                       e,
                       order.id,
-                      (apps) => {
-                        // applications 상태 업데이트는 useOrderRequestDetail에서 처리
-                        // 여기서는 refreshData를 호출하여 전체 데이터를 새로고침
+                      () => {
                         refreshData();
                       },
                       (error) => {
-                        // 에러 처리
                         console.error(error);
                       }
                     )

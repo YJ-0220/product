@@ -9,7 +9,7 @@ export default function Topbar() {
   const role = user?.role || "";
 
   const getUserGreeting = () => {
-    const userName = user?.name || "사용자";
+    const userName = user?.username || "사용자";
 
     switch (role) {
       case "admin":
@@ -286,7 +286,7 @@ export default function Topbar() {
             >
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-semibold">
-                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                  {user?.username?.charAt(0).toUpperCase() || "U"}
                 </span>
               </div>
               <svg
@@ -308,7 +308,7 @@ export default function Topbar() {
               <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border z-50">
                 <div className="p-3 border-b">
                   <h2 className="text-lg font-semibold text-gray-900">
-                    {user?.name}님
+                    {user?.username}님
                   </h2>
                   <p className="text-sm text-gray-500">
                     등급: {user?.membershipLevel}

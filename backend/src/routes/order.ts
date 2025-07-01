@@ -1,8 +1,8 @@
 import express from "express";
-import { 
-  getCategories, 
+import {
+  getCategories,
   getSubCategories,
-  getOrders, 
+  getOrders,
   getOrderRequestById,
   createOrderRequest,
   updateOrderStatus,
@@ -10,10 +10,18 @@ import {
   updateApplication,
   getApplicationsByOrder,
   updateApplicationStatus,
+  deleteApplication,
 } from "../controllers/orderRequestController";
-import { authenticate, requiredAdmin, requiredSeller } from "../middleware/auth";
+import {
+  authenticate,
+  requiredAdmin,
+  requiredSeller,
+} from "../middleware/auth";
 
 const router = express.Router();
+
+// 모든 라우트에 인증 필요
+router.use(authenticate);
 
 // 카테고리 관련
 router.get("/categories", getCategories);
@@ -24,15 +32,20 @@ router.get("/", getOrders);
 router.get("/:id", getOrderRequestById);
 
 // 구매자용 주문하기
-router.post("/request", authenticate, createOrderRequest);
+router.post("/request", createOrderRequest);
 
 // 관리자 전용 주문 상태 변경
-router.patch("/request/:id/status", authenticate, requiredAdmin, updateOrderStatus);
-router.put("/applications/:applicationId", authenticate, requiredAdmin, updateApplication);
+router.patch("/request/:id/status", requiredAdmin, updateOrderStatus);
+router.put("/applications/:applicationId", requiredAdmin, updateApplication);
 
 // 판매자용 신청 관련
-router.post("/:orderRequestId/applications", authenticate, requiredSeller, createApplication);
+router.post("/:orderRequestId/applications", requiredSeller, createApplication);
 router.get("/:orderRequestId/applications", getApplicationsByOrder);
-router.patch("/applications/:applicationId/status", authenticate, updateApplicationStatus);
+router.patch("/applications/:applicationId/status", updateApplicationStatus);
+router.delete(
+  "/applications/:applicationId",
+  requiredSeller,
+  deleteApplication
+);
 
 export default router;

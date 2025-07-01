@@ -9,17 +9,16 @@ interface LayoutWrapperProps {
 }
 
 export default function LayoutWrapper({ 
-  children, 
   allowedRoles = [], 
   requireAuth = true 
 }: LayoutWrapperProps) {
   if (!requireAuth) {
-    return <Layout>{children}</Layout>;
+    return <Layout />;
   }
 
   return (
     <RequireAuth allowedRoles={allowedRoles}>
-      <Layout>{children}</Layout>
+      <Layout />
     </RequireAuth>
   );
 } 

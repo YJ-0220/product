@@ -246,51 +246,75 @@ export const getAllPointChargeRequests = async (
   }
 };
 
+export const getAllPointWithdrawRequests = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const withdrawRequests = await prisma.pointWithdrawRequest.findMany({
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
+      orderBy: {
+        requestedAt: "desc",
+      },
+    });
+    res.status(200).json({
+      withdrawRequests: withdrawRequests.map((request) => ({
+        ...request,
+        user: { name: request.user.username },
+        requestedAt: request.requestedAt.toISOString(),
+        processedAt: request.processedAt?.toISOString(),
+      })),
+    });
+  } catch (error) {
+    console.error("포인트 환전 신청 목록 조회 오류:", error);
+    res
+      .status(500)
+      .json({ message: "포인트 환전 신청 목록 조회에 실패했습니다." });
+  }
+};
+
 // 관리자용: 포인트 충전 신청 승인/거절
 export const updatePointChargeRequestStatus = async (
   req: Request,
   res: Response
 ) => {
   const { requestId } = req.params;
-  const { status } = req.body; // 'approved' 또는 'rejected'
+  const { status } = req.body;
 
   if (!["approved", "rejected"].includes(status)) {
     res.status(400).json({
-      message: "유효하지 않은 상태값입니다.",
+      message: "승인 또는 거절 중 하나를 선택해주세요.",
     });
     return;
   }
 
   try {
+    const chargeRequest = await prisma.pointChargeRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    // 충전 신청 조회
+    if (!chargeRequest || chargeRequest.status !== "pending") {
+      res.status(400).json({
+        message: "충전 신청을 찾을 수 없습니다.",
+      });
+      return;
+    }
+
     await prisma.$transaction(async (tx) => {
-      // 충전 신청 조회
-      const chargeRequest = await tx.pointChargeRequest.findUnique({
-        where: { id: requestId },
-      });
-
-      if (!chargeRequest) {
-        throw new Error("충전 신청을 찾을 수 없습니다.");
-      }
-
-      if (chargeRequest.status !== "pending") {
-        throw new Error("이미 처리된 신청입니다.");
-      }
-
-      // 신청 상태 업데이트
-      await tx.pointChargeRequest.update({
-        where: { id: requestId },
-        data: {
-          status: status,
-          approvedAt: status === "approved" ? new Date() : null,
-        },
-      });
-
-      // 승인된 경우 포인트 충전
       if (status === "approved") {
+        // 포인트 잔액 조회
         const pointRecord = await tx.point.findUnique({
           where: { userId: chargeRequest.userId },
         });
 
+        // 포인트 잔액 조회
         if (!pointRecord) {
           await tx.point.create({
             data: {
@@ -299,6 +323,7 @@ export const updatePointChargeRequestStatus = async (
             },
           });
         } else {
+          // 포인트 잔액 증가
           await tx.point.update({
             where: { userId: chargeRequest.userId },
             data: {
@@ -306,6 +331,15 @@ export const updatePointChargeRequestStatus = async (
             },
           });
         }
+
+        // 신청 상태 업데이트
+        await tx.pointChargeRequest.update({
+          where: { id: requestId },
+          data: {
+            status: "approved",
+            approvedAt: new Date(),
+          },
+        });
 
         // 포인트 거래 내역 기록
         await tx.pointTransaction.create({
@@ -342,14 +376,14 @@ export const updatePointWithdrawRequestStatus = async (
 
   if (!["approved", "rejected"].includes(status)) {
     res.status(400).json({
-      message: "유효하지 않은 상태값입니다.",
+      message: "승인 또는 거절 중 하나를 선택해주세요.",
     });
     return;
   }
 
   try {
     const withdrawRequest = await prisma.pointWithdrawRequest.findUnique({
-      where: { id: requestId },
+      where: { id: requestId },  
     });
 
     if (!withdrawRequest || withdrawRequest.status !== "pending") {
@@ -361,11 +395,7 @@ export const updatePointWithdrawRequestStatus = async (
 
     await prisma.$transaction(async (tx) => {
       if (status === "approved") {
-        await tx.point.update({
-          where: { userId: withdrawRequest.userId },
-          data: { balance: { decrement: withdrawRequest.amount } },
-        });
-
+        // 포인트 환전 내역 기록
         await tx.pointTransaction.create({
           data: {
             userId: withdrawRequest.userId,
@@ -375,9 +405,13 @@ export const updatePointWithdrawRequestStatus = async (
           },
         });
 
+        // 포인트 환전 신청 상태 업데이트
         await tx.pointWithdrawRequest.update({
           where: { id: requestId },
-          data: { status: "approved" },
+          data: { 
+            status: "approved",
+            processedAt: new Date()
+          },
         });
       } else if (status === "rejected") {
         // 포인트 환전 신청 거절 시 포인트 잔액 복구
@@ -389,7 +423,10 @@ export const updatePointWithdrawRequestStatus = async (
         // 포인트 환전 신청 상태 업데이트
         await tx.pointWithdrawRequest.update({
           where: { id: requestId },
-          data: { status: "rejected" },
+          data: { 
+            status: "rejected",
+            processedAt: new Date()
+          },
         });
       }
     });

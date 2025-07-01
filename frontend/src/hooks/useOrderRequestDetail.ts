@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getOrderById, updateOrderStatus, getApplicationsByOrder, updateApplicationStatus } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
-import { type OrderData, type ApplicationData } from "@/types/orderTypes";
+import type { OrderData, ApplicationData } from "@/types/orderTypes";
 
 export const useOrderRequestDetail = () => {
   const { id } = useParams<{ id: string }>();

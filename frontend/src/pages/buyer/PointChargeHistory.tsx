@@ -1,14 +1,6 @@
 import { useState, useEffect } from "react";
+import type { PointChargeRequest } from "@/types/pointRequestTypes";
 import { getPointChargeRequests } from "@/api/points";
-
-interface PointChargeRequest {
-  id: string;
-  userId: string;
-  amount: number;
-  status: string;
-  requestedAt: string;
-  approvedAt?: string;
-}
 
 export default function PointChargeHistoryPage() {
   const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>([]);

@@ -14,11 +14,15 @@ export default function RequireAuth({
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return <div>로딩 중...</div>;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!user && !loading) {
+    return <Navigate to="/not-found" replace />;
   }
 
   if (user && !allowedRoles.includes(user.role)) {

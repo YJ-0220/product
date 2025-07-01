@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getCategories, getSubCategories } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
-import { type OrderCategory } from "@/types/orderTypes";
+import type { OrderCategory } from "@/types/orderTypes";
 
 export function useCategories() {
   const [categories, setCategories] = useState<OrderCategory[]>([]);

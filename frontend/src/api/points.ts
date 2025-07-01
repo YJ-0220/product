@@ -8,13 +8,7 @@ export const chargePoint = async (amount: number) => {
 
 // 포인트 충전 신청
 export const createPointChargeRequest = async (amount: number) => {
-  const response = await api.post("/points/charge-request", { amount });
-  return response.data;
-};
-
-// 포인트 충전 신청 목록 조회
-export const getPointChargeRequests = async () => {
-  const response = await api.get("/points/charge");
+  const response = await api.post("/points/charge-requests", { amount });
   return response.data;
 };
 
@@ -24,13 +18,19 @@ export const createPointWithdrawRequest = async (data: {
   bankName: string;
   accountNum: string;
 }) => {
-  const response = await api.post("/points/withdraw-request", data);
+  const response = await api.post("/points/withdraw-requests", data);
+  return response.data;
+};
+
+// 포인트 충전 신청 목록 조회
+export const getPointChargeRequests = async () => {
+  const response = await api.get("/points/charge-requests");
   return response.data;
 };
 
 // 포인트 환전 신청 목록 조회
 export const getPointWithdrawRequests = async () => {
-  const response = await api.get("/points/withdraw");
+  const response = await api.get("/points/withdraw-requests");
   return response.data;
 };
 
@@ -38,4 +38,4 @@ export const getPointWithdrawRequests = async () => {
 export const getPointHistory = async () => {
   const response = await api.get("/points/history");
   return response.data;
-}; 
+};

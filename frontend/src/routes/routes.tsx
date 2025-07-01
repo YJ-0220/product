@@ -1,6 +1,7 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import Home from "@/pages/Home";
 import RequireNoAuth from "@/components/RequireNoAuth";
-import { Home } from "@/pages/Home";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import LoginForm from "@/pages/common/Login";
 import NotFound from "@/pages/common/NotFound";
 import OrderSuccess from "@/pages/buyer/OrderSuccess";
@@ -8,22 +9,97 @@ import OrderHistory from "@/pages/common/OrderHistory";
 import Order from "@/pages/common/Order";
 import OrderBoard from "@/components/OrderBoard";
 import OrderDetail from "@/components/OrderDetail";
-import PointChargePage from "@/pages/buyer/PointCharge";
 import OrderRequest from "@/pages/buyer/OrderRequest";
-import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import MyPage from "@/pages/common/MyPage";
 import Membership from "@/pages/common/Membership";
-import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
-import PointWithdraw from "@/components/PointWithdraw";
+import PointPage from "@/pages/common/PointPage";
+import PointChargeForm from "@/components/buyer/PointChargeForm";
+import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
+import RequireAuth from "@/components/RequireAuth";
+import Layout from "@/components/layout/Layout";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: (
       <LayoutWrapper allowedRoles={["admin", "seller", "buyer"]}>
-        <Home />
+        <Layout />
       </LayoutWrapper>
     ),
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "point",
+        element: (
+          <RequireAuth allowedRoles={["buyer", "seller"]}>
+            <PointPage />
+          </RequireAuth>
+        ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="history" />,
+          },
+          {
+            path: "charge",
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <PointChargeForm />
+              </RequireAuth>
+            ),
+          },
+          {
+            path: "withdraw",
+            element: (
+              <RequireAuth allowedRoles={["seller"]}>
+                <PointWithdrawForm />
+              </RequireAuth>
+            ),
+          },
+        ],
+      },
+      {
+        path: "order",
+        element: <Order />,
+        children: [
+          {
+            index: true,
+            element: <OrderBoard />,
+          },
+          {
+            path: "request",
+            element: <OrderRequest />,
+          },
+          {
+            path: ":id",
+            element: <OrderDetail />,
+          },
+          {
+            path: "success",
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <OrderSuccess />
+              </RequireAuth>
+            ),
+          },
+          {
+            path: "history",
+            element: <OrderHistory />,
+          },
+        ],
+      },
+      {
+        path: "mypage",
+        element: (
+          <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
+            <MyPage />
+          </RequireAuth>
+        ),
+      },
+    ],
   },
   {
     path: "/users",
@@ -59,66 +135,17 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/order",
-    element: (
-      <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
-        <Order />
-      </LayoutWrapper>
-    ),
-    children: [
-      {
-        index: true,
-        element: <OrderBoard />,
-      },
-      {
-        path: "request",
-        element: <OrderRequest />,
-      },
-      {
-        path: ":id",
-        element: <OrderDetail />,
-      },
-      {
-        path: "success",
-        element: <OrderSuccess />,
-      },
-      {
-        path: "history",
-        element: <OrderHistory />,
-      },
-    ],
-  },
-  {
-    path: "/point/charge",
-    element: (
-      <LayoutWrapper allowedRoles={["buyer"]}>
-        <PointChargePage />
-      </LayoutWrapper>
-    ),
-  },
-  {
-    path: "/point/history",
-    element: (
-      <LayoutWrapper allowedRoles={["buyer"]}>
-        <PointChargeHistory />
-      </LayoutWrapper>
-    ),
-  },
-  {
-    path: "/point/withdraw",
-    element: (
-      <LayoutWrapper allowedRoles={["seller"]}>
-        <PointWithdraw />
-      </LayoutWrapper>
-    ),
-  },
-  {
     path: "/mypage",
     element: (
       <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
         <MyPage />
       </LayoutWrapper>
     ),
+    children: [
+      {
+        path: "point",
+      },
+    ],
   },
   {
     path: "/membership",

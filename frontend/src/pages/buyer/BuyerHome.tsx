@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getOrders, type OrderData } from "@/api/order";
+import { getOrders } from "@/api/order";
+import type { OrderData } from "@/types/orderTypes";
 import { useAuth } from "@/context/AuthContext";
 
 interface OrderStats {

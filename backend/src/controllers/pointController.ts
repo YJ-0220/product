@@ -184,35 +184,6 @@ export const createPointChargeRequest = async (req: Request, res: Response) => {
   }
 };
 
-// 사용자의 포인트 충전 신청 목록 조회
-export const getPointChargeRequests = async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-
-  try {
-    const chargeRequests = await prisma.pointChargeRequest.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: {
-        requestedAt: "desc",
-      },
-    });
-
-    res.status(200).json({
-      chargeRequests: chargeRequests.map((request) => ({
-        ...request,
-        requestedAt: request.requestedAt.toISOString(),
-        approvedAt: request.approvedAt?.toISOString(),
-      })),
-    });
-  } catch (error) {
-    console.error("포인트 충전 신청 목록 조회 오류:", error);
-    res.status(500).json({
-      message: "포인트 충전 신청 목록 조회에 실패했습니다.",
-    });
-  }
-};
-
 // 포인트 환전 신청 생성
 export const createPointWithdrawRequest = async (
   req: Request,
@@ -259,16 +230,6 @@ export const createPointWithdrawRequest = async (
       },
     });
 
-    // 포인트 거래 내역 기록
-    await prisma.pointTransaction.create({
-      data: {
-        userId: userId!,
-        amount: amount,
-        type: "withdraw",
-        description: "포인트 환전",
-      },
-    });
-
     // 포인트 잔액 업데이트
     await prisma.point.update({
       where: { userId: userId },
@@ -286,6 +247,35 @@ export const createPointWithdrawRequest = async (
     console.error("포인트 환전 신청 오류:", error);
     res.status(500).json({
       message: "포인트 환전 신청에 실패했습니다.",
+    });
+  }
+};
+
+// 사용자의 포인트 충전 신청 목록 조회
+export const getPointChargeRequests = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  try {
+    const chargeRequests = await prisma.pointChargeRequest.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        requestedAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      chargeRequests: chargeRequests.map((request) => ({
+        ...request,
+        requestedAt: request.requestedAt.toISOString(),
+        approvedAt: request.approvedAt?.toISOString(),
+      })),
+    });
+  } catch (error) {
+    console.error("포인트 충전 신청 목록 조회 오류:", error);
+    res.status(500).json({
+      message: "포인트 충전 신청 목록 조회에 실패했습니다.",
     });
   }
 };

@@ -9,6 +9,7 @@ import {
   getAllPointChargeRequests,
   updatePointChargeRequestStatus,
   updatePointWithdrawRequestStatus,
+  getAllPointWithdrawRequests,
 } from "../controllers/adminController";
 import {
   adminChargePoint,
@@ -32,10 +33,12 @@ router.get("/users", getAllUserList);
 router.delete("/users/:userId/delete", adminDeleteUser);
 
 // 포인트 충전 신청 관리/승인,거절
-router.get("/points/charge", getAllPointChargeRequests);
-router.put("/points/charge/:id", updatePointChargeRequestStatus);
-// router.get("/points/withdraw", getAllPointWithdrawRequests);
-router.put("/points/withdraw/:id", updatePointWithdrawRequestStatus);
+router.get("/points/charge-requests", getAllPointChargeRequests);
+router.put("/points/charge-requests/:id", updatePointChargeRequestStatus);
+
+// 포인트 환전 신청 관리/승인,거절
+router.get("/points/withdraw-requests", getAllPointWithdrawRequests);
+router.put("/points/withdraw-requests/:id", updatePointWithdrawRequestStatus);
 
 // 관리자 포인트 충전/사용자 포인트 충전
 router.post("/charge", adminChargePoint);

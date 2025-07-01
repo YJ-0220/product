@@ -4,7 +4,7 @@ import {
   updateApplication,
 } from "@/api/order";
 import { useState } from "react";
-import { type ApplicationData } from "@/types/orderTypes";
+import type { ApplicationData } from "@/types/orderTypes";
 
 export const useOrderApplicationForm = () => {
   const [applicationForm, setApplicationForm] = useState({
@@ -12,7 +12,9 @@ export const useOrderApplicationForm = () => {
     proposedPrice: "",
     estimatedDelivery: "",
   });
-  const [editingApplicationId, setEditingApplicationId] = useState<string | null>(null);
+  const [editingApplicationId, setEditingApplicationId] = useState<
+    string | null
+  >(null);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -21,9 +23,10 @@ export const useOrderApplicationForm = () => {
     e: React.FormEvent,
     orderId: string,
     setApplications: (applications: ApplicationData[]) => void,
-    setError: (error: string) => void,
+    setError: (error: string) => void
   ) => {
     e.preventDefault();
+
     if (!orderId) return;
 
     try {
@@ -61,7 +64,9 @@ export const useOrderApplicationForm = () => {
     setApplicationForm({
       message: application.message || "",
       proposedPrice: application.proposedPrice?.toString() || "",
-      estimatedDelivery: application.estimatedDelivery ? new Date(application.estimatedDelivery).toISOString().split('T')[0] : "",
+      estimatedDelivery: application.estimatedDelivery
+        ? new Date(application.estimatedDelivery).toISOString().split("T")[0]
+        : "",
     });
     setShowApplicationForm(true);
   };
@@ -84,9 +89,11 @@ export const useOrderApplicationForm = () => {
 
   // 폼 유효성 검사
   const isFormValid = () => {
-    return applicationForm.message.trim().length > 0 || 
-           applicationForm.proposedPrice.trim().length > 0 || 
-           applicationForm.estimatedDelivery.trim().length > 0;
+    return (
+      applicationForm.message.trim().length > 0 ||
+      applicationForm.proposedPrice.trim().length > 0 ||
+      applicationForm.estimatedDelivery.trim().length > 0
+    );
   };
 
   // 신청 상태 관련 유틸리티
@@ -122,7 +129,7 @@ export const useOrderApplicationForm = () => {
     editingApplicationId,
     showApplicationForm,
     submitting,
-    
+
     // 액션
     setApplicationForm,
     handleApplicationSubmit,
@@ -131,7 +138,7 @@ export const useOrderApplicationForm = () => {
     resetForm,
     setShowApplicationForm,
     setEditingApplicationId,
-    
+
     // 유틸리티
     isFormValid,
     getApplicationStatusBadgeClass,

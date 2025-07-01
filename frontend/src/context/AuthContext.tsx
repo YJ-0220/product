@@ -1,12 +1,5 @@
 import { createContext, useContext } from "react";
-
-export interface User {
-  id: string;
-  name: string;
-  role: string;
-  membershipLevel?: string;
-  points?: number;
-}
+import type { User } from "@/types/userTypes";
 
 interface AuthContextType {
   isAuthenticated: boolean;

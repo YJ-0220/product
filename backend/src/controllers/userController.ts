@@ -1,5 +1,4 @@
 import { Request, RequestHandler, Response } from "express";
-import { verifyToken } from "../utils/jwt";
 import { prisma } from "../index";
 
 export const getUserProfile: RequestHandler = async (
@@ -7,15 +6,7 @@ export const getUserProfile: RequestHandler = async (
   res: Response
 ): Promise<void> => {
   try {
-    const token = req.cookies.token;
-
-    if (!token) {
-      res.status(401).json({ message: "인증이 필요합니다." });
-      return;
-    }
-
-    const decoded = verifyToken(token) as { userId: string };
-    const userId = decoded.userId;
+    const userId = req.user?.id;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

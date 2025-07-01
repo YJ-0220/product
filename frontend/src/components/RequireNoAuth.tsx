@@ -10,9 +10,9 @@ export default function RequireNoAuth({ children }: RequireNoAuthProps) {
   const { isAuthenticated, user, loading } = useAuth();
 
   const roleHomeMap: Record<string, string> = {
-    admin: "/admin",
-    seller: "/seller",
-    buyer: "/buyer",
+    admin: "/",
+    seller: "/",
+    buyer: "/",
   };
 
   if (loading) {

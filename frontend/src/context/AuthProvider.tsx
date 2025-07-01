@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 import { getUserProfile } from "@/api/users";
-
-interface User {
-  id: string;
-  name: string;
-  role: string;
-  membershipLevel?: string;
-  points?: number;
-}
+import type { User } from "@/types/userTypes";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {

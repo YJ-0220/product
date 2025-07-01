@@ -1,10 +1,10 @@
 import api from "./axios";
-import {
-  type OrderCategory,
-  type OrderRequestData,
-  type OrderData,
-  type ApplicationData,
-  type CreateApplicationData,
+import type {
+  OrderCategory,
+  OrderRequestData,
+  OrderData,
+  ApplicationData,
+  CreateApplicationData,
 } from "../types/orderTypes";
 
 export const createOrderRequest = async (data: OrderRequestData) => {

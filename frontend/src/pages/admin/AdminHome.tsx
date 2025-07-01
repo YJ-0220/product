@@ -1,104 +1,10 @@
 import { useDashboardStats } from "@/hooks/useAdminDashboardStats";
-import { useState, useEffect } from "react";
-import { getAllPointChargeRequests, updatePointChargeRequest, getAllUsers, chargeUserPoint } from "@/api/admin";
 import { Link } from "react-router-dom";
-
-interface PointChargeRequest {
-  id: string;
-  userId: string;
-  amount: number;
-  status: string;
-  requestedAt: string;
-  approvedAt?: string;
-  user: {
-    name: string;
-  };
-}
-
-interface User {
-  id: string;
-  username: string;
-  role: string;
-  membershipLevel?: string;
-}
+import PointChargeRequest from "@/components/admin/PointChargeRequest";
+import PointWithdrawRequest from "@/components/admin/PointWithdrawRequest";
 
 export default function AdminHome() {
   const { stats } = useDashboardStats();
-  const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showChargeModal, setShowChargeModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [chargeAmount, setChargeAmount] = useState("");
-  const [chargeDescription, setChargeDescription] = useState("");
-  const [charging, setCharging] = useState(false);
-
-  useEffect(() => {
-    fetchChargeRequests();
-    fetchUsers();
-  }, []);
-
-  const fetchChargeRequests = async () => {
-    try {
-      setLoading(true);
-      const response = await getAllPointChargeRequests();
-      setChargeRequests(response.chargeRequests);
-    } catch (error) {
-      console.error("포인트 충전 신청 목록 조회 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const response = await getAllUsers();
-      setUsers(response.users);
-    } catch (error) {
-      console.error("사용자 목록 조회 실패:", error);
-    }
-  };
-
-  const handleUpdateRequest = async (requestId: string, status: 'approved' | 'rejected') => {
-    try {
-      await updatePointChargeRequest(requestId, status);
-      alert(`포인트 충전 신청이 ${status === 'approved' ? '승인' : '거절'}되었습니다.`);
-      fetchChargeRequests(); // 목록 새로고침
-    } catch (error) {
-      console.error("포인트 충전 신청 처리 실패:", error);
-      alert("처리에 실패했습니다.");
-    }
-  };
-
-  const handleChargePoint = async () => {
-    if (!selectedUser || !chargeAmount) {
-      alert("사용자와 충전 금액을 선택해주세요.");
-      return;
-    }
-
-    const amount = Number(chargeAmount);
-    if (isNaN(amount) || amount <= 0) {
-      alert("유효한 금액을 입력해주세요.");
-      return;
-    }
-
-    try {
-      setCharging(true);
-      await chargeUserPoint(selectedUser.id, amount, chargeDescription);
-      alert("포인트 충전이 완료되었습니다.");
-      setShowChargeModal(false);
-      setSelectedUser(null);
-      setChargeAmount("");
-      setChargeDescription("");
-    } catch (error) {
-      console.error("포인트 충전 실패:", error);
-      alert("포인트 충전에 실패했습니다.");
-    } finally {
-      setCharging(false);
-    }
-  };
-
-  const pendingRequests = chargeRequests.filter(req => req.status === 'pending');
 
   return (
     <div className="min-h-screen">
@@ -132,8 +38,8 @@ export default function AdminHome() {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">대기중인 충전 신청</p>
-                <p className="text-3xl font-bold text-gray-900">{pendingRequests.length}</p>
+                <p className="text-sm font-medium text-gray-600">대기중인 신청</p>
+                <p className="text-3xl font-bold text-gray-900">-</p>
               </div>
               <div className="p-3 bg-yellow-100 rounded-full">
                 <svg
@@ -206,61 +112,8 @@ export default function AdminHome() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                포인트 충전 신청
-              </h3>
-              <button 
-                onClick={fetchChargeRequests}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                새로고침
-              </button>
-            </div>
-            {loading ? (
-              <div className="text-center py-4">
-                <p className="text-gray-500">로딩 중...</p>
-              </div>
-            ) : pendingRequests.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">대기중인 충전 신청이 없습니다.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {pendingRequests.slice(0, 5).map((request) => (
-                  <div
-                    key={request.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">{request.user.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {request.amount.toLocaleString()}P 신청
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {new Date(request.requestedAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleUpdateRequest(request.id, 'approved')}
-                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                      >
-                        승인
-                      </button>
-                      <button
-                        onClick={() => handleUpdateRequest(request.id, 'rejected')}
-                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                      >
-                        거절
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <PointChargeRequest />
+          <PointWithdrawRequest />
 
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-4">
@@ -384,10 +237,7 @@ export default function AdminHome() {
               빠른 작업
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => setShowChargeModal(true)}
-                className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
-              >
+              <button className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors">
                 <div className="text-center">
                   <svg
                     className="w-6 h-6 text-blue-600 mx-auto mb-2"
@@ -495,87 +345,7 @@ export default function AdminHome() {
         </div>
       </div>
 
-      {/* 포인트 충전 모달 */}
-      {showChargeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              포인트 충전
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  사용자 선택
-                </label>
-                <select
-                  value={selectedUser?.id || ""}
-                  onChange={(e) => {
-                    const user = users.find(u => u.id === e.target.value);
-                    setSelectedUser(user || null);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">사용자를 선택하세요</option>
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.username} ({user.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  충전 포인트
-                </label>
-                <input
-                  type="number"
-                  value={chargeAmount}
-                  onChange={(e) => setChargeAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="충전할 포인트를 입력하세요"
-                  min="1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  설명 (선택사항)
-                </label>
-                <input
-                  type="text"
-                  value={chargeDescription}
-                  onChange={(e) => setChargeDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="충전 사유를 입력하세요"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowChargeModal(false);
-                  setSelectedUser(null);
-                  setChargeAmount("");
-                  setChargeDescription("");
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleChargePoint}
-                disabled={charging || !selectedUser || !chargeAmount}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-              >
-                {charging ? "충전 중..." : "충전하기"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

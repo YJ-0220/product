@@ -9,9 +9,9 @@ export const getCategories = async (req: Request, res: Response) => {
         id: true,
         name: true,
       },
-      distinct: ['name'],
+      distinct: ["name"],
       orderBy: {
-        id: 'asc',
+        id: "asc",
       },
     });
     res.status(200).json(categories);
@@ -128,28 +128,34 @@ export const createOrderRequest = async (req: Request, res: Response) => {
 // 주문 목록 조회(주문 게시판용)
 export const getOrders = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 10, categoryId, subcategoryId, sortBy = 'latest' } = req.query;
-    
+    const {
+      page = 1,
+      limit = 10,
+      categoryId,
+      subcategoryId,
+      sortBy = "latest",
+    } = req.query;
+
     const skip = (Number(page) - 1) * Number(limit);
-    
+
     // 필터 조건 구성
     const where: any = {};
     if (categoryId) where.categoryId = Number(categoryId);
     if (subcategoryId) where.subcategoryId = Number(subcategoryId);
-    
+
     // 정렬 조건 구성
     let orderBy: any = {};
     switch (sortBy) {
-      case 'deadline':
-        orderBy.deadline = 'asc';
+      case "deadline":
+        orderBy.deadline = "asc";
         break;
-      case 'points':
-        orderBy.requiredPoints = 'desc';
+      case "points":
+        orderBy.requiredPoints = "desc";
         break;
       default:
-        orderBy.createdAt = 'desc';
+        orderBy.createdAt = "desc";
     }
-    
+
     const [orders, total] = await Promise.all([
       prisma.orderRequest.findMany({
         where,
@@ -176,9 +182,9 @@ export const getOrders = async (req: Request, res: Response) => {
       }),
       prisma.orderRequest.count({ where }),
     ]);
-    
+
     res.status(200).json({
-      orders: orders.map(order => ({
+      orders: orders.map((order) => ({
         ...order,
         buyer: { name: order.buyer.username },
         createdAt: order.createdAt.toISOString(),
@@ -198,7 +204,7 @@ export const getOrders = async (req: Request, res: Response) => {
 export const getOrderRequestById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     const order = await prisma.orderRequest.findUnique({
       where: { id },
       include: {
@@ -219,12 +225,12 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
         },
       },
     });
-    
+
     if (!order) {
       res.status(404).json({ error: "주문을 찾을 수 없습니다." });
       return;
     }
-    
+
     res.status(200).json({
       ...order,
       buyer: { name: order.buyer.username },
@@ -242,14 +248,14 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    
+
     // 유효한 상태값인지 확인
-    const validStatuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+    const validStatuses = ["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
     if (!validStatuses.includes(status)) {
       res.status(400).json({ error: "유효하지 않은 상태값입니다." });
       return;
     }
-    
+
     const updatedOrder = await prisma.orderRequest.update({
       where: { id },
       data: { status },
@@ -271,7 +277,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         },
       },
     });
-    
+
     res.status(200).json({
       message: "주문 상태가 성공적으로 변경되었습니다.",
       order: {
@@ -292,7 +298,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
   try {
     const { applicationId } = req.params;
     const { status } = req.body;
-    
+
     const adminId = req.user?.id;
     const adminRole = req.user?.role;
 
@@ -302,7 +308,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
     }
 
     // 유효한 상태값인지 확인
-    const validStatuses = ['PENDING', 'ACCEPTED', 'REJECTED'];
+    const validStatuses = ["PENDING", "ACCEPTED", "REJECTED"];
     if (!validStatuses.includes(status)) {
       res.status(400).json({ error: "유효하지 않은 상태값입니다." });
       return;
@@ -327,7 +333,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
     }
 
     // 권한 확인: 관리자만 상태 변경 가능
-    if (adminRole !== 'admin' && application.orderRequest.buyerId !== adminId) {
+    if (adminRole !== "admin" && application.orderRequest.buyerId !== adminId) {
       res.status(403).json({ error: "상태 변경 권한이 없습니다." });
       return;
     }
@@ -348,10 +354,13 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       });
 
       // 신청이 수락되면 주문 상태를 "진행중"으로 변경
-      if (status === 'ACCEPTED' && application.orderRequest.status === 'PENDING') {
+      if (
+        status === "ACCEPTED" &&
+        application.orderRequest.status === "PENDING"
+      ) {
         await tx.orderRequest.update({
           where: { id: application.orderRequest.id },
-          data: { status: 'IN_PROGRESS' },
+          data: { status: "IN_PROGRESS" },
         });
       }
 
@@ -407,12 +416,12 @@ export const getApplicationsByOrder = async (req: Request, res: Response) => {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     res.status(200).json({
-      applications: applications.map(app => ({
+      applications: applications.map((app) => ({
         ...app,
         seller: { name: app.seller.username },
         createdAt: app.createdAt.toISOString(),
@@ -431,9 +440,10 @@ export const createApplication = async (req: Request, res: Response) => {
   try {
     const { orderRequestId } = req.params;
     const { message, proposedPrice, estimatedDelivery } = req.body;
-    
+
+    // 판매자 아이디 조회
     const sellerId = req.user?.id;
-    
+
     if (!sellerId) {
       res.status(401).json({ error: "판매자 인증이 필요합니다." });
       return;
@@ -448,7 +458,7 @@ export const createApplication = async (req: Request, res: Response) => {
     });
 
     if (existingApplication) {
-      res.status(400).json({ error: "이미 신청한 주문입니다." });
+      res.status(400).json({ error: "이미 신청한 주문이 있습니다." });
       return;
     }
 
@@ -462,7 +472,7 @@ export const createApplication = async (req: Request, res: Response) => {
       return;
     }
 
-    if (orderRequest.status !== 'PENDING') {
+    if (orderRequest.status !== "PENDING") {
       res.status(400).json({ error: "신청 가능한 상태가 아닙니다." });
       return;
     }
@@ -473,7 +483,9 @@ export const createApplication = async (req: Request, res: Response) => {
         sellerId,
         message,
         proposedPrice: proposedPrice ? Number(proposedPrice) : null,
-        estimatedDelivery: estimatedDelivery ? new Date(estimatedDelivery) : null,
+        estimatedDelivery: estimatedDelivery
+          ? new Date(estimatedDelivery)
+          : null,
       },
       include: {
         seller: {
@@ -505,9 +517,9 @@ export const updateApplication = async (req: Request, res: Response) => {
   try {
     const { applicationId } = req.params;
     const { message, proposedPrice, estimatedDelivery } = req.body;
-    
+
     const sellerId = req.user?.id;
-    
+
     if (!sellerId) {
       res.status(401).json({ error: "판매자 인증이 필요합니다." });
       return;
@@ -537,13 +549,13 @@ export const updateApplication = async (req: Request, res: Response) => {
     }
 
     // PENDING 상태인 신청만 수정 가능
-    if (application.status !== 'PENDING') {
+    if (application.status !== "PENDING") {
       res.status(400).json({ error: "대기중인 신청만 수정할 수 있습니다." });
       return;
     }
 
     // 주문이 PENDING 상태인지 확인
-    if (application.orderRequest.status !== 'PENDING') {
+    if (application.orderRequest.status !== "PENDING") {
       res.status(400).json({ error: "신청 가능한 상태가 아닙니다." });
       return;
     }
@@ -553,7 +565,9 @@ export const updateApplication = async (req: Request, res: Response) => {
       data: {
         message,
         proposedPrice: proposedPrice ? Number(proposedPrice) : null,
-        estimatedDelivery: estimatedDelivery ? new Date(estimatedDelivery) : null,
+        estimatedDelivery: estimatedDelivery
+          ? new Date(estimatedDelivery)
+          : null,
       },
       include: {
         seller: {
@@ -577,5 +591,37 @@ export const updateApplication = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "신청 수정 실패" });
+  }
+};
+
+// 판매자 신청 삭제
+export const deleteApplication = async (req: Request, res: Response) => {
+  try {
+    const { applicationId } = req.params;
+
+    const sellerId = req.user?.id;
+
+    const application = await prisma.orderApplication.findUnique({
+      where: { id: applicationId },
+    });
+
+    if (!application) {
+      res.status(404).json({ error: "신청을 찾을 수 없습니다." });
+      return;
+    }
+
+    if (application.sellerId !== sellerId) {
+      res.status(403).json({ error: "자신의 신청만 삭제할 수 있습니다." });
+      return;
+    }
+
+    await prisma.orderApplication.delete({
+      where: { id: applicationId },
+    });
+
+    res.status(200).json({ message: "신청이 성공적으로 삭제되었습니다." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "신청 삭제 실패" });
   }
 };

@@ -171,7 +171,7 @@ export default function SellerHome() {
             판매자 대시보드
           </h1>
           <p className="text-gray-600">
-            안녕하세요, {user?.name}님! 오늘도 좋은 거래 되세요.
+            안녕하세요, {user?.username}님! 오늘도 좋은 거래 되세요.
           </p>
         </div>
 

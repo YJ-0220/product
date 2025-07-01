@@ -5,8 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 
 export const useLogin = () => {
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
-  
+  const { setIsAuthenticated, setUser } = useAuth();
+
   const [error, setError] = useState<string | null>(null);
 
   const login = async (username: string, password: string) => {
@@ -19,6 +19,7 @@ export const useLogin = () => {
       localStorage.setItem("role", role);
 
       setIsAuthenticated(true);
+      setUser(user);
 
       navigate("/");
 

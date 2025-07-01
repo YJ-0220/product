@@ -4,12 +4,12 @@ import BuyerHome from "@/pages/buyer/BuyerHome";
 import SellerHome from "@/pages/seller/SellerHome";
 
 const HomeContent: Record<string, React.ReactNode> = {
-  admin: <AdminHome />,
-  buyer: <BuyerHome />,
-  seller: <SellerHome />,
-};
+    admin: <AdminHome />,
+    buyer: <BuyerHome />,
+    seller: <SellerHome />,
+  };
 
-export const Home = () => {
+export default function Home() {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -22,4 +22,4 @@ export const Home = () => {
   const content = HomeContent[user.role];
 
   return <>{content}</>;
-};
+}

@@ -188,7 +188,7 @@ export default function MyPage() {
                       <label className="block text-sm font-medium text-gray-700">
                         사용자명
                       </label>
-                      <p className="mt-1 text-sm text-gray-900">{user?.name}</p>
+                      <p className="mt-1 text-sm text-gray-900">{user?.username}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">

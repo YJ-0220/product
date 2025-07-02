@@ -22,11 +22,9 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <RequireAuth allowedRoles={["admin", "seller", "buyer"]}>
-        <LayoutWrapper>
-          <Layout />
-        </LayoutWrapper>
-      </RequireAuth>
+      <LayoutWrapper allowedRoles={["admin", "seller", "buyer"]}>
+        <Layout />
+      </LayoutWrapper>
     ),
     children: [
       {

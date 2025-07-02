@@ -32,10 +32,6 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "login",
-        element: <LoginForm />,
-      },
-      {
         path: "point",
         element: (
           <RequireAuth allowedRoles={["buyer", "seller"]}>

@@ -34,11 +34,11 @@ router.delete("/users/:userId/delete", adminDeleteUser);
 
 // 포인트 충전 신청 관리/승인,거절
 router.get("/points/charge-requests", getAllPointChargeRequests);
-router.put("/points/charge-requests/:id", updatePointChargeRequestStatus);
+router.put("/points/charge-requests/:requestId", updatePointChargeRequestStatus);
 
 // 포인트 환전 신청 관리/승인,거절
 router.get("/points/withdraw-requests", getAllPointWithdrawRequests);
-router.put("/points/withdraw-requests/:id", updatePointWithdrawRequestStatus);
+router.put("/points/withdraw-requests/:requestId", updatePointWithdrawRequestStatus);
 
 // 관리자 포인트 충전/사용자 포인트 충전
 router.post("/charge", adminChargePoint);

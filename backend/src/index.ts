@@ -16,7 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.ORIGIN_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
@@ -35,8 +35,6 @@ prisma.$connect()
     console.log("Successfully connected to database");
     app.listen(process.env.PORT, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
-      console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
-      console.log(`process.env.DATABASE_URL: ${process.env.DATABASE_URL}`);
     });
   })
   .catch((error) => {

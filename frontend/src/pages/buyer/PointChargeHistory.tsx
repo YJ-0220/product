@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { PointChargeRequest } from "@/types/pointRequestTypes";
 import { getPointChargeRequests } from "@/api/points";
 
-export default function PointChargeHistoryPage() {
+export default function PointChargeHistory() {
   const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>([]);
   const [loading, setLoading] = useState(false);
 

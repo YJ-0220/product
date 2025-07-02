@@ -14,30 +14,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (isAuthenticated) {
-        try {
-          const res = await getUserProfile();
-          setUser({
-            ...res.user,
-            points: Number(res.points),
-          });
-        } catch (error) {
-          console.error("사용자 정보를 가져오는데 실패했습니다:", error);
-          localStorage.clear();
-          setIsAuthenticated(false);
-        }
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        const res = await getUserProfile();
+        const userData = {
+          ...res.user,
+          points: Number(res.points),
+        };
+
+        setUser(userData);
+        localStorage.setItem("role", userData.role || "");
+      } catch (error) {
+        console.error("사용자 정보를 가져오는데 실패했습니다:", error);
+        localStorage.clear();
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUserInfo();
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      localStorage.setItem("role", user?.role || "");
-    }
-  }, [isAuthenticated, user]);
 
   const logout = () => {
     localStorage.clear();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createPointChargeRequest } from "@/api/points";
 
-export default function PointCharge() {
+export default function PointChargeForm() {
   const [amount, setAmount] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,7 +28,7 @@ export default function PointCharge() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-center text-black mb-4">
         포인트 충전 신청
       </h2>

@@ -24,7 +24,7 @@ export default function Topbar() {
         return (
           <div className="flex flex-col">
             <span className="text-2xl font-bold text-black">
-              환영합니다, {userName}님
+              어서오세요, {userName}님
             </span>
           </div>
         );
@@ -32,7 +32,7 @@ export default function Topbar() {
         return (
           <div className="flex flex-col">
             <span className="text-2xl font-bold text-black">
-              환영합니다, {userName}님
+              환영해요, {userName}님
             </span>
           </div>
         );

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createPointWithdrawRequest } from "@/api/points";
 
-export default function PointWithdraw() {
+export default function PointWithdrawForm() {
   const [amount, setAmount] = useState<string>("");
   const [bankName, setBankName] = useState<string>("");
   const [accountNum, setAccountNum] = useState<string>("");

@@ -17,6 +17,7 @@ import PointChargeForm from "@/components/buyer/PointChargeForm";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
 import RequireAuth from "@/components/RequireAuth";
 import Layout from "@/components/layout/Layout";
+import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,14 @@ export const router = createBrowserRouter([
               </RequireAuth>
             ),
           },
+          {
+            path: "history",
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <PointChargeHistory />
+              </RequireAuth>
+            ),
+          },
         ],
       },
       {
@@ -90,6 +99,14 @@ export const router = createBrowserRouter([
             element: <OrderHistory />,
           },
         ],
+      },
+      {
+        path: "membership",
+        element: (
+          <RequireAuth allowedRoles={["buyer"]}>
+            <Membership />
+          </RequireAuth>
+        ),
       },
       {
         path: "mypage",
@@ -146,14 +163,6 @@ export const router = createBrowserRouter([
         path: "point",
       },
     ],
-  },
-  {
-    path: "/membership",
-    element: (
-      <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
-        <Membership />
-      </LayoutWrapper>
-    ),
   },
   {
     path: "/login",

@@ -31,7 +31,7 @@ export const getUserProfile: RequestHandler = async (
     res.status(200).json({
       user: {
         id: user.id,
-        name: user.username,
+        username: user.username,
         role: user.role,
         membershipLevel: user.membershipLevel,
       },

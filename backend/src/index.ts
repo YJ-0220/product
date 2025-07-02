@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
+import { env } from "./config/env";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import adminRoutes from "./routes/admin";
@@ -16,7 +17,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: env.CLIENT_URL,
     credentials: true,
   })
 );

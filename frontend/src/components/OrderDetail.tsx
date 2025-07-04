@@ -1,5 +1,5 @@
 import { useOrderRequestDetail } from "@/hooks/useOrderRequestDetail";
-import { useOrderApplicationForm } from "@/hooks/useOrderApplicationForm";
+import { useOrderApplicationRequest } from "@/hooks/useOrderApplicationRequest";
 
 export default function OrderDetail() {
   const {
@@ -24,25 +24,13 @@ export default function OrderDetail() {
   } = useOrderRequestDetail();
 
   const {
-    // 상태
-    applicationForm,
-    editingApplicationId,
-    showApplicationForm,
-    submitting,
-
-    // 액션
-    setApplicationForm,
-    handleApplicationSubmit,
-    handleEditApplication,
-    handleCancelEdit,
-    setShowApplicationForm,
-    // setEditingApplicationId,
+    handleDeleteApplication,
+    handleSimpleApplication,
 
     // 유틸리티
-    isFormValid,
     getApplicationStatusBadgeClass,
     getApplicationStatusText,
-  } = useOrderApplicationForm();
+  } = useOrderApplicationRequest();
 
   if (loading) {
     return (
@@ -101,15 +89,7 @@ export default function OrderDetail() {
     <div className="px-8 py-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {order.title}
-          </h1>
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <span>주문 ID: {order.id}</span>
-            <span>생성일: {formatDate(order.createdAt)}</span>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{order.title}</h1>
         <div className="flex items-center space-x-4">
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClass(
@@ -128,9 +108,7 @@ export default function OrderDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* 메인 컨텐츠 */}
         <div className="lg:col-span-2 space-y-6">
-          {/* 주문 정보 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               주문 정보
@@ -169,7 +147,6 @@ export default function OrderDetail() {
             </div>
           </div>
 
-          {/* 판매자 신청 목록 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -177,115 +154,20 @@ export default function OrderDetail() {
               </h2>
               {user?.role === "seller" && order.status === "PENDING" && (
                 <button
-                  onClick={() => setShowApplicationForm(!showApplicationForm)}
+                  onClick={() => handleSimpleApplication(
+                    order.id,
+                    order.requiredPoints,
+                    applications,
+                    user?.id || '',
+                    refreshData
+                  )}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 >
-                  {showApplicationForm ? "취소" : "신청하기"}
+                  신청하기
                 </button>
               )}
             </div>
 
-            {/* 신청 폼 */}
-            {showApplicationForm && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  {editingApplicationId ? "신청 수정" : "신청하기"}
-                </h3>
-                <form
-                  onSubmit={(e) =>
-                    handleApplicationSubmit(
-                      e,
-                      order.id,
-                      () => {
-                        refreshData();
-                      },
-                      (error) => {
-                        console.error(error);
-                      }
-                    )
-                  }
-                  className="space-y-4"
-                >
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      메시지
-                    </label>
-                    <textarea
-                      value={applicationForm.message}
-                      onChange={(e) =>
-                        setApplicationForm((prev) => ({
-                          ...prev,
-                          message: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={3}
-                      placeholder="구매자에게 전달할 메시지를 입력하세요..."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        제안 가격 (선택사항)
-                      </label>
-                      <input
-                        type="number"
-                        value={applicationForm.proposedPrice}
-                        onChange={(e) =>
-                          setApplicationForm((prev) => ({
-                            ...prev,
-                            proposedPrice: e.target.value,
-                          }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="제안 가격을 입력하세요"
-                        min="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        예상 배송일 (선택사항)
-                      </label>
-                      <input
-                        type="date"
-                        value={applicationForm.estimatedDelivery}
-                        onChange={(e) =>
-                          setApplicationForm((prev) => ({
-                            ...prev,
-                            estimatedDelivery: e.target.value,
-                          }))
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={handleCancelEdit}
-                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
-                    >
-                      취소
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting || !isFormValid()}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-                    >
-                      {submitting
-                        ? "제출 중..."
-                        : editingApplicationId
-                        ? "수정 완료"
-                        : "신청 제출"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* 신청 목록 */}
             {applications.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
                 아직 신청한 판매자가 없습니다.
@@ -314,16 +196,23 @@ export default function OrderDetail() {
                         <span className="text-sm text-gray-500">
                           {formatDate(application.createdAt)}
                         </span>
-                        {/* 판매자가 자신의 PENDING 신청을 수정할 수 있음 */}
                         {user?.role === "seller" &&
                           user?.id === application.sellerId &&
                           application.status === "PENDING" &&
                           order?.status === "PENDING" && (
                             <button
-                              onClick={() => handleEditApplication(application)}
-                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                              onClick={() =>
+                                handleDeleteApplication(
+                                  application.id,
+                                  order.id,
+                                  () => {
+                                    refreshData();
+                                  }
+                                )
+                              }
+                              className="text-red-600 hover:text-red-700 text-sm font-medium"
                             >
-                              수정
+                              삭제
                             </button>
                           )}
                       </div>
@@ -334,27 +223,6 @@ export default function OrderDetail() {
                         {application.message}
                       </p>
                     )}
-
-                    <div className="space-y-1 text-sm">
-                      {application.proposedPrice && (
-                        <div>
-                          <span className="text-gray-600">제안 가격:</span>
-                          <span className="ml-2 font-medium">
-                            {application.proposedPrice.toLocaleString()}P
-                          </span>
-                        </div>
-                      )}
-                      {application.estimatedDelivery && (
-                        <div>
-                          <span className="text-gray-600">예상 배송일:</span>
-                          <span className="ml-2 font-medium">
-                            {formatDate(application.estimatedDelivery)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 구매자/관리자용 상태 변경 버튼 */}
                     {(user?.role === "admin" || user?.id === order.buyerId) &&
                       application.status === "PENDING" && (
                         <div className="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200">
@@ -391,9 +259,7 @@ export default function OrderDetail() {
           </div>
         </div>
 
-        {/* 사이드바 */}
         <div className="space-y-6">
-          {/* 구매자 정보 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               구매자 정보
@@ -407,14 +273,13 @@ export default function OrderDetail() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  구매자 ID
+                  생성일
                 </label>
-                <p className="text-gray-900 text-sm">{order.buyerId}</p>
+                <p className="text-gray-900">{formatDate(order.createdAt)}</p>
               </div>
             </div>
           </div>
 
-          {/* 카테고리 정보 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               카테고리 정보
@@ -435,7 +300,6 @@ export default function OrderDetail() {
             </div>
           </div>
 
-          {/* 관리자용 상태 변경 */}
           {user?.role === "admin" && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">

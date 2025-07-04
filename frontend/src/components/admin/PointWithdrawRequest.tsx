@@ -34,7 +34,7 @@ export default function PointWithdrawRequest() {
     }
   };
 
-  const pendingRequests = withdrawRequests.filter(req => req.status === 'pending');
+  const pendingRequests = withdrawRequests.filter(req => req.status === 'pending').slice(0, 3);
 
   if (loading) {
     return (

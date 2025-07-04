@@ -86,19 +86,30 @@ model PointChargeRequest {
   user       User     @relation(fields: [userId], references: [id])
 }
 
+model Bank {
+  @@schema("app")
+
+  id                String @id @default(dbgenerated("gen_random_uuid()"))
+  name              String @unique
+  accountNumLength  Int
+
+  withdrawRequests  PointWithdrawRequest[] @relation("BankWithdrawRequests")
+}
+
 model PointWithdrawRequest {
   @@schema("app")
 
   id           String   @id @default(dbgenerated("gen_random_uuid()"))
   userId       String
-  amount       Int
-  bankName     String
+  bankId       String
   accountNum   String
-  status       String   @default("pending") // 'pending', 'completed', 'rejected'
+  amount       Int
+  status       String   @default("pending")
   requestedAt  DateTime @default(now())
   processedAt  DateTime?
 
   user         User     @relation(fields: [userId], references: [id])
+  bank         Bank     @relation("BankWithdrawRequests", fields: [bankId], references: [id])
 }
 
 enum OrderStatus {

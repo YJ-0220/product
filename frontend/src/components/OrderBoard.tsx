@@ -41,11 +41,11 @@ export default function OrderBoard() {
   const getStatusText = (status: string) => {
     switch (status) {
       case "PENDING":
-        return "요청 중";
+        return "대기 중";
       case "IN_PROGRESS":
         return "진행 중";
       case "COMPLETED":
-        return "진행 완료";
+        return "완료됨";
       case "CANCELLED":
         return "취소됨";
       default:

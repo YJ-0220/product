@@ -3,7 +3,7 @@ import { createOrderRequest } from "@/api/order";
 import { useNavigate } from "react-router-dom";
 import type { OrderRequestData } from "@/types/orderTypes";
 
-export function useOrderRequestForm() {
+export function useOrderRequest() {
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);

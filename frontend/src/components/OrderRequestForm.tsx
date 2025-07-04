@@ -1,4 +1,4 @@
-import { useOrderRequestForm } from "@/hooks/useOrderRequestForm";
+import { useOrderRequest } from "@/hooks/useOrderRequest";
 import { useCategories } from "@/hooks/useCategories";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
@@ -51,7 +51,7 @@ const FormInput = ({ label, name, value, onChange, type = "text", rows, options 
 );
 
 export default function OrderRequestForm() {
-  const { formData, error, isSubmitting, handleChange, handleSubmit } = useOrderRequestForm();
+  const { formData, error, isSubmitting, handleChange, handleSubmit } = useOrderRequest();
   const { categories, subcategories, fetchSubcategories } = useCategories();
   const { loading } = useAuth();
 

@@ -117,60 +117,6 @@ export default function AdminHome() {
 
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                최근 가입자
-              </h3>
-              <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                전체보기
-              </button>
-            </div>
-            <div className="space-y-4">
-              {[
-                {
-                  name: "김철수",
-                  email: "kim@example.com",
-                  role: "구매자",
-                  time: "2시간 전",
-                },
-                {
-                  name: "이영희",
-                  email: "lee@example.com",
-                  role: "판매자",
-                  time: "5시간 전",
-                },
-                {
-                  name: "박민수",
-                  email: "park@example.com",
-                  role: "구매자",
-                  time: "1일 전",
-                },
-              ].map((user, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                      {user.name[0]}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-700">
-                      {user.role}
-                    </p>
-                    <p className="text-xs text-gray-500">{user.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">최근 주문</h3>
               <Link to="/order" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                 전체보기

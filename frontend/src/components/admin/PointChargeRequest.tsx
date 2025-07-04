@@ -34,7 +34,7 @@ export default function PointChargeRequest() {
     }
   };
 
-  const pendingRequests = chargeRequests.filter(req => req.status === 'pending');
+  const pendingRequests = chargeRequests.filter(req => req.status === 'pending').slice(0, 3);
 
   if (loading) {
     return (

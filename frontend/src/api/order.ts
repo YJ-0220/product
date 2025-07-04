@@ -92,3 +92,10 @@ export const updateApplicationStatus = async (
   });
   return res.data.application;
 };
+
+export const deleteApplication = async (
+  applicationId: string
+): Promise<ApplicationData> => {
+  const res = await api.delete(`/order/applications/${applicationId}`);
+  return res.data.application;
+};

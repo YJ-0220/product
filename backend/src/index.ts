@@ -36,7 +36,6 @@ prisma.$connect()
     app.listen(env.PORT, () => {
       console.log(`Server is running on port ${env.PORT}`);
       console.log(`Client URL: ${env.CLIENT_URL}`);
-      console.log(`Database URL: ${env.DATABASE_URL}`);
     });
   })
   .catch((error) => {

@@ -1,11 +1,10 @@
 import api from "./axios";
 import type {
   OrderCategory,
-  OrderRequestData,
   OrderData,
   ApplicationData,
-  CreateApplicationData,
 } from "../types/orderTypes";
+import type { OrderRequestData, CreateApplicationData } from "@/types/formTypes";
 
 export const createOrderRequest = async (data: OrderRequestData) => {
   const res = await api.post("/order/request", data);

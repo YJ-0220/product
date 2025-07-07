@@ -1,11 +1,26 @@
-import { useState } from "react";
-import { createPointWithdrawRequest } from "@/api/points";
+import { useState, useEffect } from "react";
+import { createPointWithdrawRequest, getBanks } from "@/api/points";
+import type { Bank } from "@/types/pointRequestTypes";
 
 export default function PointWithdrawForm() {
   const [amount, setAmount] = useState<string>("");
-  const [bankName, setBankName] = useState<string>("");
+  const [bankId, setBankId] = useState<string>("");
   const [accountNum, setAccountNum] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [banks, setBanks] = useState<Bank[]>([]);
+
+  useEffect(() => {
+    fetchBanks();
+  }, []);
+
+  const fetchBanks = async () => {
+    try {
+      const response = await getBanks();
+      setBanks(response.banks || []);
+    } catch (error) {
+      console.error("은행 목록 조회 실패:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,16 +31,26 @@ export default function PointWithdrawForm() {
       return;
     }
 
+    if (!bankId) {
+      alert("은행을 선택해주세요.");
+      return;
+    }
+
+    if (!accountNum.trim()) {
+      alert("계좌번호를 입력해주세요.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const response = await createPointWithdrawRequest({
         amount: pointAmount,
-        bankName,
+        bankId,
         accountNum,
       });
       alert(response.message);
       setAmount("");
-      setBankName("");
+      setBankId("");
       setAccountNum("");
     } catch (error) {
       console.error("포인트 환전 신청 실패:", error);
@@ -56,12 +81,18 @@ export default function PointWithdrawForm() {
           <label className="block text-sm font-semibold text-gray-900">
             은행명
           </label>
-          <input
-            type="text"
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
+          <select
+            value={bankId}
+            onChange={(e) => setBankId(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-          />
+          >
+            <option value="">은행을 선택해주세요</option>
+            {banks.map((bank) => (
+              <option key={bank.id} value={bank.id}>
+                {bank.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-semibold text-gray-900">

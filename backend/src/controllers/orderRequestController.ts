@@ -84,9 +84,9 @@ export const createOrderRequest = async (req: Request, res: Response) => {
           title,
           description,
           desiredQuantity,
-          deadline: new Date(deadline),
+          deadline: deadline ? new Date(deadline) : null,
           requiredPoints,
-          status: "PENDING",
+          status: "pending",
         },
       });
 
@@ -184,12 +184,12 @@ export const getOrders = async (req: Request, res: Response) => {
     ]);
 
     res.status(200).json({
-      orders: orders.map((order) => ({
-        ...order,
-        buyer: { name: order.buyer.username },
-        createdAt: order.createdAt.toISOString(),
-        deadline: order.deadline.toISOString(),
-      })),
+              orders: orders.map((order) => ({
+          ...order,
+          buyer: { name: order.buyer.username },
+          createdAt: order.createdAt.toISOString(),
+          deadline: order.deadline?.toISOString() || null,
+        })),
       total,
       page: Number(page),
       limit: Number(limit),
@@ -235,7 +235,7 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
       ...order,
       buyer: { name: order.buyer.username },
       createdAt: order.createdAt.toISOString(),
-      deadline: order.deadline.toISOString(),
+      deadline: order.deadline?.toISOString() || null,
     });
   } catch (error) {
     console.error(error);
@@ -284,7 +284,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         ...updatedOrder,
         buyer: { name: updatedOrder.buyer.username },
         createdAt: updatedOrder.createdAt.toISOString(),
-        deadline: updatedOrder.deadline.toISOString(),
+        deadline: updatedOrder.deadline?.toISOString() || null,
       },
     });
   } catch (error) {
@@ -356,11 +356,11 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       // 신청이 수락되면 주문 상태를 "진행중"으로 변경
       if (
         status === "ACCEPTED" &&
-        application.orderRequest.status === "PENDING"
+        application.orderRequest.status === "pending"
       ) {
         await tx.orderRequest.update({
           where: { id: application.orderRequest.id },
-          data: { status: "IN_PROGRESS" },
+          data: { status: "progress" },
         });
       }
 
@@ -472,7 +472,7 @@ export const createApplication = async (req: Request, res: Response) => {
       return;
     }
 
-    if (orderRequest.status !== "PENDING") {
+    if (orderRequest.status !== "pending") {
       res.status(400).json({ error: "신청 가능한 상태가 아닙니다." });
       return;
     }
@@ -549,13 +549,13 @@ export const updateApplication = async (req: Request, res: Response) => {
     }
 
     // PENDING 상태인 신청만 수정 가능
-    if (application.status !== "PENDING") {
+    if (application.status !== "pending") {
       res.status(400).json({ error: "대기중인 신청만 수정할 수 있습니다." });
       return;
     }
 
     // 주문이 PENDING 상태인지 확인
-    if (application.orderRequest.status !== "PENDING") {
+    if (application.orderRequest.status !== "pending") {
       res.status(400).json({ error: "신청 가능한 상태가 아닙니다." });
       return;
     }

@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { createOrderRequest } from "@/api/order";
-import { useNavigate } from "react-router-dom";
-import type { OrderRequestData } from "@/types/orderTypes";
+import type { OrderRequestData } from "@/types/formTypes";
 
 export function useOrderRequest() {
-  const navigate = useNavigate();
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState<OrderRequestData>({
+  const initialFormData: OrderRequestData = {
     categoryId: 0,
     subcategoryId: 0,
     title: "",
     description: "",
-    desiredQuantity: 0,
-    requiredPoints: 0,
+    desiredQuantity: "",
+    requiredPoints: "",
     deadline: "",
-  });
+  };
+
+  const [formData, setFormData] = useState<OrderRequestData>(initialFormData);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -40,16 +40,11 @@ export function useOrderRequest() {
         };
       }
 
+      // 숫자 필드들
+      const numberFields = ["categoryId", "subcategoryId", "desiredQuantity", "requiredPoints"];
       return {
         ...prev,
-        [name]: [
-          "categoryId",
-          "subcategoryId",
-          "desiredQuantity",
-          "requiredPoints",
-        ].includes(name)
-          ? Number(value)
-          : value,
+        [name]: numberFields.includes(name) ? Number(value) : value,
       };
     });
   };
@@ -62,8 +57,7 @@ export function useOrderRequest() {
       { condition: !formData.categoryId, message: "카테고리를 선택해주세요." },
       { condition: !formData.subcategoryId, message: "하위 카테고리를 선택해주세요." },
       { condition: !formData.title.trim(), message: "제목을 입력해주세요." },
-      { condition: formData.desiredQuantity <= 0, message: "수량을 입력해주세요." },
-      { condition: !formData.deadline, message: "마감일을 선택해주세요." },
+      { condition: Number(formData.desiredQuantity) <= 0, message: "수량을 입력해주세요." },
     ];
 
     const firstError = validations.find(validation => validation.condition);
@@ -77,18 +71,12 @@ export function useOrderRequest() {
       setError("");
       
       await createOrderRequest(formData);
-      navigate("/order/success");
-      
+
       // 폼 초기화
-      setFormData({
-        categoryId: 0,
-        subcategoryId: 0,
-        title: "",
-        description: "",
-        desiredQuantity: 0,
-        requiredPoints: 0,
-        deadline: "",
-      });
+      setFormData(initialFormData);
+      
+      // 새로고침 후 성공 페이지로 이동
+      window.location.href = "/order/success";
     } catch (error: any) {
       // 서버에서 오는 에러 메시지 처리
       const errorMessage = error?.response?.data?.message || "주문 요청에 실패했습니다. 다시 시도해주세요.";

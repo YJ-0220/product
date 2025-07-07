@@ -4,16 +4,6 @@ export interface OrderCategory {
   parentId: number | null;
 }
 
-export interface OrderRequestData {
-  categoryId: number;
-  subcategoryId: number;
-  title: string;
-  description: string;
-  desiredQuantity: number;
-  requiredPoints: number;
-  deadline: string;
-}
-
 export interface OrderData {
   id: string;
   categoryId: number;
@@ -34,7 +24,7 @@ export interface OrderData {
   subcategory: {
     name: string;
   };
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  status: "pending" | "progress" | "completed" | "cancelled";
 }
 
 export interface ApplicationData {
@@ -44,16 +34,10 @@ export interface ApplicationData {
   message?: string;
   proposedPrice?: number;
   estimatedDelivery?: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  status: "pending" | "accepted" | "rejected" | "cancelled";
   createdAt: string;
   updatedAt: string;
   seller: {
     name: string;
   };
-}
-
-export interface CreateApplicationData {
-  message?: string;
-  proposedPrice?: number;
-  estimatedDelivery?: string;
 }

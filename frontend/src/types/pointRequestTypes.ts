@@ -5,7 +5,7 @@ export interface PointChargeRequest {
   status: string;
   requestedAt: string;
   approvedAt?: string;
-  user: {
+  user?: {
     name: string;
   };
 }
@@ -14,10 +14,19 @@ export interface PointWithdrawRequest {
   id: string;
   userId: string;
   amount: number;
+  bankId: string;
+  bankName: string;
+  accountNum: string;
   status: string;
   requestedAt: string;
   processedAt?: string;
-  user: {
+  user?: {
     name: string;
   };
+}
+
+export interface Bank {
+  id: string;
+  name: string;
+  accountNumLength?: number;
 }

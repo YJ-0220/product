@@ -119,7 +119,7 @@ export default function PointWithdrawRequest() {
       {withdrawRequests.length > 0 && (
         <div className="mt-4 pt-4 border-t">
           <p className="text-sm text-gray-500">
-            총 {withdrawRequests.length}건의 신청 중 {pendingRequests.length}건 대기중
+            총 {pendingRequests.length}건 대기중
           </p>
         </div>
       )}

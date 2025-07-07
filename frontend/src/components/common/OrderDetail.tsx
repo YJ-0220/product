@@ -3,21 +3,16 @@ import { useOrderApplicationRequest } from "@/hooks/useOrderApplicationRequest";
 
 export default function OrderDetail() {
   const {
-    // 상태
     order,
     applications,
     loading,
     error,
     updating,
     user,
-
-    // 액션
     handleOrderStatusUpdate,
     handleApplicationStatusUpdate,
     refreshData,
     navigate,
-
-    // 유틸리티
     getStatusBadgeClass,
     getStatusText,
     formatDate,
@@ -26,8 +21,6 @@ export default function OrderDetail() {
   const {
     handleDeleteApplication,
     handleSimpleApplication,
-
-    // 유틸리티
     getApplicationStatusBadgeClass,
     getApplicationStatusText,
   } = useOrderApplicationRequest();
@@ -87,7 +80,6 @@ export default function OrderDetail() {
 
   return (
     <div className="px-8 py-6">
-      {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{order.title}</h1>
         <div className="flex items-center space-x-4">
@@ -142,7 +134,9 @@ export default function OrderDetail() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   마감일
                 </label>
-                <p className="text-gray-900">{formatDate(order.deadline)}</p>
+                <p className="text-gray-900">
+                  {order.deadline ? formatDate(order.deadline) : "마감일 없음"}
+                </p>
               </div>
             </div>
           </div>
@@ -152,7 +146,7 @@ export default function OrderDetail() {
               <h2 className="text-xl font-semibold text-gray-900">
                 판매자 신청 ({applications.length})
               </h2>
-              {user?.role === "seller" && order.status === "PENDING" && (
+              {user?.role === "seller" && order.status === "pending" && (
                 <button
                   onClick={() => handleSimpleApplication(
                     order.id,
@@ -198,8 +192,8 @@ export default function OrderDetail() {
                         </span>
                         {user?.role === "seller" &&
                           user?.id === application.sellerId &&
-                          application.status === "PENDING" &&
-                          order?.status === "PENDING" && (
+                          application.status === "pending" &&
+                          order?.status === "pending" && (
                             <button
                               onClick={() =>
                                 handleDeleteApplication(
@@ -224,13 +218,13 @@ export default function OrderDetail() {
                       </p>
                     )}
                     {(user?.role === "admin" || user?.id === order.buyerId) &&
-                      application.status === "PENDING" && (
+                      application.status === "pending" && (
                         <div className="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200">
                           <button
                             onClick={() =>
                               handleApplicationStatusUpdate(
                                 application.id,
-                                "REJECTED"
+                                "rejected"
                               )
                             }
                             disabled={updating}
@@ -242,7 +236,7 @@ export default function OrderDetail() {
                             onClick={() =>
                               handleApplicationStatusUpdate(
                                 application.id,
-                                "ACCEPTED"
+                                "accepted"
                               )
                             }
                             disabled={updating}
@@ -306,7 +300,7 @@ export default function OrderDetail() {
                 상태 관리
               </h2>
               <div className="space-y-3">
-                {["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"].map(
+                {["pending", "progress", "completed", "cancelled"].map(
                   (status) => (
                     <button
                       key={status}

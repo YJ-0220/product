@@ -93,15 +93,23 @@ async function main() {
     });
   }
 
+  // 은행 데이터 미리 넣기
+  await prisma.bank.createMany({
+    data: [
+      { name: "국민은행"},
+      { name: "신한은행"},
+      { name: "우리은행"},
+      { name: "하나은행"},
+      { name: "카카오뱅크"},
+    ],
+    skipDuplicates: true,
+  });
+
   console.log("시드 데이터가 성공적으로 생성되었습니다.");
-  console.log("관리자 계정이 생성되었습니다:", admin.username);
-  console.log("비밀번호:", adminPassword);
-  console.log("구매자 계정이 생성되었습니다:", buyer.username);
-  console.log("비밀번호:", buyerPassword);
-  console.log("판매자 계정이 생성되었습니다:", seller.username);
-  console.log("비밀번호:", sellerPassword);
+  console.log("모든 아이디가 생성되었습니다.");
   console.log("카테고리 데이터가 성공적으로 생성되었습니다.");
   console.log("서브카테고리 데이터가 성공적으로 생성되었습니다.");
+  console.log("✅ 은행 시드 완료");
   console.log("모든 데이터가 성공적으로 생성되었습니다.");
 }
 

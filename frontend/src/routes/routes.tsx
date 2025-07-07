@@ -1,23 +1,23 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Home from "@/pages/Home";
+import RequireAuth from "@/components/RequireAuth";
 import RequireNoAuth from "@/components/RequireNoAuth";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
-import LoginForm from "@/pages/common/Login";
-import NotFound from "@/pages/common/NotFound";
-import OrderSuccess from "@/pages/buyer/OrderSuccess";
-import OrderHistory from "@/pages/common/OrderHistory";
-import Order from "@/pages/common/Order";
-import OrderBoard from "@/components/OrderBoard";
-import OrderDetail from "@/components/OrderDetail";
-import OrderRequest from "@/pages/buyer/OrderRequest";
+import Layout from "@/components/layout/Layout";
+import Home from "@/pages/Home";
 import MyPage from "@/pages/common/MyPage";
 import Membership from "@/pages/common/Membership";
 import PointPage from "@/pages/common/PointPage";
+import LoginForm from "@/pages/common/Login";
+import Order from "@/pages/common/Order";
+import OrderBoard from "@/components/common/OrderBoard";
+import OrderDetail from "@/components/common/OrderDetail";
+import OrderRequest from "@/pages/buyer/OrderRequest";
+import OrderSuccess from "@/pages/buyer/OrderSuccess";
+import OrderHistory from "@/pages/common/OrderHistory";
+import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 import PointChargeForm from "@/components/buyer/PointChargeForm";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
-import RequireAuth from "@/components/RequireAuth";
-import Layout from "@/components/layout/Layout";
-import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
+import NotFound from "@/pages/common/NotFound";
 
 export const router = createBrowserRouter([
   {

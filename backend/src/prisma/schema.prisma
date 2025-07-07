@@ -1,187 +1,183 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   schemas  = ["app"]
 }
 
-generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
-}
-
-enum UserRole {
-  @@schema("app")
-  buyer
-  seller
-  admin
-}
-
-enum MembershipLevel {
-  @@schema("app")
-  bronze
-  silver
-  gold
-  platinum
-  vip
-}
-
 model User {
+  id                    String                 @id @default(dbgenerated("gen_random_uuid()"))
+  username              String                 @unique
+  password              String
+  role                  UserRole
+  membershipLevel       MembershipLevel?       @map("membership_level")
+  applications          OrderApplication[]     @relation("UserApplications")
+  orderRequests         OrderRequest[]         @relation("UserOrderRequests")
+  point                 Point?
+  pointChargeRequests   PointChargeRequest[]
+  pointTransactions     PointTransaction[]
+  pointWithdrawRequests PointWithdrawRequest[]
+
   @@schema("app")
-
-  id              String   @id @default(dbgenerated("gen_random_uuid()"))
-  username        String   @unique
-  password        String
-  role            UserRole
-  membershipLevel MembershipLevel?  @map("membership_level")
-
-  orderRequests           OrderRequest[]         @relation("UserOrderRequests")
-  applications            OrderApplication[]     @relation("UserApplications")
-  point                   Point?
-  pointTransactions       PointTransaction[]
-  pointChargeRequests     PointChargeRequest[]
-  pointWithdrawRequests   PointWithdrawRequest[]
 }
 
 model Point {
-  @@schema("app")
-
   userId  String @id
   balance Int
-
   user    User   @relation(fields: [userId], references: [id])
-}
 
-enum PointTransactionType {
   @@schema("app")
-  charge
-  earn
-  spend
-  withdraw
-  admin_adjust
 }
 
 model PointTransaction {
-  @@schema("app")
-
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId     String
-  type       PointTransactionType
-  amount     Int
-  createdAt  DateTime @default(now())
+  id          String               @id @default(dbgenerated("gen_random_uuid()"))
+  userId      String
+  type        PointTransactionType
+  amount      Int
+  createdAt   DateTime             @default(now())
   description String?
+  user        User                 @relation(fields: [userId], references: [id])
 
-  user       User     @relation(fields: [userId], references: [id])
+  @@schema("app")
 }
 
 model PointChargeRequest {
-  @@schema("app")
-
-  id         String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId     String
-  amount     Int
-  status     String   @default("pending") // 'pending', 'approved', 'rejected'
-  requestedAt DateTime @default(now())
+  id          String    @id @default(dbgenerated("gen_random_uuid()"))
+  userId      String
+  amount      Int
+  status      String    @default("pending")
+  requestedAt DateTime  @default(now())
   approvedAt  DateTime?
+  user        User      @relation(fields: [userId], references: [id])
 
-  user       User     @relation(fields: [userId], references: [id])
+  @@schema("app")
 }
 
 model Bank {
-  @@schema("app")
-
-  id                String @id @default(dbgenerated("gen_random_uuid()"))
-  name              String @unique
-  accountNumLength  Int
-
+  id                String                 @id @default(dbgenerated("gen_random_uuid()"))
+  name              String                 @unique
+  accountNumLength  Int?
   withdrawRequests  PointWithdrawRequest[] @relation("BankWithdrawRequests")
+
+  @@schema("app")
 }
 
 model PointWithdrawRequest {
+  id          String    @id @default(dbgenerated("gen_random_uuid()"))
+  userId      String
+  bankId      String
+  accountNum  String
+  amount      Int
+  status      String    @default("pending")
+  requestedAt DateTime  @default(now())
+  processedAt DateTime?
+  bank        Bank      @relation("BankWithdrawRequests", fields: [bankId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
   @@schema("app")
-
-  id           String   @id @default(dbgenerated("gen_random_uuid()"))
-  userId       String
-  bankId       String
-  accountNum   String
-  amount       Int
-  status       String   @default("pending")
-  requestedAt  DateTime @default(now())
-  processedAt  DateTime?
-
-  user         User     @relation(fields: [userId], references: [id])
-  bank         Bank     @relation("BankWithdrawRequests", fields: [bankId], references: [id])
-}
-
-enum OrderStatus {
-  @@schema("app")
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum ApplicationStatus {
-  @@schema("app")
-  PENDING   @map("pending")
-  ACCEPTED  @map("accepted")
-  REJECTED  @map("rejected")
 }
 
 model OrderRequest {
-  @@schema("app")
-
-  id              String   @id @default(dbgenerated("gen_random_uuid()"))
+  id              String             @id @default(dbgenerated("gen_random_uuid()"))
   buyerId         String
   categoryId      Int
   subcategoryId   Int
   title           String
   description     String?
   desiredQuantity Int
-  deadline        DateTime
+  deadline        DateTime?
   requiredPoints  Int
-  status          OrderStatus
-  createdAt       DateTime @default(now())
-
-  buyer           User        @relation("UserOrderRequests", fields: [buyerId], references: [id])
-  category        Category    @relation(fields: [categoryId], references: [id])
-  subcategory     Subcategory @relation(fields: [subcategoryId], references: [id])
+  status          OrderStatus        @default(pending)
+  createdAt       DateTime           @default(now())
   applications    OrderApplication[]
+  buyer           User               @relation("UserOrderRequests", fields: [buyerId], references: [id])
+  category        Category           @relation(fields: [categoryId], references: [id])
+  subcategory     Subcategory        @relation(fields: [subcategoryId], references: [id])
+
+  @@schema("app")
 }
 
 model OrderApplication {
-  @@schema("app")
-
-  id              String   @id @default(dbgenerated("gen_random_uuid()"))
-  orderRequestId  String
-  sellerId        String
-  message         String?
-  proposedPrice   Int?
+  id                String            @id @default(dbgenerated("gen_random_uuid()"))
+  orderRequestId    String
+  sellerId          String
+  message           String?
+  proposedPrice     Int?
   estimatedDelivery DateTime?
-  status          ApplicationStatus @default(PENDING)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  status            ApplicationStatus @default(pending)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  orderRequest      OrderRequest      @relation(fields: [orderRequestId], references: [id], onDelete: Cascade)
+  seller            User              @relation("UserApplications", fields: [sellerId], references: [id])
 
-  orderRequest    OrderRequest @relation(fields: [orderRequestId], references: [id], onDelete: Cascade)
-  seller          User         @relation("UserApplications", fields: [sellerId], references: [id])
+  @@schema("app")
 }
 
 model Category {
-  @@schema("app")
-
-  id            Int           @id @default(autoincrement())
-  name          String        @unique
-
-  subcategories Subcategory[] @relation("CategoryToSub")
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
   orderRequests OrderRequest[]
+  subcategories Subcategory[]  @relation("CategoryToSub")
+
+  @@schema("app")
 }
 
 model Subcategory {
-  @@schema("app")
-
-  id        Int      @id @default(autoincrement())
-  name      String
-  parentId  Int
-
-  parent    Category @relation("CategoryToSub", fields: [parentId], references: [id])
+  id            Int            @id @default(autoincrement())
+  name          String
+  parentId      Int
   orderRequests OrderRequest[]
+  parent        Category       @relation("CategoryToSub", fields: [parentId], references: [id])
+
+  @@schema("app")
+}
+
+enum UserRole {
+  buyer
+  seller
+  admin
+
+  @@schema("app")
+}
+
+enum MembershipLevel {
+  bronze
+  silver
+  gold
+  platinum
+  vip
+
+  @@schema("app")
+}
+
+enum PointTransactionType {
+  charge
+  earn
+  spend
+  withdraw
+  admin_adjust
+
+  @@schema("app")
+}
+
+enum OrderStatus {
+  pending
+  progress
+  completed
+  cancelled
+
+  @@schema("app")
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+  cancelled
+
+  @@schema("app")
 }

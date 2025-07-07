@@ -15,7 +15,7 @@ export const createPointChargeRequest = async (amount: number) => {
 // 포인트 환전 신청
 export const createPointWithdrawRequest = async (data: {
   amount: number;
-  bankName: string;
+  bankId: string;
   accountNum: string;
 }) => {
   const response = await api.post("/points/withdraw-requests", data);
@@ -31,6 +31,12 @@ export const getPointChargeRequests = async () => {
 // 포인트 환전 신청 목록 조회
 export const getPointWithdrawRequests = async () => {
   const response = await api.get("/points/withdraw-requests");
+  return response.data;
+};
+
+// 은행 목록 조회
+export const getBanks = async () => {
+  const response = await api.get("/points/banks");
   return response.data;
 };
 

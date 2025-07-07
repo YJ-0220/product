@@ -106,13 +106,13 @@ export const useOrderRequestDetail = () => {
   // 유틸리티 함수들
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "PENDING":
+      case "pending":
         return "bg-yellow-100 text-yellow-800";
-      case "IN_PROGRESS":
+      case "progress":
         return "bg-blue-100 text-blue-800";
-      case "COMPLETED":
+      case "completed":
         return "bg-green-100 text-green-800";
-      case "CANCELLED":
+      case "cancelled":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -121,13 +121,13 @@ export const useOrderRequestDetail = () => {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "PENDING":
+      case "pending":
         return "대기중";
-      case "IN_PROGRESS":
+      case "progress":
         return "진행중";
-      case "COMPLETED":
+      case "completed":
         return "완료";
-      case "CANCELLED":
+      case "cancelled":
         return "취소";
       default:
         return status;

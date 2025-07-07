@@ -189,7 +189,7 @@ export const createPointWithdrawRequest = async (
   req: Request,
   res: Response
 ) => {
-  const { amount, bankName, accountNum } = req.body;
+  const { amount, bankId, accountNum } = req.body;
   const userId = req.user?.id;
 
   if (!amount || isNaN(amount) || amount <= 0) {
@@ -199,7 +199,7 @@ export const createPointWithdrawRequest = async (
     return;
   }
 
-  if (!bankName || !accountNum) {
+  if (!bankId || !accountNum) {
     res.status(400).json({
       message: "은행명과 계좌번호를 입력해주세요.",
     });
@@ -224,7 +224,7 @@ export const createPointWithdrawRequest = async (
       data: {
         userId: userId!,
         amount: amount,
-        bankName: bankName,
+        bankId: bankId,
         accountNum: accountNum,
         status: "pending",
       },
@@ -333,6 +333,26 @@ export const getUserPointHistory = async (req: Request, res: Response) => {
     console.error("포인트 거래 내역 조회 오류:", error);
     res.status(500).json({
       message: "포인트 거래 내역 조회에 실패했습니다.",
+    });
+  }
+};
+
+// 은행 목록 조회
+export const getBanks = async (req: Request, res: Response) => {
+  try {
+    const banks = await prisma.bank.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    res.status(200).json({
+      banks,
+    });
+  } catch (error) {
+    console.error("은행 목록 조회 오류:", error);
+    res.status(500).json({
+      message: "은행 목록 조회에 실패했습니다.",
     });
   }
 };

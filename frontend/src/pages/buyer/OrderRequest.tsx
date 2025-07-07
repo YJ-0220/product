@@ -1,4 +1,4 @@
-import OrderRequestForm from "@/components/OrderRequestForm";
+import OrderRequestForm from "@/components/buyer/OrderRequestForm";
 
 export default function OrderRequest() {
   return (

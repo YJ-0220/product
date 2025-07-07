@@ -108,12 +108,14 @@ export const useOrderApplicationRequest = () => {
   // 신청 상태 관련 유틸리티
   const getApplicationStatusBadgeClass = (status: string) => {
     switch (status) {
-      case "PENDING":
+      case "pending":
         return "bg-yellow-100 text-yellow-800";
-      case "ACCEPTED":
+      case "accepted":
         return "bg-green-100 text-green-800";
-      case "REJECTED":
+      case "rejected":
         return "bg-red-100 text-red-800";
+      case "cancelled":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -121,12 +123,14 @@ export const useOrderApplicationRequest = () => {
 
   const getApplicationStatusText = (status: string) => {
     switch (status) {
-      case "PENDING":
+      case "pending":
         return "검토중";
-      case "ACCEPTED":
+      case "accepted":
         return "수락됨";
-      case "REJECTED":
+      case "rejected":
         return "거절됨";
+      case "cancelled":
+        return "취소됨";
       default:
         return status;
     }

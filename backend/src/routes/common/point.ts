@@ -10,9 +10,13 @@ import {
   getUserPointHistory,
   createPointWithdrawRequest,
   getPointWithdrawRequests,
+  getBanks,
 } from "../../controllers/pointController";
 
 const router = express.Router();
+
+// 은행 목록 조회
+router.get("/banks", getBanks);
 
 // 포인트 충전 신청/환전 신청
 router.post("/charge-requests", authenticate, requiredBuyer, createPointChargeRequest);

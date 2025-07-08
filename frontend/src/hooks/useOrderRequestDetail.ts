@@ -74,7 +74,7 @@ export const useOrderRequestDetail = () => {
 
       // 성공 메시지 표시 후 게시판으로 돌아가기
       setTimeout(() => {
-        alert(newStatus === 'ACCEPTED' ? '신청이 수락되었습니다. 주문이 진행중 상태로 변경되었습니다.' : '신청이 거절되었습니다.');
+        alert(newStatus === 'accepted' ? '신청이 수락되었습니다. 주문이 진행중 상태로 변경되었습니다.' : '신청이 거절되었습니다.');
         navigate('/order');
       }, 1000);
     } catch (error: any) {

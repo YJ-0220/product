@@ -80,7 +80,11 @@ export const router = createBrowserRouter([
           },
           {
             path: "request",
-            element: <OrderRequest />,
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <OrderRequest />
+              </RequireAuth>
+            ),
           },
           {
             path: ":id",

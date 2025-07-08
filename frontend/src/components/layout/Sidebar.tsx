@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
+import Footer from "./Footer";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -37,9 +39,30 @@ const renderLink = (to: string, label: string, iconPath: string) => (
   </li>
 );
 
+const renderDropdownLink = (to: string, label: string, iconPath?: string) => (
+  <li>
+    <Link
+      aria-label={label}
+      to={to}
+      className="w-full flex items-center space-x-3 p-4 pl-8 text-white hover:bg-gray-900 transition-colors text-sm"
+    >
+      {iconPath && <Icon path={iconPath} />}
+      <span>{label}</span>
+    </Link>
+  </li>
+);
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const role = user?.role || "";
+  const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
+
+  const toggleDropdown = (dropdownKey: string) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [dropdownKey]: !prev[dropdownKey]
+    }));
+  };
 
   if (!user) {
     return (
@@ -79,11 +102,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "콘텐츠 관리",
               "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             )}
-            {renderLink(
-              "/order",
-              "주문관리",
-              "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            )}
+            <li>
+              <button
+                onClick={() => toggleDropdown("admin-order")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  <span>주문관리</span>
+                </div>
+                <Icon 
+                  path={openDropdowns["admin-order"] 
+                    ? "M19 9l-7 7-7-7" 
+                    : "M9 5l7 7-7 7"
+                  } 
+                />
+              </button>
+              {openDropdowns["admin-order"] && (
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/order", "게시판")}
+                  {renderDropdownLink("/order/history", "주문내역")}
+                </ul>
+              )}
+            </li>
           </>
         );
       case "seller":
@@ -94,16 +135,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "홈",
               "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             )}
-            {renderLink(
-              "/order",
-              "주문하기",
-              "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            )}
-            {renderLink(
-              "/order/history",
-              "주문내역",
-              "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            )}
+            <li>
+              <button
+                onClick={() => toggleDropdown("seller-order")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  <span>주문하기</span>
+                </div>
+                <Icon 
+                  path={openDropdowns["seller-order"] 
+                    ? "M19 9l-7 7-7-7" 
+                    : "M9 5l7 7-7 7"
+                  } 
+                />
+              </button>
+              {openDropdowns["seller-order"] && (
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/order", "게시판")}
+                  {renderDropdownLink("/order/history", "작업현황")}
+                </ul>
+              )}
+            </li>
             {renderLink(
               "/point/withdraw",
               "포인트 환전",
@@ -124,11 +178,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "홈",
               "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
             )}
-            {renderLink(
-              "/order",
-              "주문하기",
-              "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            )}
+            <li>
+              <button
+                onClick={() => toggleDropdown("buyer-order")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  <span>주문하기</span>
+                </div>
+                <Icon 
+                  path={openDropdowns["buyer-order"] 
+                    ? "M19 9l-7 7-7-7" 
+                    : "M9 5l7 7-7 7"
+                  } 
+                />
+              </button>
+              {openDropdowns["buyer-order"] && (
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/order/board", "게시판")}
+                  {renderDropdownLink("/order/request", "주문신청")}
+                  {renderDropdownLink("/order/history", "작업현황")}
+                </ul>
+              )}
+            </li>
             {renderLink(
               "/point/charge",
               "포인트 충전",
@@ -194,6 +267,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </li>
           </ul>
         </nav>
+        <Footer />
       </aside>
     </>
   );

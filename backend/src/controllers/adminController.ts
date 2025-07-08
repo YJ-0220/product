@@ -9,6 +9,7 @@ export const getAdminDashboard: RequestHandler = async (
   res: Response
 ) => {
   try {
+    // 총 사용자 수
     const userCountResult = await prisma.user.count({
       where: {
         role: {
@@ -17,8 +18,29 @@ export const getAdminDashboard: RequestHandler = async (
       },
     });
 
+    // 총 주문 수
+    const orderRequestCountResult = await prisma.orderRequest.count({
+      where: {
+        status: {
+          in: ["pending", "progress", "completed", "cancelled"],
+        },
+      },
+    });
+
+    // 지난 1개월 동안 대기중인 총 주문 요청 수
+    const orderRequestMonthCountResult = await prisma.orderRequest.count({
+      where: {
+        status: "pending",
+        createdAt: {
+          gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+        },
+      },
+    });
+
     const stats = {
       totalUsers: userCountResult,
+      totalOrderRequests: orderRequestCountResult,
+      totalOrderRequestsMonth: orderRequestMonthCountResult,
     };
 
     res.json(stats);

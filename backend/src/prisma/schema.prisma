@@ -15,12 +15,13 @@ model User {
   password              String
   role                  UserRole
   membershipLevel       MembershipLevel?       @map("membership_level")
-  applications          OrderApplication[]     @relation("UserApplications")
-  orderRequests         OrderRequest[]         @relation("UserOrderRequests")
   point                 Point?
   pointChargeRequests   PointChargeRequest[]
   pointTransactions     PointTransaction[]
   pointWithdrawRequests PointWithdrawRequest[]
+
+  applications          OrderApplication[]     @relation("UserApplications")
+  orderRequests         OrderRequest[]         @relation("UserOrderRequests")
 
   @@schema("app")
 }
@@ -40,6 +41,7 @@ model PointTransaction {
   amount      Int
   createdAt   DateTime             @default(now())
   description String?
+
   user        User                 @relation(fields: [userId], references: [id])
 
   @@schema("app")
@@ -52,6 +54,7 @@ model PointChargeRequest {
   status      String    @default("pending")
   requestedAt DateTime  @default(now())
   approvedAt  DateTime?
+
   user        User      @relation(fields: [userId], references: [id])
 
   @@schema("app")
@@ -61,6 +64,7 @@ model Bank {
   id                String                 @id @default(dbgenerated("gen_random_uuid()"))
   name              String                 @unique
   accountNumLength  Int?
+
   withdrawRequests  PointWithdrawRequest[] @relation("BankWithdrawRequests")
 
   @@schema("app")
@@ -75,6 +79,7 @@ model PointWithdrawRequest {
   status      String    @default("pending")
   requestedAt DateTime  @default(now())
   processedAt DateTime?
+
   bank        Bank      @relation("BankWithdrawRequests", fields: [bankId], references: [id])
   user        User      @relation(fields: [userId], references: [id])
 
@@ -94,6 +99,8 @@ model OrderRequest {
   status          OrderStatus        @default(pending)
   createdAt       DateTime           @default(now())
   applications    OrderApplication[]
+  workItem        WorkItem?
+
   buyer           User               @relation("UserOrderRequests", fields: [buyerId], references: [id])
   category        Category           @relation(fields: [categoryId], references: [id])
   subcategory     Subcategory        @relation(fields: [subcategoryId], references: [id])
@@ -111,8 +118,26 @@ model OrderApplication {
   status            ApplicationStatus @default(pending)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
+
   orderRequest      OrderRequest      @relation(fields: [orderRequestId], references: [id], onDelete: Cascade)
   seller            User              @relation("UserApplications", fields: [sellerId], references: [id])
+  workItems         WorkItem[]
+
+  @@schema("app")
+}
+
+model WorkItem {
+  id              String    @id @default(dbgenerated("gen_random_uuid()"))
+  orderRequestId  String    @unique
+  applicationId   String   
+  fileUrl         String?  
+  workLink        String?  
+  description     String?
+  status          String    @default("submitted") // submitted, approved, rejected
+  submittedAt     DateTime? @default(now())
+
+  orderRequest    OrderRequest     @relation(fields: [orderRequestId], references: [id])
+  application     OrderApplication @relation(fields: [applicationId], references: [id])
 
   @@schema("app")
 }
@@ -121,6 +146,7 @@ model Category {
   id            Int            @id @default(autoincrement())
   name          String         @unique
   orderRequests OrderRequest[]
+
   subcategories Subcategory[]  @relation("CategoryToSub")
 
   @@schema("app")
@@ -131,6 +157,7 @@ model Subcategory {
   name          String
   parentId      Int
   orderRequests OrderRequest[]
+
   parent        Category       @relation("CategoryToSub", fields: [parentId], references: [id])
 
   @@schema("app")
@@ -177,7 +204,6 @@ enum ApplicationStatus {
   pending
   accepted
   rejected
-  cancelled
 
   @@schema("app")
 }

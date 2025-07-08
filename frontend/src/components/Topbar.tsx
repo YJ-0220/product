@@ -8,39 +8,6 @@ export default function Topbar() {
   const { user, logout } = useAuth();
   const role = user?.role || "";
 
-  const getUserGreeting = () => {
-    const userName = user?.username || "사용자";
-
-    switch (role) {
-      case "admin":
-        return (
-          <div className="flex flex-col">
-            <span className="text-2xl font-bold text-black">
-              환영합니다, 관리자님
-            </span>
-          </div>
-        );
-      case "seller":
-        return (
-          <div className="flex flex-col">
-            <span className="text-2xl font-bold text-black">
-              어서오세요, {userName}님
-            </span>
-          </div>
-        );
-      case "buyer":
-        return (
-          <div className="flex flex-col">
-            <span className="text-2xl font-bold text-black">
-              환영해요, {userName}님
-            </span>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
   const getNotifications = () => {
     switch (role) {
       case "admin":
@@ -151,9 +118,7 @@ export default function Topbar() {
 
   return (
     <div className="sticky bg-[#f2f7fb] top-0 z-10">
-      <div className="flex items-center justify-between shadow-sm p-4">
-        <div className="flex items-center">{getUserGreeting()}</div>
-
+      <div className="flex items-center justify-end shadow-sm p-4">
         <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}

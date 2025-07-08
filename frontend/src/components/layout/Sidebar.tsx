@@ -196,7 +196,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </button>
               {openDropdowns["buyer-order"] && (
                 <ul className="bg-gray-800">
-                  {renderDropdownLink("/order/board", "게시판")}
+                  {renderDropdownLink("/order", "게시판")}
                   {renderDropdownLink("/order/request", "주문신청")}
                   {renderDropdownLink("/order/history", "작업현황")}
                 </ul>

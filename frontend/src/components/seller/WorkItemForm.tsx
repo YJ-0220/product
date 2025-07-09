@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+// import { useAuth } from "@/context/AuthContext";
 import FormInput from "@/components/FormInput";
 import { createWorkItem, getAcceptedApplication } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
@@ -13,7 +13,7 @@ interface WorkItemData {
 
 export default function WorkItemForm() {
   const { id: orderId } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");

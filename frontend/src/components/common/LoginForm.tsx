@@ -1,24 +1,15 @@
-import { useState } from "react";
 import { useLogin } from "@/hooks/useLogin";
 
 export default function LoginForm() {
-  const { login, error } = useLogin();
-
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      await login(username, password);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    error,
+    handleLoginSubmit,
+    loading,
+    username,
+    setUsername,
+    password,
+    setPassword,
+  } = useLogin();
 
   return (
     <div className="flex items-center justify-center h-screen">
@@ -27,7 +18,7 @@ export default function LoginForm() {
           <h1 className="items-center justify-center py-10 font-black text-2xl">
             홈페이지 제목이요
           </h1>
-          <form onSubmit={handleSubmit} className="w-full px-8">
+          <form onSubmit={handleLoginSubmit} className="w-full px-8">
             <input
               type="text"
               placeholder="아이디를 입력해주세요"
@@ -48,7 +39,11 @@ export default function LoginForm() {
               type="submit"
               disabled={loading}
               className={`w-full mt-4 py-2 px-4 rounded-md text-white font-semibold
-                ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-600 hover:bg-gray-700"}
+                ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gray-600 hover:bg-gray-700"
+                }
                 transition-colors duration-200`}
             >
               {loading ? "로그인 중..." : "로그인"}

@@ -1,8 +1,35 @@
 import { useEffect, useState } from "react";
-import { getOrders } from "@/api/order";
+import { getOrderRequestBoard } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import type { OrderData } from "@/types/orderTypes";
+
+const OrderBoardTitles = [
+  {
+    id: 1,
+    title: "번호",
+  },
+  {
+    id: 2,
+    title: "작성자",
+  },
+  {
+    id: 3,
+    title: "작성일",
+  },
+  {
+    id: 4,
+    title: "제목",
+  },
+  {
+    id: 5,
+    title: "카테고리",
+  },
+  {
+    id: 6,
+    title: "상태",
+  },
+];
 
 export default function OrderBoard() {
   const [orders, setOrders] = useState<OrderData[]>([]);
@@ -14,7 +41,7 @@ export default function OrderBoard() {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const result = await getOrders();
+        const result = await getOrderRequestBoard();
         setOrders(result.orders);
       } catch (error) {
         console.error("주문서 목록 조회 실패:", error);
@@ -30,10 +57,10 @@ export default function OrderBoard() {
       fetchOrders();
     };
 
-    window.addEventListener('focus', handleFocus);
-    
+    window.addEventListener("focus", handleFocus);
+
     return () => {
-      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener("focus", handleFocus);
     };
   }, []);
 
@@ -78,30 +105,32 @@ export default function OrderBoard() {
   }
 
   return (
-    <div className="p-6">
+    <div className="px-10 py-4">
       <div className="mb-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">주문서 게시판</h1>
-            <p className="text-gray-600 mt-2">생성된 주문서 목록을 확인할 수 있습니다.</p>
+            <p className="text-gray-600 mt-2">
+              생성된 주문서 목록을 확인할 수 있습니다.
+            </p>
           </div>
-          
+
           {(user?.role === "buyer" || user?.role === "admin") && (
             <Link
               to="/order/request"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
-              <svg 
-                className="w-4 h-4 mr-2" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
               주문하기
@@ -115,37 +144,30 @@ export default function OrderBoard() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  번호
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  작성자
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  작성일
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  제목
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  카테고리
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  상태
-                </th>
+                {OrderBoardTitles.map((title) => (
+                  <th
+                    key={title.id}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {title.title}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     등록된 주문서가 없습니다.
                   </td>
                 </tr>
               ) : (
                 orders.map((order, index) => (
-                  <tr 
-                    key={order.id} 
+                  <tr
+                    key={order.id}
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => {
                       // 주문 상세 페이지로 이동
@@ -176,7 +198,9 @@ export default function OrderBoard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                          order.status
+                        )}`}
                       >
                         {getStatusText(order.status)}
                       </span>

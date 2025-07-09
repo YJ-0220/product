@@ -206,6 +206,13 @@ export const createPointWithdrawRequest = async (
     return;
   }
 
+  if (amount > 10000) {
+    res.status(400).json({
+      message: "최소 10000원 이상 환전 가능합니다.",
+    });
+    return;
+  }
+
   try {
     // 현재 포인트 잔액 확인
     const pointRecord = await prisma.point.findUnique({

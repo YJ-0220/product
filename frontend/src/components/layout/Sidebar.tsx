@@ -155,6 +155,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "게시판")}
                   {renderDropdownLink("/order/history", "작업현황")}
+                  {renderDropdownLink("/order/:id/work", "작업물 제출")}
                 </ul>
               )}
             </li>

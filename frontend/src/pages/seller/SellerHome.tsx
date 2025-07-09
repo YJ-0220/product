@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
-// import { getApplicationsBySeller, getSellerStats } from "@/api/order";
+import { getAcceptedApplications } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
 
 interface SellerStats {
@@ -10,6 +10,15 @@ interface SellerStats {
   acceptedApplications: number;
   completedOrders: number;
   totalEarnings: number;
+}
+
+interface AcceptedApplication extends ApplicationData {
+  orderRequest: {
+    id: string;
+    title: string;
+    description: string;
+    requiredPoints: number;
+  };
 }
 
 export default function SellerHome() {
@@ -24,6 +33,7 @@ export default function SellerHome() {
   const [recentApplications, setRecentApplications] = useState<ApplicationData[]>(
     []
   );
+  const [acceptedApplications, setAcceptedApplications] = useState<AcceptedApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,6 +60,10 @@ export default function SellerHome() {
 
       setStats(mockStats);
       setRecentApplications([]);
+      
+      // 승인된 신청서 조회
+      const acceptedData = await getAcceptedApplications();
+      setAcceptedApplications(acceptedData);
     } catch (error) {
       console.error("판매자 데이터 조회 실패:", error);
     } finally {
@@ -218,6 +232,85 @@ export default function SellerHome() {
                   />
                 </svg>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 진행중인 작업 섹션 */}
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">진행중인 작업</h3>
+              <Link
+                to="/order"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                전체보기
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {acceptedApplications.length === 0 ? (
+                <div className="text-center py-8">
+                  <svg
+                    className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <p className="text-gray-500 mb-2">진행중인 작업이 없습니다</p>
+                  <p className="text-sm text-gray-400">
+                    승인된 주문이 있으면 여기에 표시됩니다
+                  </p>
+                </div>
+              ) : (
+                acceptedApplications.map((application) => (
+                  <div
+                    key={application.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-gray-900">
+                        {application.orderRequest.title}
+                      </h4>
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                        진행중
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {application.orderRequest.description}
+                    </p>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-sm text-gray-600">
+                        <span className="font-medium">수락일:</span> {formatDate(application.updatedAt)}
+                      </div>
+                      <div className="text-sm font-medium text-blue-600">
+                        {application.orderRequest.requiredPoints.toLocaleString()}P
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Link
+                        to={`/order/${application.orderRequest.id}/work`}
+                        className="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                      >
+                        작업물 제출
+                      </Link>
+                      <Link
+                        to={`/order/${application.orderRequest.id}`}
+                        className="flex-1 bg-gray-100 text-gray-700 text-center py-2 px-4 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+                      >
+                        상세보기
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

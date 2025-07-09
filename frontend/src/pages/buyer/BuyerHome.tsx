@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getOrders } from "@/api/order";
+import { getOrderRequestBoard } from "@/api/order";
 import type { OrderData } from "@/types/orderTypes";
 import { useAuth } from "@/context/AuthContext";
 
@@ -22,7 +22,7 @@ export default function BuyerHome() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const result = await getOrders();
+        const result = await getOrderRequestBoard();
         setOrders(result.orders);
 
         const newStats = result.orders.reduce(

@@ -6,10 +6,10 @@ import Layout from "@/components/layout/Layout";
 import Home from "@/pages/Home";
 import MyPage from "@/pages/common/MyPage";
 import Membership from "@/pages/common/Membership";
-import PointPage from "@/pages/common/PointPage";
-import LoginForm from "@/pages/common/Login";
+import Point from "@/pages/common/Point";
+import Login from "@/pages/common/Login";
 import Order from "@/pages/common/Order";
-import OrderBoard from "@/components/common/OrderBoard";
+import OrderBoard from "@/pages/common/OrderBoard";
 import OrderDetail from "@/components/common/OrderDetail";
 import OrderRequest from "@/pages/buyer/OrderRequest";
 import OrderSuccess from "@/pages/buyer/OrderSuccess";
@@ -18,6 +18,7 @@ import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 import PointChargeForm from "@/components/buyer/PointChargeForm";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
 import NotFound from "@/pages/common/NotFound";
+import WorkItemForm from "@/components/seller/WorkItemForm";
 
 export const router = createBrowserRouter([
   {
@@ -36,7 +37,7 @@ export const router = createBrowserRouter([
         path: "point",
         element: (
           <RequireAuth allowedRoles={["buyer", "seller"]}>
-            <PointPage />
+            <Point />
           </RequireAuth>
         ),
         children: [
@@ -89,6 +90,12 @@ export const router = createBrowserRouter([
           {
             path: ":id",
             element: <OrderDetail />,
+            children: [
+              {
+                path: "work",
+                element: <WorkItemForm />,
+              },
+            ],
           },
           {
             path: "success",
@@ -134,17 +141,6 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/work",
-    element: (
-      <LayoutWrapper allowedRoles={["admin"]}>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">작업 현황</h1>
-          <p>작업 현황 페이지입니다.</p>
-        </div>
-      </LayoutWrapper>
-    ),
-  },
-  {
     path: "/content",
     element: (
       <LayoutWrapper allowedRoles={["admin"]}>
@@ -172,7 +168,7 @@ export const router = createBrowserRouter([
     path: "/login",
     element: (
       <RequireNoAuth>
-        <LoginForm />
+        <Login />
       </RequireNoAuth>
     ),
   },

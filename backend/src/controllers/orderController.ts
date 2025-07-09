@@ -43,7 +43,7 @@ export const getOrderSubCategories = async (req: Request, res: Response) => {
   }
 };
 
-// 주문하기 생성
+// 주문하기 생성(구매자만 가능)
 export const createOrderRequest = async (req: Request, res: Response) => {
   try {
     const {
@@ -111,6 +111,7 @@ export const createOrderRequest = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "주문 요청이 성공적으로 생성되었습니다.",
+      orderRequestId: result.order.id,
       order: result.order,
       remainingPoint: result.remainingPoint,
     });
@@ -122,6 +123,29 @@ export const createOrderRequest = async (req: Request, res: Response) => {
     }
     res.status(500).json({ message: "주문 요청 오류가 발생했습니다.", error });
     return;
+  }
+};
+
+// 작업 생성(판매자만 가능)
+export const createWorkItem = async (req: Request, res: Response) => {
+  try {
+    const { orderRequestId, applicationId, description, fileUrl, workLink } =
+      req.body;
+
+    const workItem = await prisma.workItem.create({
+      data: {
+        orderRequestId,
+        applicationId,
+        description,
+        fileUrl,
+        workLink,
+      },
+    });
+
+    res.status(201).json({ message: "작업 내역 생성 성공", workItem });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "작업 내역 생성 실패" });
   }
 };
 
@@ -223,10 +247,10 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
 // 주문서 상세 조회(모든 사용자 가능)
 export const getOrderRequestById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { orderId } = req.params;
 
     const order = await prisma.orderRequest.findUnique({
-      where: { id },
+      where: { id: orderId },
       include: {
         buyer: {
           select: {
@@ -266,7 +290,7 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
 // 주문 상태 변경(관리자만 가능)
 export const updateOrderRequestStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { orderId } = req.params;
     const { status } = req.body;
 
     // 유효한 상태값인지 확인
@@ -277,7 +301,7 @@ export const updateOrderRequestStatus = async (req: Request, res: Response) => {
     }
 
     const updatedOrder = await prisma.orderRequest.update({
-      where: { id },
+      where: { id: orderId },
       data: { status },
       include: {
         buyer: {

@@ -1,5 +1,6 @@
 import { useOrderRequestDetail } from "@/hooks/useOrderRequestDetail";
-import { useOrderApplicationRequest } from "@/hooks/useOrderApplicationRequest";
+import { useOrderApplication } from "@/hooks/useOrderApplication";
+import { Link } from "react-router-dom";
 
 export default function OrderDetail() {
   const {
@@ -16,6 +17,7 @@ export default function OrderDetail() {
     getStatusBadgeClass,
     getStatusText,
     formatDate,
+    handleDeleteAcceptedApplication,
   } = useOrderRequestDetail();
 
   const {
@@ -23,7 +25,7 @@ export default function OrderDetail() {
     handleSimpleApplication,
     getApplicationStatusBadgeClass,
     getApplicationStatusText,
-  } = useOrderApplicationRequest();
+  } = useOrderApplication();
 
   if (loading) {
     return (
@@ -90,6 +92,14 @@ export default function OrderDetail() {
           >
             {getStatusText(order.status)}
           </span>
+          {order.status === "progress" && (
+            <Link
+              to={`/order/${order.id}/progress`}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              작업 진행 상황
+            </Link>
+          )}
           <button
             onClick={() => navigate(-1)}
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
@@ -143,111 +153,262 @@ export default function OrderDetail() {
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                판매자 신청 ({applications.length})
-              </h2>
-              {user?.role === "seller" && order.status === "pending" && (
-                <button
-                  onClick={() => handleSimpleApplication(
-                    order.id,
-                    order.requiredPoints,
-                    applications,
-                    user?.id || '',
-                    refreshData
-                  )}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  신청하기
-                </button>
-              )}
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  판매자 신청 ({applications.length})
+                </h2>
+                {order.status === "pending" ? (
+                  <p className="text-sm text-blue-600 mt-1">
+                    신청을 받고 있습니다
+                  </p>
+                ) : order.status === "progress" ? (
+                  <p className="text-sm text-green-600 mt-1">
+                    승인된 신청서가 작업물로 진행중입니다
+                  </p>
+                ) : order.status === "completed" ? (
+                  <p className="text-sm text-gray-600 mt-1">
+                    작업이 완료되었습니다
+                  </p>
+                ) : (
+                  <p className="text-sm text-red-600 mt-1">
+                    주문이 취소되었습니다
+                  </p>
+                )}
+              </div>
+              {user?.role === "seller" &&
+                order.status === "pending" &&
+                (() => {
+                  // 현재 사용자가 이미 신청했는지 확인
+                  const hasApplied = applications.some(
+                    (app) => app.sellerId === user?.id
+                  );
+
+                  if (hasApplied) {
+                    return (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-green-600 font-medium">
+                          신청 완료
+                        </span>
+                        <button
+                          onClick={() => {
+                            const myApplication = applications.find(
+                              (app) => app.sellerId === user?.id
+                            );
+                            if (myApplication) {
+                              handleDeleteApplication(
+                                myApplication.id,
+                                order.id
+                              );
+                            }
+                          }}
+                          className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                        >
+                          신청 취소
+                        </button>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() =>
+                            handleSimpleApplication(
+                              order.id,
+                              order.requiredPoints,
+                              applications,
+                              user?.id || "",
+                              refreshData
+                            )
+                          }
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          신청하기
+                        </button>
+                      </div>
+                    );
+                  }
+                })()}
             </div>
 
             {applications.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                아직 신청한 판매자가 없습니다.
-              </p>
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-2">
+                  아직 신청한 판매자가 없습니다.
+                </p>
+                {order.status === "pending" && user?.role === "seller" && (
+                  <p className="text-sm text-blue-600">
+                    첫 번째로 신청해보세요!
+                  </p>
+                )}
+              </div>
             ) : (
               <div className="space-y-4">
-                {applications.map((application) => (
-                  <div
-                    key={application.id}
-                    className="border border-gray-200 rounded-md p-4"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-medium text-gray-900">
-                          {application.seller.name}
-                        </span>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getApplicationStatusBadgeClass(
-                            application.status
-                          )}`}
-                        >
-                          {getApplicationStatusText(application.status)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500">
-                          {formatDate(application.createdAt)}
-                        </span>
-                        {user?.role === "seller" &&
-                          user?.id === application.sellerId &&
-                          application.status === "pending" &&
-                          order?.status === "pending" && (
-                            <button
-                              onClick={() =>
-                                handleDeleteApplication(
-                                  application.id,
-                                  order.id,
-                                  () => {
-                                    refreshData();
-                                  }
-                                )
-                              }
-                              className="text-red-600 hover:text-red-700 text-sm font-medium"
-                            >
-                              삭제
-                            </button>
-                          )}
-                      </div>
-                    </div>
+                {applications.filter((app) => app.status === "pending").length >
+                  0 && (
+                  <div className="mb-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">
+                      신청 단계
+                    </h3>
+                    <div className="space-y-3">
+                      {applications
+                        .filter(
+                          (app) =>
+                            app.status === "pending" ||
+                            app.status === "rejected"
+                        )
+                        .map((application) => (
+                          <div
+                            key={application.id}
+                            className="border border-gray-200 rounded-md p-4"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-3">
+                                <span className="font-medium text-gray-900">
+                                  {application.seller.name}
+                                </span>
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${getApplicationStatusBadgeClass(
+                                    application.status
+                                  )}`}
+                                >
+                                  {getApplicationStatusText(application.status)}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-gray-500">
+                                  {formatDate(application.createdAt)}
+                                </span>
+                                {user?.role === "seller" &&
+                                  user?.id === application.sellerId &&
+                                  application.status === "pending" && (
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteApplication(
+                                          application.id,
+                                          order.id
+                                        )
+                                      }
+                                      className="text-red-600 hover:text-red-700 text-sm font-medium"
+                                    >
+                                      삭제
+                                    </button>
+                                  )}
+                              </div>
+                            </div>
 
-                    {application.message && (
-                      <p className="text-gray-700 mb-3 whitespace-pre-wrap">
-                        {application.message}
-                      </p>
-                    )}
-                    {(user?.role === "admin" || user?.id === order.buyerId) &&
-                      application.status === "pending" && (
-                        <div className="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200">
-                          <button
-                            onClick={() =>
-                              handleApplicationStatusUpdate(
-                                application.id,
-                                "rejected"
-                              )
-                            }
-                            disabled={updating}
-                            className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400"
-                          >
-                            거절
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleApplicationStatusUpdate(
-                                application.id,
-                                "accepted"
-                              )
-                            }
-                            disabled={updating}
-                            className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400"
-                          >
-                            수락
-                          </button>
-                        </div>
-                      )}
+                            {application.message && (
+                              <p className="text-gray-700 mb-3 whitespace-pre-wrap">
+                                {application.message}
+                              </p>
+                            )}
+                            {user?.role === "admin" &&
+                              application.status === "pending" && (
+                                <div className="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200">
+                                  <button
+                                    onClick={() =>
+                                      handleApplicationStatusUpdate(
+                                        order.id,
+                                        application.id,
+                                        "rejected"
+                                      )
+                                    }
+                                    disabled={updating}
+                                    className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                                  >
+                                    거절
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleApplicationStatusUpdate(
+                                        order.id,
+                                        application.id,
+                                        "accepted"
+                                      )
+                                    }
+                                    disabled={updating}
+                                    className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400"
+                                  >
+                                    수락
+                                  </button>
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                ))}
+                )}
+
+                {/* 작업 단계 (승인된 신청) */}
+                {applications.filter((app) => app.status === "accepted")
+                  .length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">
+                      작업 단계
+                    </h3>
+                    <div className="space-y-3">
+                      {applications
+                        .filter((app) => app.status === "accepted")
+                        .map((application) => (
+                          <div
+                            key={application.id}
+                            className="border border-green-200 bg-green-50 rounded-md p-4"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-3">
+                                <span className="font-medium text-gray-900">
+                                  {application.seller.name}
+                                </span>
+                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  작업 진행중
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm text-gray-500">
+                                  승인일: {formatDate(application.updatedAt)}
+                                </span>
+                                {/* 관리자만 삭제 버튼 노출 */}
+                                {user?.role === "admin" && (
+                                  <button
+                                    onClick={() => {
+                                      if (
+                                        window.confirm("정말 삭제하시겠습니까?")
+                                      ) {
+                                        handleDeleteAcceptedApplication(
+                                          application.id
+                                        );
+                                      }
+                                    }}
+                                    className="ml-2 px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                                    disabled={updating}
+                                  >
+                                    삭제
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            {application.message && (
+                              <p className="text-gray-700 mb-3 whitespace-pre-wrap">
+                                {application.message}
+                              </p>
+                            )}
+
+                            {/* 작업물 제출 상태 표시 */}
+                            <div className="mt-3 pt-3 border-t border-green-200">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-gray-600">
+                                  작업물 상태
+                                </span>
+                                <span className="text-sm text-blue-600 font-medium">
+                                  작업물 제출 대기중
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

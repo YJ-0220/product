@@ -8,6 +8,9 @@ const FormInput = ({
   type = "text",
   rows,
   options,
+  placeholder,
+  min,
+  max,
 }: FormInputProps) => (
   <div className="space-y-2">
     <label className="block text-sm font-semibold text-gray-900">{label}</label>
@@ -17,6 +20,7 @@ const FormInput = ({
         value={value}
         onChange={onChange}
         rows={rows}
+        placeholder={placeholder}
         className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
       />
     ) : type === "select" ? (
@@ -26,10 +30,10 @@ const FormInput = ({
         onChange={onChange}
         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
       >
-        <option value={0}>선택</option>
-        {options?.map((opt) => (
-          <option key={opt.id} value={opt.id}>
-            {opt.name}
+        <option value="">선택</option>
+        {options?.map((opt, index) => (
+          <option key={index} value={'id' in opt ? opt.id : opt.value}>
+            {'name' in opt ? opt.name : opt.label}
           </option>
         ))}
       </select>
@@ -39,6 +43,9 @@ const FormInput = ({
         name={name}
         value={value}
         onChange={onChange}
+        placeholder={placeholder}
+        min={min}
+        max={max}
         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
       />
     )}

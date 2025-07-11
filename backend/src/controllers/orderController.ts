@@ -1,48 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
 
-// 카테고리 조회(구매자만 조회 가능)
-export const getOrderCategories = async (req: Request, res: Response) => {
-  try {
-    const categories = await prisma.category.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-      distinct: ["name"],
-      orderBy: {
-        id: "asc",
-      },
-    });
-    res.status(200).json(categories);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "카테고리 조회 실패" });
-  }
-};
-
-// 서브카테고리 조회(구매자만 조회 가능)
-export const getOrderSubCategories = async (req: Request, res: Response) => {
-  const categoryId = Number(req.params.categoryId);
-  try {
-    if (isNaN(categoryId)) {
-      res.status(400).json({ error: "유효하지 않은 카테고리 ID입니다." });
-      return;
-    }
-
-    const subcategories = await prisma.subcategory.findMany({
-      where: {
-        parentId: categoryId,
-      },
-    });
-    res.status(200).json(subcategories);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "하위 카테고리 조회 실패" });
-    return;
-  }
-};
-
 // 주문하기 생성(구매자만 가능)
 export const createOrderRequest = async (req: Request, res: Response) => {
   try {
@@ -126,29 +84,6 @@ export const createOrderRequest = async (req: Request, res: Response) => {
   }
 };
 
-// 작업 생성(판매자만 가능)
-export const createWorkItem = async (req: Request, res: Response) => {
-  try {
-    const { orderRequestId, applicationId, description, fileUrl, workLink } =
-      req.body;
-
-    const workItem = await prisma.workItem.create({
-      data: {
-        orderRequestId,
-        applicationId,
-        description,
-        fileUrl,
-        workLink,
-      },
-    });
-
-    res.status(201).json({ message: "작업 내역 생성 성공", workItem });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "작업 내역 생성 실패" });
-  }
-};
-
 // 작업 내역 조회(판매자는 작업물을 올려주고 구매자는 작업 현황 진행중인걸 보는것만 허용)
 export const getOrderHistory = async (req: Request, res: Response) => {
   try {
@@ -179,6 +114,8 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
       subcategoryId,
       sortBy = "latest",
     } = req.query;
+
+    const currentUserId = req.user?.id;
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -222,18 +159,34 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
               name: true,
             },
           },
+          applications: {
+            select: {
+              id: true,
+              status: true,
+              sellerId: true,
+            },
+          },
         },
       }),
       prisma.orderRequest.count({ where }),
     ]);
 
     res.status(200).json({
-      orders: orders.map((order) => ({
-        ...order,
-        buyer: { name: order.buyer.username },
-        createdAt: order.createdAt.toISOString(),
-        deadline: order.deadline?.toISOString() || null,
-      })),
+      orders: orders.map((order) => {
+        // 현재 사용자가 신청한 신청서 찾기
+        const myApplication = order.applications.find(
+          (app) => app.sellerId === currentUserId
+        );
+
+        return {
+          ...order,
+          buyer: { name: order.buyer.username },
+          createdAt: order.createdAt.toISOString(),
+          deadline: order.deadline?.toISOString() || null,
+          myApplicationStatus: myApplication ? myApplication.status : null, // 내 신청 상태
+          hasApplied: !!myApplication, // 내가 신청했는지 여부
+        };
+      }),
       total,
       page: Number(page),
       limit: Number(limit),

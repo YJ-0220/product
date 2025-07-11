@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getOrderById, updateOrderStatus, getApplicationsByOrder, updateApplicationStatus } from "@/api/order";
+import { getOrderById, updateOrderStatus, getApplicationsByOrder, updateApplicationStatus, deleteAcceptedApplication } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
 import type { OrderData, ApplicationData } from "@/types/orderTypes";
 
@@ -57,10 +57,10 @@ export const useOrderRequestDetail = () => {
   };
 
   // 신청 상태 변경 (구매자/관리자용)
-  const handleApplicationStatusUpdate = async (applicationId: string, newStatus: string) => {
+  const handleApplicationStatusUpdate = async (orderId: string, applicationId: string, newStatus: string) => {
     try {
       setUpdating(true);
-      await updateApplicationStatus(applicationId, newStatus);
+      await updateApplicationStatus(orderId, applicationId, newStatus);
       
       // 신청 목록과 주문 정보 모두 새로고침
       if (id) {
@@ -79,6 +79,20 @@ export const useOrderRequestDetail = () => {
       }, 1000);
     } catch (error: any) {
       setError(error?.response?.data?.error || "신청 상태 변경에 실패했습니다.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // 관리자용 승인된 신청서 삭제
+  const handleDeleteAcceptedApplication = async (applicationId: string) => {
+    try {
+      setUpdating(true);
+      await deleteAcceptedApplication(applicationId);
+      await refreshData();
+      alert("승인된 신청서가 삭제되었습니다.");
+    } catch (error: any) {
+      setError(error?.response?.data?.error || "삭제에 실패했습니다.");
     } finally {
       setUpdating(false);
     }
@@ -156,6 +170,7 @@ export const useOrderRequestDetail = () => {
     // 액션
     handleOrderStatusUpdate,
     handleApplicationStatusUpdate,
+    handleDeleteAcceptedApplication,
     refreshData,
     navigate,
     

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getOrderRequestBoard } from "@/api/order";
 import type { OrderData } from "@/types/orderTypes";
 import { useAuth } from "@/context/AuthContext";
+import { useUtils } from "@/hooks/useUtils";
 
 interface OrderStats {
   pending: number;
@@ -12,6 +13,7 @@ interface OrderStats {
 
 export default function BuyerHome() {
   const { user } = useAuth();
+  const { getStatusText, getStatusColor } = useUtils();
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [stats, setStats] = useState<OrderStats>({
     pending: 0,
@@ -41,31 +43,7 @@ export default function BuyerHome() {
     fetchOrders();
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
-      case "IN_PROGRESS":
-        return "bg-blue-100 text-blue-800";
-      case "COMPLETED":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "대기중";
-      case "IN_PROGRESS":
-        return "진행중";
-      case "COMPLETED":
-        return "완료";
-      default:
-        return status;
-    }
-  };
 
   return (
     <div className="px-8">
@@ -140,7 +118,7 @@ export default function BuyerHome() {
                   {getStatusText(order.status)}
                 </span>
                 <p className="text-sm text-gray-500 mt-1">
-                  마감일: {new Date(order.deadline).toLocaleDateString()}
+                  마감일: {order.deadline ? new Date(order.deadline).toLocaleDateString() : "미정"}
                 </p>
               </div>
             </div>

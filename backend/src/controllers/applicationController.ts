@@ -2,60 +2,54 @@ import { Request, Response } from "express";
 import { prisma } from "../index";
 
 // 판매자 주문 신청
-export const createApplication = async (req: Request, res: Response) => {
+export const createOrderApplication = async (req: Request, res: Response) => {
   try {
-    const { orderRequestId } = req.params;
+    const { orderId } = req.params;
+    if (!orderId) {
+      res.status(400).json({ error: "유효하지 않은 orderId입니다." });
+      return;
+    }
+    console.log("프론트에서 요청하는 orderId:", orderId);
     const { message, proposedPrice, estimatedDelivery } = req.body;
+    const sellerId = req.user!.id;
 
-    // 판매자 아이디 조회
-    const sellerId = req.user?.id;
-
-    // 이미 신청했는지 확인
-    const existingApplication = await prisma.orderApplication.findFirst({
-      where: {
-        orderRequestId,
-        sellerId: sellerId!,
-      },
-    });
-
-    if (existingApplication) {
-      res.status(400).json({ error: "이미 신청한 주문이 있습니다." });
-      return;
-    }
-
-    // 주문이 존재하고 PENDING 상태인지 확인
-    const orderRequest = await prisma.orderRequest.findUnique({
-      where: { id: orderRequestId },
-    });
-
-    if (!orderRequest) {
-      res.status(404).json({ error: "주문을 찾을 수 없습니다." });
-      return;
-    }
-
-    if (orderRequest.status !== "pending") {
-      res.status(400).json({ error: "신청 가능한 상태가 아닙니다." });
-      return;
-    }
-
-    // 신청서 생성
-    const application = await prisma.orderApplication.create({
-      data: {
-        orderRequestId,
-        sellerId: sellerId!,
-        message,
-        proposedPrice: proposedPrice ? Number(proposedPrice) : null,
-        estimatedDelivery: estimatedDelivery
-          ? new Date(estimatedDelivery)
-          : null,
-      },
-      include: {
-        seller: {
-          select: {
-            username: true,
-          },
+    const application = await prisma.$transaction(async (tx) => {
+      const existingApplication = await tx.orderApplication.findFirst({
+        where: {
+          orderRequestId: orderId,
+          sellerId,
         },
-      },
+      });
+
+      if (existingApplication) {
+        throw new Error("이미 신청한 주문이 있습니다.");
+      }
+
+      const orderRequest = await tx.orderRequest.findUnique({
+        where: { id: orderId },
+      });
+
+      if (!orderRequest) {
+        throw new Error("주문을 찾을 수 없습니다.");
+      }
+
+      if (orderRequest.status !== "pending") {
+        throw new Error("신청 가능한 상태가 아닙니다.");
+      }
+
+      const newApplication = await tx.orderApplication.create({
+        data: {
+          orderRequestId: orderId,
+          sellerId,
+          message,
+          proposedPrice: proposedPrice ? Number(proposedPrice) : null,
+          estimatedDelivery: estimatedDelivery
+            ? new Date(estimatedDelivery)
+            : null,
+        },
+        include: { seller: { select: { username: true } } },
+      });
+      return newApplication;
     });
 
     res.status(201).json({
@@ -68,37 +62,38 @@ export const createApplication = async (req: Request, res: Response) => {
         estimatedDelivery: application.estimatedDelivery?.toISOString(),
       },
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "신청 제출 실패" });
+  } catch (error: any) {
+    console.error("신청 생성 에러:", error, error?.stack);
+    if (error.message === "이미 신청한 주문이 있습니다.") {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    if (error.message === "주문을 찾을 수 없습니다.") {
+      res.status(404).json({ error: error.message });
+      return;
+    }
+    if (error.message === "신청 가능한 상태가 아닙니다.") {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    res.status(500).json({ error: "신청 제출 실패", details: error.message });
   }
 };
 
 // 판매자 신청 수정
-export const updateApplication = async (req: Request, res: Response) => {
+export const editOrderApplication = async (req: Request, res: Response) => {
   try {
     const { applicationId } = req.params;
     const { message, proposedPrice, estimatedDelivery } = req.body;
+    const sellerId = req.user!.id;
 
-    const sellerId = req.user?.id;
-
-    if (!sellerId) {
-      res.status(401).json({ error: "판매자 인증이 필요합니다." });
-      return;
-    }
-
-    // 신청 조회 및 권한 확인
+    // 신청서 조회
     const application = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
-      include: {
-        orderRequest: {
-          select: {
-            status: true,
-          },
-        },
-      },
+      include: { orderRequest: { select: { status: true } } },
     });
 
+    // 신청서 조회 실패 시 예외 처리
     if (!application) {
       res.status(404).json({ error: "신청을 찾을 수 없습니다." });
       return;
@@ -110,18 +105,19 @@ export const updateApplication = async (req: Request, res: Response) => {
       return;
     }
 
-    // PENDING 상태인 신청만 수정 가능
+    // 대기 상태인 신청만 수정 가능
     if (application.status !== "pending") {
       res.status(400).json({ error: "대기중인 신청만 수정할 수 있습니다." });
       return;
     }
 
-    // 주문이 PENDING 상태인지 확인
+    // 주문 요청이 대기 상태인지 확인
     if (application.orderRequest.status !== "pending") {
       res.status(400).json({ error: "신청 가능한 상태가 아닙니다." });
       return;
     }
 
+    // 신청서 수정
     const updatedApplication = await prisma.orderApplication.update({
       where: { id: applicationId },
       data: {
@@ -131,15 +127,8 @@ export const updateApplication = async (req: Request, res: Response) => {
           ? new Date(estimatedDelivery)
           : null,
       },
-      include: {
-        seller: {
-          select: {
-            username: true,
-          },
-        },
-      },
+      include: { seller: { select: { username: true } } },
     });
-
     res.status(200).json({
       message: "신청이 성공적으로 수정되었습니다.",
       application: {
@@ -151,56 +140,48 @@ export const updateApplication = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "신청 수정 실패" });
   }
 };
 
 // 판매자 신청 삭제
-export const deleteApplication = async (req: Request, res: Response) => {
+export const deleteOrderApplication = async (req: Request, res: Response) => {
   try {
     const { applicationId } = req.params;
-
-    const sellerId = req.user?.id;
-
+    const sellerId = req.user!.id; // 미들웨어에서 무조건 보장
     const application = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
     });
-
     if (!application) {
       res.status(404).json({ error: "신청을 찾을 수 없습니다." });
       return;
     }
-
     if (application.sellerId !== sellerId) {
       res.status(403).json({ error: "자신의 신청만 삭제할 수 있습니다." });
       return;
     }
-
     await prisma.orderApplication.delete({
       where: { id: applicationId },
     });
-
     res.status(200).json({ message: "신청이 성공적으로 삭제되었습니다." });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "신청 삭제 실패" });
   }
 };
 
 // 신청 상태 처리 및 주문 상태 변경 (관리자만 가능)
-export const updateApplicationStatus = async (req: Request, res: Response) => {
+export const updateOrderApplicationStatus = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { applicationId } = req.params;
     const { status } = req.body;
-
-    // 유효한 상태값인지 확인
     const validStatuses = ["pending", "accepted", "rejected"];
     if (!validStatuses.includes(status)) {
       res.status(400).json({ error: "유효하지 않은 상태값입니다." });
       return;
     }
-
     const application = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
       include: {
@@ -213,65 +194,40 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
         },
       },
     });
-
     if (!application) {
       res.status(404).json({ error: "신청을 찾을 수 없습니다." });
       return;
     }
-
-    // 트랜잭션으로 처리
     await prisma.$transaction(async (tx) => {
-      // 신청 상태 업데이트
       const updatedApplication = await tx.orderApplication.update({
         where: { id: applicationId },
         data: { status },
-        include: {
-          seller: {
-            select: {
-              username: true,
-            },
-          },
-        },
+        include: { seller: { select: { username: true } } },
       });
 
-      // 신청이 수락되면 주문 상태를 "진행중"으로 변경
       if (
         status === "accepted" &&
         application.orderRequest.status === "pending"
       ) {
-        // 주문 상태를 "진행중"으로 변경
         await tx.orderRequest.update({
           where: { id: application.orderRequest.id },
           data: { status: "progress" },
         });
-
-        // 승인된 신청자 빼고 나머지 신청자는 거절 처리
         await tx.orderApplication.updateMany({
           where: {
             orderRequestId: application.orderRequest.id,
             status: "pending",
           },
-          data: {
-            status: "rejected",
-          },
+          data: { status: "rejected" },
         });
       }
-
       return updatedApplication;
     });
 
-    // 업데이트된 구매자 정보 조회
     const updatedApplication = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
-      include: {
-        seller: {
-          select: {
-            username: true,
-          },
-        },
-      },
+      include: { seller: { select: { username: true } } },
     });
-
     res.status(200).json({
       message: "신청 상태가 성공적으로 변경되었습니다.",
       application: {
@@ -282,36 +238,27 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "신청 상태 변경 실패" });
   }
 };
 
 // 주문별 신청 목록 조회
-export const getApplicationsByOrder = async (req: Request, res: Response) => {
+export const getOrderApplicationsByOrder = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { orderRequestId } = req.params;
     const { status } = req.query;
-
     const where: any = { orderRequestId };
     if (status) {
       where.status = status;
     }
-
     const applications = await prisma.orderApplication.findMany({
       where,
-      include: {
-        seller: {
-          select: {
-            username: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      include: { seller: { select: { username: true } } },
+      orderBy: { createdAt: "desc" },
     });
-
     res.status(200).json({
       applications: applications.map((app) => ({
         ...app,
@@ -322,19 +269,18 @@ export const getApplicationsByOrder = async (req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "신청 목록 조회 실패" });
   }
 };
 
-// 판매자의 승인된 신청서 조회
-export const getAcceptedApplications = async (req: Request, res: Response) => {
+// 판매자의 승인된 신청서 목록 조회
+export const getMyOrderApplications = async (req: Request, res: Response) => {
   try {
-    const sellerId = req.user?.id;
+    const sellerId = req.user!.id;
 
     const acceptedApplications = await prisma.orderApplication.findMany({
       where: {
-        sellerId,
+        sellerId: sellerId,
         status: "accepted",
       },
       include: {
@@ -345,24 +291,72 @@ export const getAcceptedApplications = async (req: Request, res: Response) => {
             description: true,
             requiredPoints: true,
             status: true,
+            createdAt: true,
+            buyer: { select: { username: true } },
+          },
+        },
+        workItems: {
+          select: {
+            id: true,
+            description: true,
+            status: true,
+            submittedAt: true,
+            workLink: true,
+            fileUrl: true,
           },
         },
       },
-      orderBy: {
-        updatedAt: "desc",
-      },
+      orderBy: { updatedAt: "desc" },
     });
-
     res.status(200).json({
       applications: acceptedApplications.map((app) => ({
         ...app,
         createdAt: app.createdAt.toISOString(),
         updatedAt: app.updatedAt.toISOString(),
         estimatedDelivery: app.estimatedDelivery?.toISOString(),
+        orderRequest: {
+          ...app.orderRequest,
+          createdAt: app.orderRequest.createdAt.toISOString(),
+          buyer: { name: app.orderRequest.buyer.username },
+        },
+        workItems: app.workItems.map((item) => ({
+          ...item,
+          submittedAt: item.submittedAt?.toISOString(),
+        })),
       })),
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "승인된 신청서 조회 실패" });
+    res.status(500).json({ error: "승인된 신청서 목록 조회 실패" });
+  }
+};
+
+// 관리자용 승인된 신청서 삭제
+export const deleteAcceptedOrderApplication = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { applicationId } = req.params;
+    const application = await prisma.orderApplication.findUnique({
+      where: { id: applicationId },
+    });
+    if (!application) {
+      res.status(404).json({ error: "신청서를 찾을 수 없습니다." });
+      return;
+    }
+    if (application.status !== "accepted") {
+      res
+        .status(400)
+        .json({ error: "승인된(accepted) 신청서만 삭제할 수 있습니다." });
+      return;
+    }
+    await prisma.orderApplication.delete({
+      where: { id: applicationId },
+    });
+    res
+      .status(200)
+      .json({ message: "승인된 신청서가 성공적으로 삭제되었습니다." });
+  } catch (error) {
+    res.status(500).json({ error: "신청서 삭제 실패" });
   }
 };

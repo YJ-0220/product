@@ -9,7 +9,10 @@ export interface FormInputProps {
   ) => void;
   type?: string;
   rows?: number;
-  options?: Array<{ id: number; name: string }>;
+  options?: Array<{ id: number; name: string } | { value: string; label: string }>;
+  placeholder?: string;
+  min?: string;
+  max?: string;
 }
 
 export interface OrderRequestData {

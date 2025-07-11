@@ -3,6 +3,7 @@ import { getOrderRequestBoard } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import type { OrderData } from "@/types/orderTypes";
+import { useUtils } from "@/hooks/useUtils";
 
 const OrderBoardTitles = [
   {
@@ -36,6 +37,7 @@ export default function OrderBoard() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { getStatusText, getStatusColor } = useUtils();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -64,37 +66,7 @@ export default function OrderBoard() {
     };
   }, []);
 
-  // 상태 텍스트 변환 함수
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "대기 중";
-      case "progress":
-        return "진행 중";
-      case "completed":
-        return "완료됨";
-      case "cancelled":
-        return "취소됨";
-      default:
-        return "알 수 없음";
-    }
-  };
 
-  // 상태 색상 클래스
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "progress":
-        return "bg-blue-100 text-blue-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
 
   if (loading) {
     return (
@@ -184,7 +156,13 @@ export default function OrderBoard() {
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                      {order.title}
+                      <div>
+                        <div className="font-medium">{order.title}</div>
+                        {order.hasApplied && (
+                          <div className="text-xs mt-1">
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex flex-col">

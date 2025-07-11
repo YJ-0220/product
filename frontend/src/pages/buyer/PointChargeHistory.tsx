@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import type { PointChargeRequest } from "@/types/pointRequestTypes";
 import { getPointChargeRequests } from "@/api/points";
+import { useUtils } from "@/hooks/useUtils";
 
 export default function PointChargeHistory() {
+  const { getStatusText, getStatusColor } = useUtils();
   const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,31 +24,7 @@ export default function PointChargeHistory() {
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '대기중';
-      case 'approved':
-        return '승인됨';
-      case 'rejected':
-        return '거절됨';
-      default:
-        return status;
-    }
-  };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">

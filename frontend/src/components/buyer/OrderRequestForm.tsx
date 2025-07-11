@@ -48,7 +48,7 @@ export default function OrderRequestForm() {
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FormInput
-              label="상위 카테고리"
+              label="SNS"
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
@@ -56,7 +56,7 @@ export default function OrderRequestForm() {
               options={categories}
             />
             <FormInput
-              label="하위 카테고리"
+              label="서비스"
               name="subcategoryId"
               value={formData.subcategoryId}
               onChange={handleChange}

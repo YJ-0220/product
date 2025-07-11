@@ -1,22 +1,22 @@
 import {
-  createApplication,
+  createOrderApplication,
   deleteApplication,
   getApplicationsByOrder,
-  updateApplication,
+  editOrderApplication,
 } from "@/api/order";
 import { useState } from "react";
 import type { ApplicationData } from "@/types/orderTypes";
 
-export const useOrderApplicationRequest = () => {
+export const useOrderApplication = () => {
   const [editingApplicationId, setEditingApplicationId] = useState<
     string | null
   >(null);
+  const [applications, setApplications] = useState<ApplicationData[]>([]);
 
   // 신청하기/취소하기
   const handleApplicationSubmit = async (
     e: React.FormEvent,
     orderId: string,
-    setApplications: (applications: ApplicationData[]) => void,
     setError: (error: string) => void
   ) => {
     e.preventDefault();
@@ -31,9 +31,9 @@ export const useOrderApplicationRequest = () => {
       };
 
       if (editingApplicationId) {
-        await updateApplication(editingApplicationId, data);
+        await editOrderApplication(orderId, editingApplicationId, data);
       } else {
-        await createApplication(orderId, data);
+        await createOrderApplication(orderId, data);
       }
 
       // 신청 목록 새로고침
@@ -46,6 +46,7 @@ export const useOrderApplicationRequest = () => {
       setError(error?.response?.data?.error || "신청 제출에 실패했습니다.");
     }
   };
+
   // 신청 수정 모드 취소
   const handleCancelEdit = () => {
     resetForm();
@@ -54,10 +55,9 @@ export const useOrderApplicationRequest = () => {
   // 신청 삭제
   const handleDeleteApplication = async (
     applicationId: string,
-    orderId: string,
-    setApplications: (applications: ApplicationData[]) => void
+    orderId: string
   ) => {
-    await deleteApplication(applicationId);
+    await deleteApplication(orderId, applicationId);
     const applicationsData = await getApplicationsByOrder(orderId);
     setApplications(applicationsData.applications);
   };
@@ -75,7 +75,7 @@ export const useOrderApplicationRequest = () => {
       const hasApplied = currentApplications.some(
         (app) => app.sellerId === currentUserId
       );
-      
+
       if (hasApplied) {
         alert("이미 신청한 주문입니다.");
         return;
@@ -88,11 +88,11 @@ export const useOrderApplicationRequest = () => {
       };
 
       // 신청 제출
-      await createApplication(orderId, applicationData);
-      
+      await createOrderApplication(orderId, applicationData);
+
       // 성공 메시지
       alert("신청되었습니다!");
-      
+
       // 데이터 새로고침
       refreshData();
     } catch (error: any) {
@@ -139,7 +139,7 @@ export const useOrderApplicationRequest = () => {
   return {
     // 상태
     editingApplicationId,
-
+    applications,
     // 액션
     handleApplicationSubmit,
     handleCancelEdit,

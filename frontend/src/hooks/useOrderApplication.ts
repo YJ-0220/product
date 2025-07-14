@@ -1,8 +1,10 @@
 import {
   createOrderApplication,
   deleteApplication,
-  getApplicationsByOrder,
   editOrderApplication,
+  updateApplicationStatus,
+  updateOrderStatus,
+  deleteAcceptedApplication,
 } from "@/api/order";
 import { useState } from "react";
 import type { ApplicationData } from "@/types/orderTypes";
@@ -11,13 +13,14 @@ export const useOrderApplication = () => {
   const [editingApplicationId, setEditingApplicationId] = useState<
     string | null
   >(null);
-  const [applications, setApplications] = useState<ApplicationData[]>([]);
+  const [updating, setUpdating] = useState(false);
 
   // 신청하기/취소하기
   const handleApplicationSubmit = async (
     e: React.FormEvent,
     orderId: string,
-    setError: (error: string) => void
+    setError: (error: string) => void,
+    refreshData: () => void
   ) => {
     e.preventDefault();
 
@@ -37,8 +40,7 @@ export const useOrderApplication = () => {
       }
 
       // 신청 목록 새로고침
-      const applicationsData = await getApplicationsByOrder(orderId);
-      setApplications(applicationsData.applications);
+      refreshData();
 
       // 폼 초기화 및 닫기
       resetForm();
@@ -52,14 +54,14 @@ export const useOrderApplication = () => {
     resetForm();
   };
 
-  // 신청 삭제
+  // 신청 삭제 (판매자용)
   const handleDeleteApplication = async (
     applicationId: string,
-    orderId: string
+    orderId: string,
+    refreshData: () => void
   ) => {
     await deleteApplication(orderId, applicationId);
-    const applicationsData = await getApplicationsByOrder(orderId);
-    setApplications(applicationsData.applications);
+    refreshData();
   };
 
   // 간단한 신청 (입력 없이 바로 신청)
@@ -100,56 +102,76 @@ export const useOrderApplication = () => {
     }
   };
 
+  // 주문 상태 변경 (관리자용)
+  const handleOrderStatusUpdate = async (
+    orderId: string,
+    newStatus: string,
+    refreshData: () => void
+  ) => {
+    try {
+      setUpdating(true);
+      await updateOrderStatus(orderId, newStatus);
+      refreshData();
+    } catch (error: any) {
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // 신청 상태 변경 (관리자용)
+  const handleApplicationStatusUpdate = async (
+    orderId: string,
+    applicationId: string,
+    newStatus: string,
+    refreshData: () => void
+  ) => {
+    try {
+      setUpdating(true);
+      await updateApplicationStatus(orderId, applicationId, newStatus);
+      refreshData();
+      
+      // 성공 메시지
+      setTimeout(() => {
+        alert(newStatus === 'accepted' ? '신청이 수락되었습니다.' : '신청이 거절되었습니다.');
+      }, 1000);
+    } catch (error: any) {
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  // 관리자용 승인된 신청서 삭제
+  const handleDeleteAcceptedApplication = async (
+    applicationId: string,
+    refreshData: () => void
+  ) => {
+    try {
+      setUpdating(true);
+      await deleteAcceptedApplication(applicationId);
+      refreshData();
+      alert("승인된 신청서가 삭제되었습니다.");
+    } catch (error: any) {
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   // 폼 초기화
   const resetForm = () => {
     setEditingApplicationId(null);
   };
 
-  // 신청 상태 관련 유틸리티
-  const getApplicationStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "accepted":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "cancelled":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getApplicationStatusText = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "검토중";
-      case "accepted":
-        return "수락됨";
-      case "rejected":
-        return "거절됨";
-      case "cancelled":
-        return "취소됨";
-      default:
-        return status;
-    }
-  };
-
   return {
-    // 상태
     editingApplicationId,
-    applications,
-    // 액션
+    updating,
     handleApplicationSubmit,
     handleCancelEdit,
     resetForm,
     setEditingApplicationId,
     handleDeleteApplication,
     handleSimpleApplication,
-
-    // 유틸리티
-    getApplicationStatusBadgeClass,
-    getApplicationStatusText,
+    handleOrderStatusUpdate,
+    handleApplicationStatusUpdate,
+    handleDeleteAcceptedApplication,
   };
 };

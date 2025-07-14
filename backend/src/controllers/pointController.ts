@@ -18,10 +18,11 @@ export const adminChargePoint = async (req: Request, res: Response) => {
       // 포인트 조회
       const pointResult = await tx.point.findUnique({
         where: {
-          userId: userId,
+          userId,
         },
       });
 
+      // 포인트 조회 결과가 없으면 생성
       if (!pointResult) {
         await tx.point.create({
           data: {
@@ -32,7 +33,7 @@ export const adminChargePoint = async (req: Request, res: Response) => {
       } else {
         await tx.point.update({
           where: {
-            userId: userId,
+            userId,
           },
           data: {
             balance: { increment: amount },
@@ -66,7 +67,6 @@ export const adminChargePoint = async (req: Request, res: Response) => {
       });
     });
   } catch (error) {
-    console.error("포인트 충전 오류:", error);
     res.status(500).json({
       message: "포인트 충전에 실패했습니다.",
     });
@@ -144,7 +144,6 @@ export const adminChargeUserPoint = async (req: Request, res: Response) => {
       description: description || "관리자 직접 충전",
     });
   } catch (error) {
-    console.error("관리자 포인트 충전 오류:", error);
     res.status(500).json({
       message: "포인트 충전에 실패했습니다.",
     });
@@ -177,7 +176,6 @@ export const createPointChargeRequest = async (req: Request, res: Response) => {
       requestId: chargeRequest.id,
     });
   } catch (error) {
-    console.error("포인트 충전 신청 오류:", error);
     res.status(500).json({
       message: "포인트 충전 신청에 실패했습니다.",
     });
@@ -251,7 +249,6 @@ export const createPointWithdrawRequest = async (
       requestId: withdrawRequest.id,
     });
   } catch (error) {
-    console.error("포인트 환전 신청 오류:", error);
     res.status(500).json({
       message: "포인트 환전 신청에 실패했습니다.",
     });
@@ -280,7 +277,6 @@ export const getPointChargeRequests = async (req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    console.error("포인트 충전 신청 목록 조회 오류:", error);
     res.status(500).json({
       message: "포인트 충전 신청 목록 조회에 실패했습니다.",
     });
@@ -309,7 +305,6 @@ export const getPointWithdrawRequests = async (req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    console.error("포인트 환전 신청 목록 조회 오류:", error);
     res.status(500).json({
       message: "포인트 환전 신청 목록 조회에 실패했습니다.",
     });
@@ -337,7 +332,6 @@ export const getUserPointHistory = async (req: Request, res: Response) => {
       })),
     });
   } catch (error) {
-    console.error("포인트 거래 내역 조회 오류:", error);
     res.status(500).json({
       message: "포인트 거래 내역 조회에 실패했습니다.",
     });
@@ -357,7 +351,6 @@ export const getBanks = async (req: Request, res: Response) => {
       banks,
     });
   } catch (error) {
-    console.error("은행 목록 조회 오류:", error);
     res.status(500).json({
       message: "은행 목록 조회에 실패했습니다.",
     });

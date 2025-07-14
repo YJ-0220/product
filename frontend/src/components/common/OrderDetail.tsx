@@ -1,31 +1,32 @@
-import { useOrderRequestDetail } from "@/hooks/useOrderRequestDetail";
+import { useOrderDetail } from "@/hooks/useOrderDetail";
 import { useOrderApplication } from "@/hooks/useOrderApplication";
+import { useUtils } from "@/hooks/useUtils";
 import { Link } from "react-router-dom";
 
 export default function OrderDetail() {
+  // 데이터 관리 훅
   const {
     order,
     applications,
     loading,
     error,
-    updating,
     user,
-    handleOrderStatusUpdate,
-    handleApplicationStatusUpdate,
     refreshData,
     navigate,
-    getStatusBadgeClass,
-    getStatusText,
     formatDate,
-    handleDeleteAcceptedApplication,
-  } = useOrderRequestDetail();
+  } = useOrderDetail();
 
+  // 신청 관련 액션 훅
   const {
     handleDeleteApplication,
     handleSimpleApplication,
-    getApplicationStatusBadgeClass,
-    getApplicationStatusText,
+    handleOrderStatusUpdate,
+    handleApplicationStatusUpdate,
+    handleDeleteAcceptedApplication,
+    updating,
   } = useOrderApplication();
+  
+  const {getStatusColor, getStatusText} = useUtils();
 
   if (loading) {
     return (
@@ -86,7 +87,7 @@ export default function OrderDetail() {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{order.title}</h1>
         <div className="flex items-center space-x-4">
           <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClass(
+            className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
               order.status
             )}`}
           >
@@ -189,22 +190,6 @@ export default function OrderDetail() {
                         <span className="text-sm text-green-600 font-medium">
                           신청 완료
                         </span>
-                        <button
-                          onClick={() => {
-                            const myApplication = applications.find(
-                              (app) => app.sellerId === user?.id
-                            );
-                            if (myApplication) {
-                              handleDeleteApplication(
-                                myApplication.id,
-                                order.id
-                              );
-                            }
-                          }}
-                          className="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
-                        >
-                          신청 취소
-                        </button>
                       </div>
                     );
                   } else {
@@ -267,11 +252,11 @@ export default function OrderDetail() {
                                   {application.seller.name}
                                 </span>
                                 <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium ${getApplicationStatusBadgeClass(
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                                     application.status
                                   )}`}
                                 >
-                                  {getApplicationStatusText(application.status)}
+                                  {getStatusText(application.status)}
                                 </span>
                               </div>
                               <div className="flex items-center space-x-2">
@@ -285,7 +270,8 @@ export default function OrderDetail() {
                                       onClick={() =>
                                         handleDeleteApplication(
                                           application.id,
-                                          order.id
+                                          order.id,
+                                          refreshData
                                         )
                                       }
                                       className="text-red-600 hover:text-red-700 text-sm font-medium"
@@ -309,7 +295,8 @@ export default function OrderDetail() {
                                       handleApplicationStatusUpdate(
                                         order.id,
                                         application.id,
-                                        "rejected"
+                                        "rejected",
+                                        refreshData
                                       )
                                     }
                                     disabled={updating}
@@ -322,7 +309,8 @@ export default function OrderDetail() {
                                       handleApplicationStatusUpdate(
                                         order.id,
                                         application.id,
-                                        "accepted"
+                                        "accepted",
+                                        refreshData
                                       )
                                     }
                                     disabled={updating}
@@ -374,7 +362,8 @@ export default function OrderDetail() {
                                         window.confirm("정말 삭제하시겠습니까?")
                                       ) {
                                         handleDeleteAcceptedApplication(
-                                          application.id
+                                          application.id,
+                                          refreshData
                                         );
                                       }
                                     }}
@@ -465,7 +454,7 @@ export default function OrderDetail() {
                   (status) => (
                     <button
                       key={status}
-                      onClick={() => handleOrderStatusUpdate(status)}
+                      onClick={() => handleOrderStatusUpdate(order.id, status, refreshData)}
                       disabled={updating || order.status === status}
                       className={`w-full px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         order.status === status

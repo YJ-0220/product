@@ -129,7 +129,7 @@ model OrderApplication {
 model WorkItem {
   id              String    @id @default(dbgenerated("gen_random_uuid()"))
   orderRequestId  String    @unique
-  applicationId   String   
+  applicationId   String    @unique
   fileUrl         String?  
   workLink        String?  
   description     String?

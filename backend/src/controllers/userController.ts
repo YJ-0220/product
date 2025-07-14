@@ -39,7 +39,6 @@ export const getUserProfile: RequestHandler = async (
       message: "프로필 조회 성공",
     });
   } catch (error) {
-    console.error("프로필 조회 오류 상세:", error);
     res.status(500).json({
       message: "서버 오류가 발생했습니다.",
     });

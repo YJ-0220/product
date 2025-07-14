@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getWorkProgress, getWorkItemByOrderId, getApplicationsByOrder } from "@/api/order";
+import { getWorkProgress, getWorkItemByOrderId, getOrderApplicationsByOrder } from "@/api/order";
 import type { WorkProgressData } from "@/types/orderTypes";
 import { useUtils } from "@/hooks/useUtils";
 
@@ -19,7 +19,7 @@ export default function WorkProgressView() {
         setLoading(true);
         
         // 승인된 신청서 조회
-        const applicationsData = await getApplicationsByOrder(orderId, "accepted");
+        const applicationsData = await getOrderApplicationsByOrder(orderId, "accepted");
         
         if (applicationsData.applications && applicationsData.applications.length > 0) {
           const applicationId = applicationsData.applications[0].id;

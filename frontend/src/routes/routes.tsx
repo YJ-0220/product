@@ -20,7 +20,6 @@ import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
 import NotFound from "@/pages/common/NotFound";
 import WorkItemForm from "@/components/seller/WorkItemForm";
 import WorkProgress from "@/pages/common/WorkProgress";
-import WorkList from "@/pages/common/WorkList";
 
 export const router = createBrowserRouter([
   {
@@ -90,30 +89,18 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: ":id",
+            path: ":orderId",
             element: <OrderDetail />,
             children: [
               {
-                path: "work",
-                element: <WorkItemForm />,
+                path: "progress",
+                element: <WorkProgress />,
               },
             ],
           },
           {
-            path: ":id/progress",
-            element: (
-              <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
-                <WorkProgress />
-              </RequireAuth>
-            ),
-          },
-          {
-            path: "work",
-            element: (
-              <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
-                <WorkList />
-              </RequireAuth>
-            ),
+            path: "my/work",
+            element: <WorkItemForm />,
           },
           {
             path: "success",

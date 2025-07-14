@@ -12,7 +12,7 @@ interface WorkItemData {
 }
 
 export default function WorkItemForm() {
-  const { id: orderId } = useParams<{ id: string }>();
+  const { id: applicationId } = useParams<{ id: string }>();
   // const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -31,11 +31,11 @@ export default function WorkItemForm() {
   // 승인된 신청서 조회
   useEffect(() => {
     const fetchAcceptedApplication = async () => {
-      if (!orderId) return;
+      if (!applicationId) return;
       
       try {
         setLoading(true);
-        const application = await getAcceptedApplication(orderId);
+        const application = await getAcceptedApplication(applicationId);
         setAcceptedApplication(application);
       } catch (error: any) {
         setError("승인된 신청서를 찾을 수 없습니다. 작업물을 제출할 권한이 없습니다.");
@@ -45,7 +45,7 @@ export default function WorkItemForm() {
     };
 
     fetchAcceptedApplication();
-  }, [orderId]);
+  }, [applicationId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -97,7 +97,7 @@ export default function WorkItemForm() {
       // const uploadedFileUrl = await uploadFile(selectedFile);
       
       const workItemData = {
-        orderId: orderId!,  
+        orderId: applicationId!,  
         applicationId: acceptedApplication.id,
         description: formData.description,
         workLink: formData.workLink,

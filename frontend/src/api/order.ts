@@ -97,7 +97,7 @@ export const editOrderApplication = async (
 };
 
 // 주문별 신청서 조회
-export const getApplicationsByOrder = async (
+export const getOrderApplicationsByOrder = async (
   orderId: string,
   status?: string
 ): Promise<{

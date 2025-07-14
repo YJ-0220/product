@@ -9,7 +9,6 @@ export const createOrderApplication = async (req: Request, res: Response) => {
       res.status(400).json({ error: "유효하지 않은 orderId입니다." });
       return;
     }
-    console.log("프론트에서 요청하는 orderId:", orderId);
     const { message, proposedPrice, estimatedDelivery } = req.body;
     const sellerId = req.user!.id;
 
@@ -63,7 +62,6 @@ export const createOrderApplication = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error("신청 생성 에러:", error, error?.stack);
     if (error.message === "이미 신청한 주문이 있습니다.") {
       res.status(400).json({ error: error.message });
       return;
@@ -248,9 +246,9 @@ export const getOrderApplicationsByOrder = async (
   res: Response
 ) => {
   try {
-    const { orderRequestId } = req.params;
+    const { orderId } = req.params;
     const { status } = req.query;
-    const where: any = { orderRequestId };
+    const where: any = { orderRequestId: orderId };
     if (status) {
       where.status = status;
     }

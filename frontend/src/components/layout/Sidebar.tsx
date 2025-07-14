@@ -154,7 +154,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {openDropdowns["seller-order"] && (
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "주문 게시판")}
-                  {renderDropdownLink("/order/work", "승인된 작업")}
+                  {renderDropdownLink("/order/my/work", "작업 현황")}
                 </ul>
               )}
             </li>

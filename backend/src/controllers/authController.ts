@@ -83,7 +83,6 @@ export const register = (async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Register error:", error);
     res.status(500).json({ 
       message: "아이디 생성에 실패했습니다.",
       error: error instanceof Error ? error.message : "Unknown error"

@@ -74,7 +74,6 @@ export const createOrderRequest = async (req: Request, res: Response) => {
       remainingPoint: result.remainingPoint,
     });
   } catch (error: any) {
-    console.error(error);
     if (error.message === "포인트가 부족합니다.") {
       res.status(400).json({ message: error.message });
       return;
@@ -99,7 +98,6 @@ export const getOrderHistory = async (req: Request, res: Response) => {
 
     res.status(200).json(myTasks);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "작업 내역 조회 실패" });
   }
 };
@@ -192,7 +190,6 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
       limit: Number(limit),
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "주문 목록 조회 실패" });
   }
 };
@@ -235,7 +232,6 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
       deadline: order.deadline?.toISOString() || null,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "주문 조회 실패" });
   }
 };
@@ -285,7 +281,6 @@ export const updateOrderRequestStatus = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "주문 상태 변경 실패" });
   }
 };

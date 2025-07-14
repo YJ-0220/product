@@ -362,6 +362,7 @@ export default function OrderDetail() {
                                         window.confirm("정말 삭제하시겠습니까?")
                                       ) {
                                         handleDeleteAcceptedApplication(
+                                          order.id,
                                           application.id,
                                           refreshData
                                         );

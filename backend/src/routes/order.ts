@@ -79,28 +79,28 @@ router.patch(
 // ===== 작업물 (승인된 신청서에만) =====
 // 승인된 신청서에 작업물 제출(판매자)
 router.post(
-  "/:applicationId/work",
+  "/:orderId/applications/:applicationId/work",
   requiredSeller,
   createWorkItem
 );
 // 작업물 조회
-router.get("/:applicationId/work", getWorkItemByOrderId);
+router.get("/:orderId/applications/:applicationId/work", getWorkItemByOrderId);
 
 // ===== 작업 진행 상황 =====
 // 작업 진행 상황 생성 (판매자)
 router.post(
-  "/:applicationId/work/progress",
+  "/:orderId/applications/:applicationId/work/progress",
   requiredSeller,
   createWorkProgress
 );
 // 작업 진행 상황 조회 (모든 사용자)
 router.get(
-  "/:applicationId/work/progress",
+  "/:orderId/applications/:applicationId/work/progress",
   getWorkProgress
 );
 // 작업 진행 상황 수정 (판매자)
 router.put(
-  "/:applicationId/work/progress",
+  "/:orderId/applications/:applicationId/work/progress",
   requiredSeller,
   updateWorkProgress
 );
@@ -113,7 +113,7 @@ router.get("/my/work", getWorkItems);
 
 // 관리자만 접근 가능한 승인된 신청서 삭제 라우트
 router.delete(
-  "/applications/:applicationId",
+  "/:orderId/applications/:applicationId/accepted",
   requiredAdmin,
   deleteAcceptedOrderApplication
 );

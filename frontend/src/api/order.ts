@@ -52,7 +52,7 @@ export const updateOrderStatus = async (
   orderId: string,
   status: string
 ): Promise<OrderData> => {
-  const res = await api.patch(`/order/${orderId}/status`, { status });
+  const res = await api.patch(`/order/${orderId}`, { status });
   return res.data.order;
 };
 
@@ -151,8 +151,13 @@ export const getAcceptedApplicationsForWork = async () => {
 };
 
 // 승인된 신청서(accepted) 관리자 삭제
-export const deleteAcceptedApplication = async (applicationId: string) => {
-  const res = await api.delete(`/order/applications/${applicationId}/accepted`);
+export const deleteAcceptedApplication = async (
+  orderId: string,
+  applicationId: string
+) => {
+  const res = await api.delete(
+    `/order/${orderId}/applications/${applicationId}/accepted`
+  );
   return res.data;
 };
 

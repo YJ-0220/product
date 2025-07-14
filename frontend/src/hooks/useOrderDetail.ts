@@ -101,7 +101,7 @@ export const useOrderDetail = () => {
   const handleDeleteAcceptedApplication = async (applicationId: string) => {
     try {
       setUpdating(true);
-      await deleteAcceptedApplication(applicationId);
+      await deleteAcceptedApplication(orderId!, applicationId);
       await refreshData();
       alert("승인된 신청서가 삭제되었습니다.");
     } catch (error: any) {

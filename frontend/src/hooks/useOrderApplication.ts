@@ -142,12 +142,13 @@ export const useOrderApplication = () => {
 
   // 관리자용 승인된 신청서 삭제
   const handleDeleteAcceptedApplication = async (
+    orderId: string,
     applicationId: string,
     refreshData: () => void
   ) => {
     try {
       setUpdating(true);
-      await deleteAcceptedApplication(applicationId);
+      await deleteAcceptedApplication(orderId, applicationId);
       refreshData();
       alert("승인된 신청서가 삭제되었습니다.");
     } catch (error: any) {

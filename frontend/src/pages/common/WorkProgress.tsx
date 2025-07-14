@@ -5,7 +5,7 @@ import WorkProgressView from "@/components/common/WorkProgressView";
 
 export default function WorkProgress() {
   const { user } = useAuth();
-  const { id: orderId } = useParams<{ id: string }>();
+  const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
 
   const handleBack = () => {

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getAcceptedWorkItems, getBuyerWorkItems, getAcceptedApplicationsForWork } from "@/api/order";
+import { getAcceptedApplicationsForWork } from "@/api/order";
 import { Link } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
-import type { WorkItemData, WorkListApplicationData } from "@/types/orderTypes";
+import type { WorkListApplicationData } from "@/types/orderTypes";
 
 export default function WorkList() {
   const { user } = useAuth();
-  const { getStatusText, getStatusColor, formatDate } = useUtils();
+  const { formatDate } = useUtils();
   const [applications, setApplications] = useState<WorkListApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -149,7 +149,7 @@ export default function WorkList() {
                     <h4 className="text-sm font-medium text-gray-700">작업물</h4>
                     {application.workItems.length === 0 && (
                       <Link
-                        to={`/work/progress/${application.orderRequest.id}`}
+                        to={`/order/${application.orderRequest.id}/work`}
                         className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                       >
                         작업물 제출

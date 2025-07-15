@@ -20,6 +20,7 @@ import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
 import NotFound from "@/pages/common/NotFound";
 import WorkItemForm from "@/components/seller/WorkItemForm";
 import WorkProgress from "@/pages/common/WorkProgress";
+import WorkList from "@/pages/common/WorkList";
 
 export const router = createBrowserRouter([
   {
@@ -96,11 +97,23 @@ export const router = createBrowserRouter([
                 path: "progress",
                 element: <WorkProgress />,
               },
+              {
+                path: "work",
+                element: (
+                  <RequireAuth allowedRoles={["seller"]}>
+                    <WorkItemForm />
+                  </RequireAuth>
+                ),
+              },
             ],
           },
           {
-            path: "my/work",
-            element: <WorkItemForm />,
+            path: "work",
+            element: (
+              <RequireAuth allowedRoles={["seller", "buyer"]}>
+                <WorkList />
+              </RequireAuth>
+            ),
           },
           {
             path: "success",

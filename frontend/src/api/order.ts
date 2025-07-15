@@ -163,6 +163,19 @@ export const deleteAcceptedApplication = async (
 
 // ===== 작업물 관련 API =====
 
+// 파일 업로드
+export const uploadFile = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const res = await api.post('/order/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};
+
 // 작업물 제출
 export const createWorkItem = async (data: {
   orderId: string;
@@ -185,6 +198,19 @@ export const getWorkItemByOrderId = async (
 ) => {
   const res = await api.get(
     `/order/${orderId}/applications/${applicationId}/work`
+  );
+  return res.data;
+};
+
+// 작업물 상태 업데이트
+export const updateWorkItemStatus = async (
+  orderId: string,
+  applicationId: string,
+  status: string
+) => {
+  const res = await api.patch(
+    `/order/${orderId}/applications/${applicationId}/work/status`,
+    { status }
   );
   return res.data;
 };

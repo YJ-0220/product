@@ -373,3 +373,47 @@ export const getWorkItems = async (req: Request, res: Response) => {
     res.status(500).json({ error: "작업 목록 조회 실패" });
   }
 };
+
+// 작업물 상태 업데이트 (구매자만 가능)
+export const updateWorkItemStatus = async (req: Request, res: Response) => {
+  try {
+    const { orderId, applicationId } = req.params;
+    const { status } = req.body;
+    const buyerId = req.user?.id;
+
+    // 주문서가 존재하고 구매자의 것인지 확인
+    const orderRequest = await prisma.orderRequest.findUnique({
+      where: { id: orderId },
+      select: { buyerId: true },
+    });
+
+    if (!orderRequest) {
+      res.status(404).json({ error: "주문서를 찾을 수 없습니다." });
+      return;
+    }
+
+    if (orderRequest.buyerId !== buyerId) {
+      res.status(403).json({ error: "자신의 주문서만 작업물 상태를 변경할 수 있습니다." });
+      return;
+    }
+
+    // 작업물 상태 업데이트
+    const updatedWorkItem = await prisma.workItem.updateMany({
+      where: {
+        orderRequestId: orderId,
+        applicationId: applicationId,
+      },
+      data: {
+        status: status,
+      },
+    });
+
+    res.status(200).json({
+      message: "작업물 상태가 업데이트되었습니다.",
+      workItem: updatedWorkItem,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "작업물 상태 업데이트 실패" });
+  }
+};

@@ -31,6 +31,7 @@ import {
   createWorkProgress,
   getWorkProgress,
   updateWorkProgress,
+  updateWorkItemStatus,
 } from "../controllers/workController";
 
 const router = express.Router();
@@ -85,6 +86,21 @@ router.post(
 );
 // 작업물 조회
 router.get("/:orderId/applications/:applicationId/work", getWorkItemByOrderId);
+// 작업물 상태 업데이트 (구매자)
+router.patch(
+  "/:orderId/applications/:applicationId/work/status",
+  requiredBuyer,
+  updateWorkItemStatus
+);
+
+// ===== 파일 업로드 =====
+// 파일 업로드 (임시 구현)
+router.post("/upload", (req, res) => {
+  // 실제로는 multer 등을 사용하여 파일 업로드 처리
+  // 현재는 임시로 파일명만 반환
+  const fileUrl = `https://example.com/uploads/${Date.now()}.pdf`;
+  res.json({ fileUrl });
+});
 
 // ===== 작업 진행 상황 =====
 // 작업 진행 상황 생성 (판매자)

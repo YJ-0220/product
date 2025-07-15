@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getAcceptedApplicationsForWork } from "@/api/order";
+import { getAcceptedApplicationsForWork, updateWorkItemStatus } from "@/api/order";
 import { Link } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
 import type { WorkListApplicationData } from "@/types/orderTypes";
@@ -11,6 +11,7 @@ export default function WorkList() {
   const [applications, setApplications] = useState<WorkListApplicationData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchWorkList = async () => {
@@ -27,6 +28,21 @@ export default function WorkList() {
 
     fetchWorkList();
   }, []);
+
+  const handleStatusUpdate = async (orderId: string, applicationId: string, status: string) => {
+    try {
+      setUpdatingStatus(`${orderId}-${applicationId}`);
+      await updateWorkItemStatus(orderId, applicationId, status);
+      
+      // 상태 업데이트 후 목록 새로고침
+      const data = await getAcceptedApplicationsForWork();
+      setApplications(data.applications || []);
+    } catch (error: any) {
+      setError(error?.response?.data?.error || "상태 업데이트에 실패했습니다.");
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -165,14 +181,34 @@ export default function WorkList() {
                             <span className="text-sm text-gray-600">
                               {workItem.description || "작업물"}
                             </span>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              workItem.status === "approved" ? "bg-green-100 text-green-800" :
-                              workItem.status === "rejected" ? "bg-red-100 text-red-800" :
-                              "bg-yellow-100 text-yellow-800"
-                            }`}>
-                              {workItem.status === "approved" ? "승인됨" :
-                               workItem.status === "rejected" ? "거절됨" : "검토중"}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                workItem.status === "approved" ? "bg-green-100 text-green-800" :
+                                workItem.status === "rejected" ? "bg-red-100 text-red-800" :
+                                "bg-yellow-100 text-yellow-800"
+                              }`}>
+                                {workItem.status === "approved" ? "승인됨" :
+                                 workItem.status === "rejected" ? "거절됨" : "검토중"}
+                              </span>
+                              {user?.role === "buyer" && workItem.status === "submitted" && (
+                                <div className="flex space-x-1">
+                                  <button
+                                    onClick={() => handleStatusUpdate(application.orderRequest.id, application.id, "approved")}
+                                    disabled={updatingStatus === `${application.orderRequest.id}-${application.id}`}
+                                    className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                                  >
+                                    승인
+                                  </button>
+                                  <button
+                                    onClick={() => handleStatusUpdate(application.orderRequest.id, application.id, "rejected")}
+                                    disabled={updatingStatus === `${application.orderRequest.id}-${application.id}`}
+                                    className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                                  >
+                                    거절
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                           {workItem.submittedAt && (
                             <p className="text-xs text-gray-500 mt-1">

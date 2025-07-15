@@ -25,8 +25,8 @@ export default function OrderDetail() {
     handleDeleteAcceptedApplication,
     updating,
   } = useOrderApplication();
-  
-  const {getStatusColor, getStatusText} = useUtils();
+
+  const { getStatusColor, getStatusText } = useUtils();
 
   if (loading) {
     return (
@@ -113,18 +113,18 @@ export default function OrderDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               주문 정보
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   제목
                 </label>
                 <p className="text-gray-900">{order.title}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   설명
                 </label>
                 <p className="text-gray-900 whitespace-pre-wrap">
@@ -133,7 +133,7 @@ export default function OrderDetail() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
                     수량
                   </label>
                   <p className="text-gray-900">
@@ -142,7 +142,7 @@ export default function OrderDetail() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   마감일
                 </label>
                 <p className="text-gray-900">
@@ -156,24 +156,18 @@ export default function OrderDetail() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  판매자 신청 ({applications.length})
+                  판매자 신청
                 </h2>
                 {order.status === "pending" ? (
-                  <p className="text-sm text-blue-600 mt-1">
-                    신청을 받고 있습니다
-                  </p>
+                  <p className="text-sm text-blue-600">신청을 받고 있습니다</p>
                 ) : order.status === "progress" ? (
-                  <p className="text-sm text-green-600 mt-1">
+                  <p className="text-sm text-green-600">
                     승인된 신청서가 작업물로 진행중입니다
                   </p>
                 ) : order.status === "completed" ? (
-                  <p className="text-sm text-gray-600 mt-1">
-                    작업이 완료되었습니다
-                  </p>
+                  <p className="text-sm text-gray-600">작업이 완료되었습니다</p>
                 ) : (
-                  <p className="text-sm text-red-600 mt-1">
-                    주문이 취소되었습니다
-                  </p>
+                  <p className="text-sm text-red-600">주문이 취소되었습니다</p>
                 )}
               </div>
               {user?.role === "seller" &&
@@ -231,7 +225,7 @@ export default function OrderDetail() {
                 {applications.filter((app) => app.status === "pending").length >
                   0 && (
                   <div className="mb-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">
+                    <h3 className="text-lg font-medium text-gray-900">
                       신청 단계
                     </h3>
                     <div className="space-y-3">
@@ -330,7 +324,7 @@ export default function OrderDetail() {
                 {applications.filter((app) => app.status === "accepted")
                   .length > 0 && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">
+                    <h3 className="text-lg font-medium text-gray-900 my-4">
                       작업 단계
                     </h3>
                     <div className="space-y-3">
@@ -406,18 +400,16 @@ export default function OrderDetail() {
 
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              구매자 정보
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900">구매자 정보</h2>
             <div className="space-y-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   구매자
                 </label>
                 <p className="text-gray-900">{order.buyer.name}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   생성일
                 </label>
                 <p className="text-gray-900">{formatDate(order.createdAt)}</p>
@@ -426,18 +418,18 @@ export default function OrderDetail() {
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
               카테고리 정보
             </h2>
             <div className="space-y-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   상위 카테고리
                 </label>
                 <p className="text-gray-900">{order.category.name}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   하위 카테고리
                 </label>
                 <p className="text-gray-900">{order.subcategory.name}</p>
@@ -447,15 +439,15 @@ export default function OrderDetail() {
 
           {user?.role === "admin" && (
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                상태 관리
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900">상태 관리</h2>
               <div className="space-y-3">
                 {["pending", "progress", "completed", "cancelled"].map(
                   (status) => (
                     <button
                       key={status}
-                      onClick={() => handleOrderStatusUpdate(order.id, status, refreshData)}
+                      onClick={() =>
+                        handleOrderStatusUpdate(order.id, status, refreshData)
+                      }
                       disabled={updating || order.status === status}
                       className={`w-full px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         order.status === status

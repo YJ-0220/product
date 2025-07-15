@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 // import { useAuth } from "@/context/AuthContext";
 import FormInput from "@/components/FormInput";
-import { createWorkItem, getAcceptedApplication } from "@/api/order";
+import { createWorkItem, getAcceptedApplication, uploadFile } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
 
 interface WorkItemData {
@@ -93,15 +93,19 @@ export default function WorkItemForm() {
       setError("");
       setSuccess("");
 
-      // TODO: 파일 업로드 API 구현 필요
-      // const uploadedFileUrl = await uploadFile(selectedFile);
+      let uploadedFileUrl = "";
+      if (selectedFile) {
+        // 파일 업로드
+        const uploadResult = await uploadFile(selectedFile);
+        uploadedFileUrl = uploadResult.fileUrl;
+      }
       
       const workItemData = {
         orderId: applicationId!,  
         applicationId: acceptedApplication.id,
         description: formData.description,
         workLink: formData.workLink,
-        fileUrl: selectedFile ? "temp-file-url" : "", // 실제 업로드된 파일 URL로 교체
+        fileUrl: uploadedFileUrl,
       };
 
       await createWorkItem(workItemData);

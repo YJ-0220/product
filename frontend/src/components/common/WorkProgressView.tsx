@@ -5,7 +5,7 @@ import type { WorkProgressData } from "@/types/orderTypes";
 import { useUtils } from "@/hooks/useUtils";
 
 export default function WorkProgressView() {
-  const { id: orderId } = useParams<{ id: string }>();
+  const { orderId, applicationId } = useParams<{ orderId: string; applicationId?: string }>();
   const { getStatusText, getStatusColor } = useUtils();
   const [workProgresses, setWorkProgresses] = useState<WorkProgressData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,23 +18,27 @@ export default function WorkProgressView() {
       try {
         setLoading(true);
         
-        // 승인된 신청서 조회
-        const applicationsData = await getOrderApplicationsByOrder(orderId, "accepted");
+        let targetApplicationId = applicationId;
         
-        if (applicationsData.applications && applicationsData.applications.length > 0) {
-          const applicationId = applicationsData.applications[0].id;
-          
-          // WorkItem 조회
-          const workItemData = await getWorkItemByOrderId(orderId, applicationId);
-          if (workItemData.workItem) {
-            // 작업 진행 상황 조회
-            const progressData = await getWorkProgress(orderId, applicationId);
-            setWorkProgresses(progressData.workProgresses || []);
+        // applicationId가 없으면 승인된 신청서를 찾아서 사용
+        if (!targetApplicationId) {
+          const applicationsData = await getOrderApplicationsByOrder(orderId, "accepted");
+          if (applicationsData.applications && applicationsData.applications.length > 0) {
+            targetApplicationId = applicationsData.applications[0].id;
           } else {
-            setError("작업물을 찾을 수 없습니다.");
+            setError("승인된 신청서를 찾을 수 없습니다.");
+            return;
           }
+        }
+        
+        // WorkItem 조회
+        const workItemData = await getWorkItemByOrderId(orderId, targetApplicationId);
+        if (workItemData.workItem) {
+          // 작업 진행 상황 조회
+          const progressData = await getWorkProgress(orderId, targetApplicationId);
+          setWorkProgresses(progressData.workProgresses || []);
         } else {
-          setError("승인된 신청서를 찾을 수 없습니다.");
+          setError("작업물을 찾을 수 없습니다.");
         }
       } catch (error: any) {
         setError("작업 진행 상황을 불러올 수 없습니다.");
@@ -44,7 +48,7 @@ export default function WorkProgressView() {
     };
 
     fetchWorkProgress();
-  }, [orderId]);
+  }, [orderId, applicationId]);
 
 
 

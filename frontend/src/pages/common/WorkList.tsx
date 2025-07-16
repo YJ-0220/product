@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getAcceptedApplicationsForWork, updateWorkItemStatus } from "@/api/order";
+import { getMyOrderApplication } from "@/api/myPage";
+import { updateWorkItemStatus } from "@/api/order";
 import { Link } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
 import type { WorkListApplicationData } from "@/types/orderTypes";
@@ -17,7 +18,7 @@ export default function WorkList() {
     const fetchWorkList = async () => {
       try {
         setLoading(true);
-        const data = await getAcceptedApplicationsForWork();
+        const data = await getMyOrderApplication();
         setApplications(data.applications || []);
       } catch (error: any) {
         setError(error?.response?.data?.error || "작업 목록을 불러올 수 없습니다.");
@@ -35,7 +36,7 @@ export default function WorkList() {
       await updateWorkItemStatus(orderId, applicationId, status);
       
       // 상태 업데이트 후 목록 새로고침
-      const data = await getAcceptedApplicationsForWork();
+      const data = await getMyOrderApplication();
       setApplications(data.applications || []);
     } catch (error: any) {
       setError(error?.response?.data?.error || "상태 업데이트에 실패했습니다.");
@@ -165,7 +166,7 @@ export default function WorkList() {
                     <h4 className="text-sm font-medium text-gray-700">작업물</h4>
                     {application.workItems.length === 0 && (
                       <Link
-                        to={`/order/${application.orderRequest.id}/work`}
+                        to={`/order/${application.orderRequest.id}/work/${application.id}`}
                         className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                       >
                         작업물 제출
@@ -214,6 +215,16 @@ export default function WorkList() {
                             <p className="text-xs text-gray-500 mt-1">
                               제출일: {formatDate(workItem.submittedAt)}
                             </p>
+                          )}
+                          {user?.role === "seller" && (
+                            <div className="mt-2">
+                              <Link
+                                to={`/order/${application.orderRequest.id}/progress/${application.id}`}
+                                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                              >
+                                작업 진행 상황 보기
+                              </Link>
+                            </div>
                           )}
                         </div>
                       ))}

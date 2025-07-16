@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import FormInput from "@/components/FormInput";
 import { createWorkProgress, getWorkProgress, getWorkItemByOrderId } from "@/api/order";
-import type { WorkProgressData, CreateWorkProgressData } from "@/types/orderTypes";
+import type { WorkProgressData } from "@/types/orderTypes";
 import { useUtils } from "@/hooks/useUtils";
 
 interface WorkProgressFormData {
@@ -13,14 +13,13 @@ interface WorkProgressFormData {
 }
 
 export default function WorkProgressForm() {
-  const { id: orderId, applicationId } = useParams<{ id: string; applicationId: string }>();
+  const { orderId, applicationId } = useParams<{ orderId: string; applicationId: string }>();
   const { getStatusText } = useUtils();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [workProgresses, setWorkProgresses] = useState<WorkProgressData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [workItemId, setWorkItemId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<WorkProgressFormData>({
     title: "",
@@ -43,8 +42,6 @@ export default function WorkProgressForm() {
         // WorkItem 조회
         const workItemData = await getWorkItemByOrderId(orderId, applicationId);
         if (workItemData.workItem) {
-          setWorkItemId(workItemData.workItem.id);
-          
           // 작업 진행 상황 조회
           const progressData = await getWorkProgress(orderId, applicationId);
           setWorkProgresses(progressData.workProgresses || []);
@@ -94,13 +91,9 @@ export default function WorkProgressForm() {
       setError("");
       setSuccess("");
 
-      if (!workItemId) {
-        setError("작업물을 찾을 수 없습니다.");
-        return;
-      }
 
-      const workProgressData: CreateWorkProgressData = {
-        workItemId: workItemId,
+
+      const workProgressData = {
         title: formData.title,
         description: formData.description,
         progressPercent: Number(formData.progressPercent),

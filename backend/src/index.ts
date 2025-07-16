@@ -8,6 +8,7 @@ import userRoutes from "./routes/user";
 import adminRoutes from "./routes/admin";
 import orderRoutes from "./routes/order";
 import pointRoutes from "./routes/common/point";
+import mypageRoutes from "./routes/common/myPage";
 
 // Prisma Client 초기화
 export const prisma = new PrismaClient();
@@ -28,6 +29,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/points", pointRoutes);
+app.use("/api/my", mypageRoutes);
 
 // 서버 시작 시 Prisma 연결 확인
 prisma.$connect()

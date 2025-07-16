@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-// import { useAuth } from "@/context/AuthContext";
 import FormInput from "@/components/FormInput";
 import { createWorkItem, getAcceptedApplication, uploadFile } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
@@ -12,8 +11,7 @@ interface WorkItemData {
 }
 
 export default function WorkItemForm() {
-  const { id: applicationId } = useParams<{ id: string }>();
-  // const { user } = useAuth();
+  const { applicationId } = useParams<{ applicationId: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
@@ -101,7 +99,7 @@ export default function WorkItemForm() {
       }
       
       const workItemData = {
-        orderId: applicationId!,  
+        orderId: acceptedApplication.orderRequestId,  
         applicationId: acceptedApplication.id,
         description: formData.description,
         workLink: formData.workLink,

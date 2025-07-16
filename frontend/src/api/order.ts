@@ -18,7 +18,7 @@ export const createOrderRequest = async (data: OrderRequestData) => {
   return res.data;
 };
 
-// 주문 목록 조회
+// 주문 목록 조회 (주문 게시판용 - 모든 주문)
 export const getOrderRequestBoard = async (params?: {
   page?: number;
   limit?: number;
@@ -83,19 +83,6 @@ export const createOrderApplication = async (
   return res.data.application;
 };
 
-// 신청서 수정
-export const editOrderApplication = async (
-  orderId: string,
-  applicationId: string,
-  data: CreateApplicationData
-): Promise<ApplicationData> => {
-  const res = await api.put(
-    `/order/${orderId}/applications/${applicationId}`,
-    data
-  );
-  return res.data.application;
-};
-
 // 주문별 신청서 조회
 export const getOrderApplicationsByOrder = async (
   orderId: string,
@@ -144,12 +131,6 @@ export const getAcceptedApplication = async (orderId: string) => {
   return res.data.applications[0]; // 승인된 신청서는 하나만 있을 것
 };
 
-// 판매자의 승인된 신청서 목록 조회 (WorkItem이 없어도 표시)
-export const getAcceptedApplicationsForWork = async () => {
-  const res = await api.get("/order/my/applications");
-  return res.data;
-};
-
 // 승인된 신청서(accepted) 관리자 삭제
 export const deleteAcceptedApplication = async (
   orderId: string,
@@ -166,11 +147,11 @@ export const deleteAcceptedApplication = async (
 // 파일 업로드
 export const uploadFile = async (file: File) => {
   const formData = new FormData();
-  formData.append('file', file);
-  
-  const res = await api.post('/order/upload', formData, {
+  formData.append("file", file);
+
+  const res = await api.post("/order/upload", formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
   return res.data;
@@ -202,6 +183,23 @@ export const getWorkItemByOrderId = async (
   return res.data;
 };
 
+// 작업물 수정
+export const updateWorkItem = async (
+  orderId: string,
+  applicationId: string,
+  data: {
+    description?: string;
+    workLink?: string;
+    fileUrl?: string;
+  }
+) => {
+  const res = await api.patch(
+    `/order/${orderId}/applications/${applicationId}/work`,
+    data
+  );
+  return res.data;
+};
+
 // 작업물 상태 업데이트
 export const updateWorkItemStatus = async (
   orderId: string,
@@ -215,17 +213,11 @@ export const updateWorkItemStatus = async (
   return res.data;
 };
 
-// 작업 목록 조회 (구매자/판매자 역할에 따라 다른 데이터)
-export const getWorkItems = async () => {
-  const res = await api.get("/order/my/work");
-  return res.data;
-};
-
 // ===== 작업 진행 상황 관련 API =====
 
 // 작업 진행 상황 생성
 export const createWorkProgress = async (
-  data: CreateWorkProgressData & {
+  data: Omit<CreateWorkProgressData, 'workItemId'> & {
     orderId: string;
     applicationId: string;
   }

@@ -5,16 +5,8 @@ import { Link } from "react-router-dom";
 
 export default function OrderDetail() {
   // 데이터 관리 훅
-  const {
-    order,
-    applications,
-    loading,
-    error,
-    user,
-    refreshData,
-    navigate,
-    formatDate,
-  } = useOrderDetail();
+  const { order, applications, loading, error, user, refreshData, navigate } =
+    useOrderDetail();
 
   // 신청 관련 액션 훅
   const {
@@ -26,7 +18,7 @@ export default function OrderDetail() {
     updating,
   } = useOrderApplication();
 
-  const { getStatusColor, getStatusText } = useUtils();
+  const { getStatusColor, getStatusText, formatDate } = useUtils();
 
   if (loading) {
     return (

@@ -113,12 +113,15 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
       sortBy = "latest",
     } = req.query;
 
+    // 현재 로그인한 사용자
     const currentUserId = req.user?.id;
 
+    // 페이지 처리
     const skip = (Number(page) - 1) * Number(limit);
 
     // 필터 조건 구성
     const where: any = {};
+    
     if (categoryId) where.categoryId = Number(categoryId);
     if (subcategoryId) where.subcategoryId = Number(subcategoryId);
 

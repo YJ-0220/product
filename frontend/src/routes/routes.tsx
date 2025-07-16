@@ -6,9 +6,8 @@ import Layout from "@/components/layout/Layout";
 import Home from "@/pages/Home";
 import MyPage from "@/pages/common/MyPage";
 import Membership from "@/pages/common/Membership";
-import Point from "@/pages/common/Point";
 import Login from "@/pages/common/Login";
-import Order from "@/pages/common/Order";
+import EmptyLayout from "@/pages/common/EmptyLayout";
 import OrderBoard from "@/pages/common/OrderBoard";
 import OrderDetail from "@/components/common/OrderDetail";
 import OrderRequest from "@/pages/buyer/OrderRequest";
@@ -17,8 +16,8 @@ import OrderHistory from "@/pages/common/OrderHistory";
 import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 import PointChargeForm from "@/components/buyer/PointChargeForm";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
-import NotFound from "@/pages/common/NotFound";
 import WorkItemForm from "@/components/seller/WorkItemForm";
+import NotFound from "@/pages/common/NotFound";
 import WorkProgress from "@/pages/common/WorkProgress";
 import WorkList from "@/pages/common/WorkList";
 
@@ -39,7 +38,7 @@ export const router = createBrowserRouter([
         path: "point",
         element: (
           <RequireAuth allowedRoles={["buyer", "seller"]}>
-            <Point />
+            <EmptyLayout />
           </RequireAuth>
         ),
         children: [
@@ -75,7 +74,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "order",
-        element: <Order />,
+        element: (
+          <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
+            <EmptyLayout />
+          </RequireAuth>
+        ),
         children: [
           {
             index: true,
@@ -91,19 +94,23 @@ export const router = createBrowserRouter([
           },
           {
             path: ":orderId",
-            element: <OrderDetail />,
+            element: (
+              <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
+                <EmptyLayout />
+              </RequireAuth>
+            ),
             children: [
+              {
+                index: true,
+                element: <OrderDetail />,
+              },
               {
                 path: "progress",
                 element: <WorkProgress />,
               },
               {
-                path: "work",
-                element: (
-                  <RequireAuth allowedRoles={["seller"]}>
-                    <WorkItemForm />
-                  </RequireAuth>
-                ),
+                path: "work/:applicationId",
+                element: <WorkItemForm />,
               },
             ],
           },
@@ -137,14 +144,6 @@ export const router = createBrowserRouter([
           </RequireAuth>
         ),
       },
-      {
-        path: "mypage",
-        element: (
-          <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
-            <MyPage />
-          </RequireAuth>
-        ),
-      },
     ],
   },
   {
@@ -170,15 +169,20 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/mypage",
+    path: "/my",
     element: (
       <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
-        <MyPage />
+        <EmptyLayout />
       </LayoutWrapper>
     ),
     children: [
       {
-        path: "point",
+        index: true,
+        element: <MyPage />,
+      },
+      {
+        path: "order",
+        element: <OrderHistory />,
       },
     ],
   },

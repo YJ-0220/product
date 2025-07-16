@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getOrderRequestBoard } from "@/api/order";
+import { getMyOrderRequest } from "@/api/myPage";
 import type { OrderData } from "@/types/orderTypes";
 import { useAuth } from "@/context/AuthContext";
 import { useUtils } from "@/hooks/useUtils";
 
 interface OrderStats {
   pending: number;
-  inProgress: number;
+  progress: number;
   completed: number;
 }
 
@@ -17,22 +17,22 @@ export default function BuyerHome() {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [stats, setStats] = useState<OrderStats>({
     pending: 0,
-    inProgress: 0,
+    progress: 0,
     completed: 0,
   });
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const result = await getOrderRequestBoard();
-        setOrders(result.orders);
+        const result = await getMyOrderRequest();
+        setOrders(result.orderRequests);
 
-        const newStats = result.orders.reduce(
+        const newStats = result.orderRequests.reduce(
           (acc: OrderStats, order: OrderData) => {
             acc[order.status.toLowerCase() as keyof OrderStats]++;
             return acc;
           },
-          { pending: 0, inProgress: 0, completed: 0 }
+          { pending: 0, progress: 0, completed: 0 }
         );
         setStats(newStats);
       } catch (error) {
@@ -79,7 +79,7 @@ export default function BuyerHome() {
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900">진행중</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{stats.inProgress}</p>
+          <p className="text-3xl font-bold text-blue-600 mt-2">{stats.progress}</p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900">완료</h3>

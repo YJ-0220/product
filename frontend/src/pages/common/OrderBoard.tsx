@@ -66,8 +66,6 @@ export default function OrderBoard() {
     };
   }, []);
 
-
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -156,13 +154,7 @@ export default function OrderBoard() {
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                      <div>
-                        <div className="font-medium">{order.title}</div>
-                        {order.hasApplied && (
-                          <div className="text-xs mt-1">
-                          </div>
-                        )}
-                      </div>
+                      <div className="font-medium">{order.title}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex flex-col">

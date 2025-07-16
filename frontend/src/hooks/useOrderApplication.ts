@@ -1,7 +1,6 @@
 import {
   createOrderApplication,
   deleteApplication,
-  editOrderApplication,
   updateApplicationStatus,
   updateOrderStatus,
   deleteAcceptedApplication,
@@ -33,11 +32,7 @@ export const useOrderApplication = () => {
         estimatedDelivery: "",
       };
 
-      if (editingApplicationId) {
-        await editOrderApplication(orderId, editingApplicationId, data);
-      } else {
-        await createOrderApplication(orderId, data);
-      }
+      await createOrderApplication(orderId, data);
 
       // 신청 목록 새로고침
       refreshData();

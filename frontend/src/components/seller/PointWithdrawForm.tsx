@@ -86,7 +86,7 @@ export default function PointWithdrawForm() {
             onChange={(e) => setBankId(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
           >
-            <option value="">은행을 선택해주세요</option>
+            <option value="" disabled>은행을 선택해주세요</option>
             {banks.map((bank) => (
               <option key={bank.id} value={bank.id}>
                 {bank.name}

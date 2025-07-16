@@ -158,6 +158,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </ul>
               )}
             </li>
+            <li>
+            <button
+                onClick={() => toggleDropdown("seller-work")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M12 4v16m8-8H4" />
+                  <span>작업 관리</span>
+                </div>
+                <Icon 
+                  path={openDropdowns["seller-work"] 
+                    ? "M19 9l-7 7-7-7" 
+                    : "M9 5l7 7-7 7"
+                  } 
+                />
+              </button>
+              {openDropdowns["seller-work"] && (
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/order/work", "작업 현황")}
+                  {renderDropdownLink("/order/work/history", "작업 내역")}
+                </ul>
+              )}
+            </li>
             {renderLink(
               "/point/withdraw",
               "포인트 환전",
@@ -199,7 +222,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {renderDropdownLink("/order", "주문 게시판")}
                   {renderDropdownLink("/order/request", "주문 신청")}
                   {renderDropdownLink("/order/history", "주문 내역")}
-                  {renderDropdownLink("/order/work", "작업 현황")}
                 </ul>
               )}
             </li>
@@ -213,11 +235,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "멤버십",
               "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
             )}
-            {renderLink(
-              "/mypage",
-              "마이 페이지",
-              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            )}
+            <li>
+              <button
+                onClick={() => toggleDropdown("buyer-mypage")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  <span>마이 페이지</span>
+                </div>
+                <Icon 
+                  path={openDropdowns["buyer-mypage"] 
+                    ? "M19 9l-7 7-7-7" 
+                    : "M9 5l7 7-7 7"
+                  } 
+                />
+              </button>
+              {openDropdowns["buyer-mypage"] && (
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/my", "마이 페이지")}
+                  {renderDropdownLink("/my/order", "주문 내역")}
+                </ul>
+              )}
+            </li>
           </>
         );
       default:

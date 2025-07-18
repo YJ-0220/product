@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import FormInput from "@/components/FormInput";
-import { createWorkItem, getAcceptedApplication, uploadFile } from "@/api/order";
+import {
+  createWorkSubmit,
+  getOrderApplicationsByOrder,
+  uploadFile,
+} from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
 
 interface WorkItemData {
@@ -10,13 +14,17 @@ interface WorkItemData {
   fileUrl: string;
 }
 
-export default function WorkItemForm() {
-  const { applicationId } = useParams<{ applicationId: string }>();
+export default function WorkSubmitForm() {
+  const { orderId, applicationId } = useParams<{
+    orderId: string;
+    applicationId: string;
+  }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [acceptedApplication, setAcceptedApplication] = useState<ApplicationData | null>(null);
+  const [acceptedApplication, setAcceptedApplication] =
+    useState<ApplicationData | null>(null);
 
   const [formData, setFormData] = useState<WorkItemData>({
     description: "",
@@ -26,27 +34,46 @@ export default function WorkItemForm() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // 승인된 신청서 조회
   useEffect(() => {
     const fetchAcceptedApplication = async () => {
-      if (!applicationId) return;
-      
+      if (!orderId || !applicationId) {
+        setError("주문 ID 또는 신청서 ID가 없습니다.");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const application = await getAcceptedApplication(applicationId);
-        setAcceptedApplication(application);
+
+        const applicationsData = await getOrderApplicationsByOrder(orderId);
+        const targetApplication = applicationsData.applications.find(
+          (app: any) => app.id === applicationId && app.status === "accepted"
+        );
+
+        if (targetApplication) {
+          setAcceptedApplication(targetApplication);
+        } else {
+          setError(
+            "승인된 신청서를 찾을 수 없습니다. 작업물을 제출할 권한이 없습니다."
+          );
+        }
       } catch (error: any) {
-        setError("승인된 신청서를 찾을 수 없습니다. 작업물을 제출할 권한이 없습니다.");
+        setError(
+          "승인된 신청서를 찾을 수 없습니다. 작업물을 제출할 권한이 없습니다. 에러: " +
+            (error?.response?.data?.error || error.message)
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchAcceptedApplication();
-  }, [applicationId]);
+  }, [orderId, applicationId]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -59,7 +86,6 @@ export default function WorkItemForm() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      // 파일 크기 제한 (10MB)
       if (file.size > 10 * 1024 * 1024) {
         setError("파일 크기는 10MB 이하여야 합니다.");
         return;
@@ -70,12 +96,12 @@ export default function WorkItemForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!acceptedApplication) {
       setError("승인된 신청서가 없습니다.");
       return;
     }
-    
+
     if (!formData.description.trim()) {
       setError("작업물 설명을 입력해주세요.");
       return;
@@ -93,20 +119,19 @@ export default function WorkItemForm() {
 
       let uploadedFileUrl = "";
       if (selectedFile) {
-        // 파일 업로드
         const uploadResult = await uploadFile(selectedFile);
         uploadedFileUrl = uploadResult.fileUrl;
       }
-      
+
       const workItemData = {
-        orderId: acceptedApplication.orderRequestId,  
+        orderId: orderId!,
         applicationId: acceptedApplication.id,
         description: formData.description,
         workLink: formData.workLink,
         fileUrl: uploadedFileUrl,
       };
 
-      await createWorkItem(workItemData);
+      await createWorkSubmit(workItemData);
 
       setSuccess("작업물이 성공적으로 제출되었습니다.");
       setFormData({
@@ -148,34 +173,22 @@ export default function WorkItemForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
+    <div className="rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-center text-gray-900 mt-6">
         작업물 제출
       </h2>
-      
+
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-red-800 text-sm">{error}</p>
         </div>
       )}
-      
+
       {success && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
           <p className="text-green-800 text-sm">{success}</p>
         </div>
       )}
-
-      <div className="mb-6 p-4 bg-blue-50 rounded-md">
-        <h3 className="font-semibold text-blue-900 mb-2">승인된 신청 정보</h3>
-        <p className="text-sm text-blue-800">
-          신청자: {acceptedApplication.seller.name}
-        </p>
-        {acceptedApplication.proposedPrice && (
-          <p className="text-sm text-blue-800">
-            제안 가격: {acceptedApplication.proposedPrice} 포인트
-          </p>
-        )}
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <FormInput
@@ -185,6 +198,7 @@ export default function WorkItemForm() {
           onChange={handleChange}
           type="textarea"
           rows={6}
+          placeholder="작업물 설명을 입력해주세요."
         />
 
         <FormInput

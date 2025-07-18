@@ -5,7 +5,10 @@ import WorkProgressView from "@/components/common/WorkProgressView";
 
 export default function WorkProgress() {
   const { user } = useAuth();
-  const { orderId } = useParams<{ orderId: string }>();
+  const { orderId } = useParams<{
+    orderId: string;
+    applicationId: string;
+  }>();
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -24,13 +27,7 @@ export default function WorkProgress() {
         </button>
       </div>
 
-      {/* 판매자인 경우 작업 진행 상황 업데이트 폼을 보여줌 */}
-      {user?.role === "seller" ? (
-        <WorkProgressForm />
-      ) : (
-        /* 구매자나 관리자인 경우 작업 진행 상황을 보여줌 */
-        <WorkProgressView />
-      )}
+      {user?.role === "seller" ? <WorkProgressForm /> : <WorkProgressView />}
     </div>
   );
 }

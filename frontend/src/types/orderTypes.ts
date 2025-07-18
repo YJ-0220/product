@@ -82,6 +82,12 @@ export interface WorkItemData {
     requiredPoints: number;
     status: string;
     createdAt: string;
+    category?: {
+      name: string;
+    };
+    subcategory?: {
+      name: string;
+    };
     buyer?: {
       name: string;
     };

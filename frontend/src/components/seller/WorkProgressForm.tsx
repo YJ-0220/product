@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import FormInput from "@/components/FormInput";
-import { createWorkProgress, getWorkProgress, getWorkItemByOrderId } from "@/api/order";
+import { createWorkProgress, getWorkProgress } from "@/api/order";
 import type { WorkProgressData } from "@/types/orderTypes";
 import { useUtils } from "@/hooks/useUtils";
 
@@ -13,7 +13,10 @@ interface WorkProgressFormData {
 }
 
 export default function WorkProgressForm() {
-  const { orderId, applicationId } = useParams<{ orderId: string; applicationId: string }>();
+  const { orderId, applicationId } = useParams<{
+    orderId: string;
+    applicationId: string;
+  }>();
   const { getStatusText } = useUtils();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -35,19 +38,12 @@ export default function WorkProgressForm() {
         setError("주문 ID 또는 신청서 ID가 없습니다.");
         return;
       }
-      
+
       try {
         setLoading(true);
-        
-        // WorkItem 조회
-        const workItemData = await getWorkItemByOrderId(orderId, applicationId);
-        if (workItemData.workItem) {
-          // 작업 진행 상황 조회
-          const progressData = await getWorkProgress(orderId, applicationId);
-          setWorkProgresses(progressData.workProgresses || []);
-        } else {
-          setError("작업물을 찾을 수 없습니다. 먼저 작업물을 제출해주세요.");
-        }
+
+        const progressData = await getWorkProgress(orderId, applicationId);
+        setWorkProgresses(progressData.workProgresses || []);
       } catch (error: any) {
         setError("작업 진행 상황을 불러올 수 없습니다.");
       } finally {
@@ -59,7 +55,9 @@ export default function WorkProgressForm() {
   }, [orderId, applicationId]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -70,18 +68,21 @@ export default function WorkProgressForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!orderId || !applicationId) {
       setError("주문 ID 또는 신청서 ID가 없습니다.");
       return;
     }
-    
+
     if (!formData.title.trim()) {
       setError("진행 상황 제목을 입력해주세요.");
       return;
     }
 
-    if (Number(formData.progressPercent) < 0 || Number(formData.progressPercent) > 100) {
+    if (
+      Number(formData.progressPercent) < 0 ||
+      Number(formData.progressPercent) > 100
+    ) {
       setError("진행률은 0-100 사이의 값이어야 합니다.");
       return;
     }
@@ -90,8 +91,6 @@ export default function WorkProgressForm() {
       setIsSubmitting(true);
       setError("");
       setSuccess("");
-
-
 
       const workProgressData = {
         title: formData.title,
@@ -119,13 +118,14 @@ export default function WorkProgressForm() {
       const progressData = await getWorkProgress(orderId, applicationId);
       setWorkProgresses(progressData.workProgresses || []);
     } catch (error: any) {
-      setError(error?.response?.data?.error || "작업 진행 상황 업데이트에 실패했습니다.");
+      setError(
+        error?.response?.data?.error ||
+          "작업 진행 상황 업데이트에 실패했습니다."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-
-
 
   if (loading) {
     return (
@@ -139,14 +139,16 @@ export default function WorkProgressForm() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">작업 진행 상황 업데이트</h2>
-      
+      <h2 className="text-xl font-bold text-gray-900 mb-6">
+        작업 진행 상황 업데이트
+      </h2>
+
       {error && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
           {error}
         </div>
       )}
-      
+
       {success && (
         <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
           {success}
@@ -208,42 +210,56 @@ export default function WorkProgressForm() {
         </div>
       </form>
 
-      {/* 진행 상황 히스토리 */}
       {workProgresses.length > 0 && (
         <div className="mt-8 pt-6 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">진행 상황 히스토리</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            진행 상황 히스토리
+          </h3>
           <div className="space-y-4">
             {workProgresses.map((progress) => (
-              <div key={progress.id} className="border rounded-lg p-4 bg-gray-50">
+              <div
+                key={progress.id}
+                className="border rounded-lg p-4 bg-gray-50"
+              >
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-medium text-gray-900">{progress.title}</h4>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    progress.status === "completed" ? "bg-green-100 text-green-800" :
-                    progress.status === "in_progress" ? "bg-blue-100 text-blue-800" :
-                    "bg-gray-100 text-gray-800"
-                  }`}>
+                  <h4 className="font-medium text-gray-900">
+                    {progress.title}
+                  </h4>
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      progress.status === "completed"
+                        ? "bg-green-100 text-green-800"
+                        : progress.status === "in_progress"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
                     {getStatusText(progress.status)}
                   </span>
                 </div>
-                
+
                 {progress.description && (
-                  <p className="text-sm text-gray-600 mb-2">{progress.description}</p>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {progress.description}
+                  </p>
                 )}
-                
+
                 <div className="flex justify-between items-center">
                   <div className="flex-1 mr-4">
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${progress.progressPercent}%` }}
                       ></div>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-500">{progress.progressPercent}%</span>
+                  <span className="text-sm text-gray-500">
+                    {progress.progressPercent}%
+                  </span>
                 </div>
-                
+
                 <p className="text-xs text-gray-400 mt-2">
-                  {new Date(progress.createdAt).toLocaleString('ko-KR')}
+                  {new Date(progress.createdAt).toLocaleString("ko-KR")}
                 </p>
               </div>
             ))}
@@ -252,4 +268,4 @@ export default function WorkProgressForm() {
       )}
     </div>
   );
-} 
+}

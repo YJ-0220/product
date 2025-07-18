@@ -104,7 +104,7 @@ export const updateApplicationStatus = async (
   status: string
 ): Promise<ApplicationData> => {
   const res = await api.patch(
-    `/order/${orderId}/applications/${applicationId}/status`,
+    `/order/${orderId}/applications/${applicationId}`,
     {
       status,
     }
@@ -121,14 +121,6 @@ export const deleteApplication = async (
     `/order/${orderId}/applications/${applicationId}`
   );
   return res.data.application;
-};
-
-// 현재 사용자의 승인된 신청서 조회
-export const getAcceptedApplication = async (orderId: string) => {
-  const res = await api.get(`/order/${orderId}/applications`, {
-    params: { status: "accepted" },
-  });
-  return res.data.applications[0]; // 승인된 신청서는 하나만 있을 것
 };
 
 // 승인된 신청서(accepted) 관리자 삭제
@@ -158,7 +150,7 @@ export const uploadFile = async (file: File) => {
 };
 
 // 작업물 제출
-export const createWorkItem = async (data: {
+export const createWorkSubmit = async (data: {
   orderId: string;
   applicationId: string;
   description: string;
@@ -166,7 +158,7 @@ export const createWorkItem = async (data: {
   fileUrl?: string;
 }) => {
   const res = await api.post(
-    `/order/${data.orderId}/applications/${data.applicationId}/work`,
+    `/order/${data.orderId}/applications/${data.applicationId}/work/submit`,
     data
   );
   return res.data;
@@ -223,7 +215,7 @@ export const createWorkProgress = async (
   }
 ) => {
   const res = await api.post(
-    `/order/${data.orderId}/applications/${data.applicationId}/work/progress`,
+    `/order/${data.orderId}/applications/${data.applicationId}/progress`,
     data
   );
   return res.data;
@@ -235,7 +227,7 @@ export const getWorkProgress = async (
   applicationId: string
 ) => {
   const res = await api.get(
-    `/order/${orderId}/applications/${applicationId}/work/progress`
+    `/order/${orderId}/applications/${applicationId}/progress`
   );
   return res.data;
 };
@@ -248,7 +240,7 @@ export const updateWorkProgress = async (
   data: Partial<CreateWorkProgressData>
 ) => {
   const res = await api.put(
-    `/order/${orderId}/applications/${applicationId}/work/progress/${progressId}`,
+    `/order/${orderId}/applications/${applicationId}/progress/${progressId}`,
     data
   );
   return res.data;

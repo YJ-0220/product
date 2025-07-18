@@ -20,13 +20,11 @@ import {
   getOrderApplicationsByOrder,
   updateOrderApplicationStatus,
   deleteOrderApplication,
-  getMyOrderApplications,
   deleteAcceptedOrderApplication,
 } from "../controllers/applicationController";
 import {
-  createWorkItem,
+  createWorkSubmit,
   getWorkItemByOrderId,
-  getWorkItems,
   createWorkProgress,
   getWorkProgress,
   updateWorkItem,
@@ -38,26 +36,25 @@ const router = express.Router();
 // 모든 라우트에 인증 필요
 router.use(authenticate);
 
-// ===== 카테고리(제일 먼저 배치) =====
+// ===== 카테고리 =====
 router.get("/categories", getOrderCategories);
 router.get("/categories/:categoryId/subcategories", getOrderSubCategories);
 
-// ===== 주문서 기본 기능 =====
+// ===== 주문서 (Orders) =====
 // 주문서 목록 조회 (게시판)
 router.get("/", getOrderRequestBoard);
-// 주문서 생성(주문하기)
+// 주문서 생성
 router.post("/", requiredBuyer, createOrderRequest);
 // 주문서 상세 조회
 router.get("/:orderId", getOrderRequestById);
 // 주문서 상태 변경 (관리자)
 router.patch("/:orderId", requiredAdmin, updateOrderRequestStatus);
 
-// ===== 신청서 (주문에 종속) =====
-// 특정 주문의 신청서 목록 조회
+// ===== 신청서 (Applications) =====
 router.get("/:orderId/applications", getOrderApplicationsByOrder);
 // 신청서 생성
 router.post("/:orderId/applications", requiredSeller, createOrderApplication);
-// 신청서 삭제(판매자)
+// 신청서 삭제 (승인 되기전에 판매자가 삭제 가능)
 router.delete(
   "/:orderId/applications/:applicationId",
   requiredSeller,
@@ -65,17 +62,23 @@ router.delete(
 );
 // 신청서 상태 변경 (관리자)
 router.patch(
-  "/:orderId/applications/:applicationId/status",
+  "/:orderId/applications/:applicationId",
   requiredAdmin,
   updateOrderApplicationStatus
 );
+// 관리자용 승인된 신청서 삭제
+router.delete(
+  "/:orderId/applications/:applicationId/accepted",
+  requiredAdmin,
+  deleteAcceptedOrderApplication
+);
 
-// ===== 작업물 (승인된 신청서에만) =====
-// 승인된 신청서에 작업물 제출(판매자)
+// ===== 작업물 (Work Items) =====
+// 작업물 제출 (판매자)
 router.post(
-  "/:orderId/applications/:applicationId/work",
+  "/:orderId/applications/:applicationId/work/submit",
   requiredSeller,
-  createWorkItem
+  createWorkSubmit
 );
 // 작업물 조회
 router.get("/:orderId/applications/:applicationId/work", getWorkItemByOrderId);
@@ -92,24 +95,17 @@ router.patch(
   updateWorkItemStatus
 );
 
-// ===== 작업 진행 상황 =====
+// ===== 작업 진행 상황 (Work Progress) =====
 // 작업 진행 상황 생성 (판매자)
 router.post(
-  "/:orderId/applications/:applicationId/work/progress",
+  "/:orderId/applications/:applicationId/progress",
   requiredSeller,
   createWorkProgress
 );
-// 작업 진행 상황 조회 (모든 사용자)
+// 작업 진행 상황 조회
 router.get(
-  "/:orderId/applications/:applicationId/work/progress",
+  "/:orderId/applications/:applicationId/progress",
   getWorkProgress
-);
-
-// 관리자만 접근 가능한 승인된 신청서 삭제 라우트
-router.delete(
-  "/:orderId/applications/:applicationId/accepted",
-  requiredAdmin,
-  deleteAcceptedOrderApplication
 );
 
 export default router;

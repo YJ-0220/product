@@ -154,7 +154,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {openDropdowns["seller-order"] && (
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "주문 게시판")}
-                  {renderDropdownLink("/order/work", "작업 현황")}
                 </ul>
               )}
             </li>
@@ -176,8 +175,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </button>
               {openDropdowns["seller-work"] && (
                 <ul className="bg-gray-800">
-                  {renderDropdownLink("/order/work", "작업 현황")}
-                  {renderDropdownLink("/order/work/history", "작업 내역")}
+                  {renderDropdownLink("/order/work", "작업 게시판")}
                 </ul>
               )}
             </li>
@@ -187,7 +185,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             )}
             {renderLink(
-              "/mypage",
+              "/my",
               "마이 페이지",
               "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             )}
@@ -221,7 +219,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "주문 게시판")}
                   {renderDropdownLink("/order/request", "주문 신청")}
-                  {renderDropdownLink("/order/history", "주문 내역")}
                 </ul>
               )}
             </li>
@@ -254,7 +251,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {openDropdowns["buyer-mypage"] && (
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/my", "마이 페이지")}
-                  {renderDropdownLink("/my/order", "주문 내역")}
                 </ul>
               )}
             </li>

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../index";
 
 // 승인된 신청서에 대한 작업물 생성(판매자만 가능)
-export const createWorkItem = async (req: Request, res: Response) => {
+export const createWorkSubmit = async (req: Request, res: Response) => {
   try {
     const { orderId, applicationId, description, fileUrl, workLink } =
       req.body;
@@ -131,8 +131,8 @@ export const createWorkProgress = async (req: Request, res: Response) => {
 
     const sellerId = req.user?.id;
 
-    // WorkItem이 존재하고 해당 판매자의 것인지 확인
-    const workItem = await prisma.workItem.findFirst({
+    // WorkItem이 존재하는지 확인 (없으면 생성)
+    let workItem = await prisma.workItem.findFirst({
       where: { 
         orderRequestId: orderId,
         applicationId: applicationId
@@ -144,16 +144,55 @@ export const createWorkProgress = async (req: Request, res: Response) => {
       },
     });
 
+    // 작업물이 없으면 자동으로 생성
     if (!workItem) {
-      res.status(404).json({ error: "작업물을 찾을 수 없습니다." });
-      return;
-    }
+      // 신청서가 존재하고 승인되었는지 확인
+      const application = await prisma.orderApplication.findUnique({
+        where: { id: applicationId },
+        include: {
+          orderRequest: {
+            select: {
+              id: true,
+              status: true,
+            },
+          },
+        },
+      });
 
-    if (workItem.application.sellerId !== sellerId) {
-      res
-        .status(403)
-        .json({ error: "자신의 작업물만 업데이트할 수 있습니다." });
-      return;
+      if (!application) {
+        res.status(404).json({ error: "신청서를 찾을 수 없습니다." });
+        return;
+      }
+
+      if (application.status !== "accepted") {
+        res.status(400).json({ error: "신청이 승인된 주문에만 진행상황을 추가할 수 있습니다." });
+        return;
+      }
+
+      if (application.sellerId !== sellerId) {
+        res.status(403).json({ error: "신청을 한 판매자만 진행상황을 추가할 수 있습니다." });
+        return;
+      }
+
+      // 작업물 자동 생성
+      workItem = await prisma.workItem.create({
+        data: {
+          orderRequestId: orderId,
+          applicationId: applicationId,
+          description: "자동 생성된 작업물",
+        },
+        include: {
+          application: {
+            select: { sellerId: true },
+          },
+        },
+      });
+    } else {
+      // 기존 작업물의 소유자 확인
+      if (workItem.application.sellerId !== sellerId) {
+        res.status(403).json({ error: "자신의 작업물만 업데이트할 수 있습니다." });
+        return;
+      }
     }
 
     const workProgress = await prisma.workProgress.create({
@@ -182,7 +221,7 @@ export const getWorkProgress = async (req: Request, res: Response) => {
   try {
     const { orderId, applicationId } = req.params;
 
-    // WorkItem 조회
+    // WorkItem 조회 (선택사항)
     const workItem = await prisma.workItem.findFirst({
       where: { 
         orderRequestId: orderId,
@@ -190,15 +229,19 @@ export const getWorkProgress = async (req: Request, res: Response) => {
       },
     });
 
-    if (!workItem) {
-      res.status(404).json({ error: "작업물을 찾을 수 없습니다." });
-      return;
+    // 작업물이 없어도 진행상황은 조회 가능하도록 수정
+    let workProgresses: any[] = [];
+    
+    if (workItem) {
+      // 작업물이 있으면 해당 작업물의 진행상황 조회
+      workProgresses = await prisma.workProgress.findMany({
+        where: { workItemId: workItem.id },
+        orderBy: { createdAt: "desc" },
+      });
+    } else {
+      // 작업물이 없으면 빈 배열 반환 (오류가 아님)
+      workProgresses = [];
     }
-
-    const workProgresses = await prisma.workProgress.findMany({
-      where: { workItemId: workItem.id },
-      orderBy: { createdAt: "desc" },
-    });
 
     res.status(200).json({ workProgresses });
   } catch (error) {

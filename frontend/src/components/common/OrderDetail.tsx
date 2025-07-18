@@ -85,20 +85,20 @@ export default function OrderDetail() {
           >
             {getStatusText(order.status)}
           </span>
-          {order.status === "progress" && (
+          {order.status === "progress" && applications.length > 0 && (
             <Link
-              to={`/order/${order.id}/progress`}
+              to={`/order/${order.id}/applications/${applications[0].id}/progress`}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               작업 진행 상황
             </Link>
           )}
-          <button
-            onClick={() => navigate(-1)}
+          <Link
+            to="/order"
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
           >
             뒤로 가기
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -165,7 +165,6 @@ export default function OrderDetail() {
               {user?.role === "seller" &&
                 order.status === "pending" &&
                 (() => {
-                  // 현재 사용자가 이미 신청했는지 확인
                   const hasApplied = applications.some(
                     (app) => app.sellerId === user?.id
                   );

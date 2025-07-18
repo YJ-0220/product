@@ -7,7 +7,7 @@ import Home from "@/pages/Home";
 import MyPage from "@/pages/common/MyPage";
 import Membership from "@/pages/common/Membership";
 import Login from "@/pages/common/Login";
-import EmptyLayout from "@/pages/common/EmptyLayout";
+import EmptyLayout from "@/components/layout/EmptyLayout";
 import OrderBoard from "@/pages/common/OrderBoard";
 import OrderDetail from "@/components/common/OrderDetail";
 import OrderRequest from "@/pages/buyer/OrderRequest";
@@ -16,10 +16,10 @@ import OrderHistory from "@/pages/common/OrderHistory";
 import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 import PointChargeForm from "@/components/buyer/PointChargeForm";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
-import WorkItemForm from "@/components/seller/WorkItemForm";
 import NotFound from "@/pages/common/NotFound";
 import WorkProgress from "@/pages/common/WorkProgress";
 import WorkList from "@/pages/common/WorkList";
+import WorkSubmitForm from "@/components/seller/WorkSubmitForm";
 
 export const router = createBrowserRouter([
   {
@@ -93,6 +93,14 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: "success",
+            element: (
+              <RequireAuth allowedRoles={["buyer"]}>
+                <OrderSuccess />
+              </RequireAuth>
+            ),
+          },
+          {
             path: ":orderId",
             element: (
               <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
@@ -105,30 +113,28 @@ export const router = createBrowserRouter([
                 element: <OrderDetail />,
               },
               {
-                path: "progress",
+                path: "applications/:applicationId/progress",
                 element: <WorkProgress />,
               },
               {
-                path: "work/:applicationId",
-                element: <WorkItemForm />,
+                path: "applications/:applicationId/work/submit",
+                element: <WorkSubmitForm />,
               },
             ],
           },
           {
             path: "work",
             element: (
-              <RequireAuth allowedRoles={["seller", "buyer"]}>
-                <WorkList />
+              <RequireAuth allowedRoles={["seller"]}>
+                <EmptyLayout />
               </RequireAuth>
             ),
-          },
-          {
-            path: "success",
-            element: (
-              <RequireAuth allowedRoles={["buyer"]}>
-                <OrderSuccess />
-              </RequireAuth>
-            ),
+            children: [
+              {
+                index: true,
+                element: <WorkList />,
+              },
+            ],
           },
           {
             path: "history",

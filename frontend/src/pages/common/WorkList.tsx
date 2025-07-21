@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getMyOrderApplication } from "@/api/myPage";
 import { updateWorkItemStatus } from "@/api/order";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
 import type { WorkListApplicationData } from "@/types/orderTypes";
 
 export default function WorkList() {
   const { user } = useAuth();
   const { formatDate } = useUtils();
+  const navigate = useNavigate();
   const [applications, setApplications] = useState<WorkListApplicationData[]>(
     []
   );
@@ -42,8 +43,10 @@ export default function WorkList() {
 
   const filteredApplications = applications.filter((application) => {
     if (filter === "in-progress") {
-      return application.workItems.length > 0 && 
-             application.orderRequest.status !== "completed";
+      return (
+        application.workItems.length > 0 &&
+        application.orderRequest.status !== "completed"
+      );
     }
     return true;
   });
@@ -150,16 +153,14 @@ export default function WorkList() {
               </svg>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {filter === "in-progress" 
-                ? "진행중인 작업이 없습니다" 
-                : "아직 승인된 신청이 없습니다"
-              }
+              {filter === "in-progress"
+                ? "진행중인 작업이 없습니다"
+                : "아직 승인된 신청이 없습니다"}
             </h3>
             <p className="text-gray-500">
               {filter === "in-progress"
                 ? "작업물을 제출하고 진행중인 작업이 있으면 여기에 표시됩니다."
-                : "관리자가 신청을 승인하면 여기에 표시됩니다."
-              }
+                : "관리자가 신청을 승인하면 여기에 표시됩니다."}
             </p>
           </div>
         ) : (
@@ -215,7 +216,10 @@ export default function WorkList() {
                     <div className="space-y-1 text-sm text-gray-600">
                       <p>신청일: {formatDate(application.createdAt)}</p>
                       {application.proposedPrice && (
-                        <p>제안 가격: {application.proposedPrice.toLocaleString()}P</p>
+                        <p>
+                          제안 가격:{" "}
+                          {application.proposedPrice.toLocaleString()}P
+                        </p>
                       )}
                       {application.estimatedDelivery && (
                         <p>
@@ -232,14 +236,23 @@ export default function WorkList() {
                     <h4 className="text-sm font-medium text-gray-700">
                       작업물
                     </h4>
-                    {application.workItems.length === 0 && (
-                      <Link
-                        to={`/order/${application.orderRequest.id}/applications/${application.id}/work/submit`}
-                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        작업물 제출
-                      </Link>
-                    )}
+                    <div className="flex space-x-2">
+                      {application.workItems.length === 0 ? (
+                        <Link
+                          to={`/order/${application.orderRequest.id}/applications/${application.id}/work/submit`}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          작업물 제출
+                        </Link>
+                      ) : (
+                        <Link
+                          to={`/order/${application.orderRequest.id}/applications/${application.id}/work/edit`}
+                          className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                        >
+                          작업물 수정
+                        </Link>
+                      )}
+                    </div>
                   </div>
 
                   {application.workItems.length > 0 ? (
@@ -247,7 +260,12 @@ export default function WorkList() {
                       {application.workItems.map((workItem) => (
                         <div
                           key={workItem.id}
-                          className="bg-gray-50 p-3 rounded"
+                          className="bg-gray-50 p-3 rounded cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() =>
+                            navigate(
+                              `/order/work/detail/${application.orderRequest.id}/${application.id}`
+                            )
+                          }
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">
@@ -314,13 +332,16 @@ export default function WorkList() {
                             </p>
                           )}
                           {user?.role === "seller" && (
-                            <div className="mt-2">
-                              <Link
-                                to={`/order/${application.orderRequest.id}/applications/${application.id}/progress`}
-                                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                            <div className="mt-2 flex space-x-2">
+                              <button
+                                onClick={() =>
+                                  navigate(
+                                    `/order/work/progress/${application.orderRequest.id}/${application.id}`
+                                  )
+                                }
                               >
-                                작업 진행 상황
-                              </Link>
+                                작업물이 진행 중입니다.
+                              </button>
                             </div>
                           )}
                         </div>

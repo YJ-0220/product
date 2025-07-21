@@ -136,18 +136,18 @@ export const deleteAcceptedApplication = async (
 
 // ===== 작업물 관련 API =====
 
-// 파일 업로드
-export const uploadFile = async (file: File) => {
-  const formData = new FormData();
-  formData.append("file", file);
+// // 파일 업로드
+// export const uploadFile = async (file: File) => {
+//   const formData = new FormData();
+//   formData.append("file", file);
 
-  const res = await api.post("/order/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return res.data;
-};
+//   const res = await api.post("/order/upload", formData, {
+//     headers: {
+//       "Content-Type": "multipart/form-data",
+//     },
+//   });
+//   return res.data;
+// };
 
 // 작업물 제출
 export const createWorkSubmit = async (data: {

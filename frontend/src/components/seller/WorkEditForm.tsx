@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FormInput from "@/components/FormInput";
 import {
-  createWorkSubmit,
-  getOrderApplicationsByOrder,
   getWorkItemByOrderId,
-  // uploadFile,
+  updateWorkItem,
+  getOrderApplicationsByOrder,
 } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
 
@@ -15,7 +14,7 @@ interface WorkItemData {
   fileUrl: string;
 }
 
-export default function WorkSubmitForm() {
+export default function WorkEditForm() {
   const { orderId, applicationId } = useParams<{
     orderId: string;
     applicationId: string;
@@ -38,7 +37,7 @@ export default function WorkSubmitForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
-    const fetchAcceptedApplication = async () => {
+    const fetchData = async () => {
       if (!orderId || !applicationId) {
         setError("주문 ID 또는 신청서 ID가 없습니다.");
         setLoading(false);
@@ -48,30 +47,43 @@ export default function WorkSubmitForm() {
       try {
         setLoading(true);
 
+        // 승인된 신청서 확인
         const applicationsData = await getOrderApplicationsByOrder(orderId);
         const targetApplication = applicationsData.applications.find(
           (app: any) => app.id === applicationId && app.status === "accepted"
         );
 
-        if (targetApplication) {
-          setAcceptedApplication(targetApplication);
-          
-          // 기존 작업물이 있는지 확인
-          try {
-            const workItemData = await getWorkItemByOrderId(orderId, applicationId);
-            setExistingWorkItem(workItemData.workItem);
-          } catch (error) {
-            // 기존 작업물이 없으면 무시 (새로 제출하는 경우)
-            setExistingWorkItem(null);
-          }
-        } else {
+        if (!targetApplication) {
           setError(
-            "승인된 신청서를 찾을 수 없습니다. 작업물을 제출할 권한이 없습니다."
+            "승인된 신청서를 찾을 수 없습니다. 작업물을 수정할 권한이 없습니다."
           );
+          setLoading(false);
+          return;
+        }
+
+        setAcceptedApplication(targetApplication);
+
+        // 기존 작업물 조회
+        try {
+          const workItemData = await getWorkItemByOrderId(orderId, applicationId);
+          setExistingWorkItem(workItemData.workItem);
+          
+          // 기존 링크를 배열로 변환 (쉼표로 구분된 경우)
+          const existingLinks = workItemData.workItem.workLink 
+            ? workItemData.workItem.workLink.split(',').map((link: string) => link.trim()).filter((link: string) => link)
+            : [""];
+          
+          setFormData({
+            description: workItemData.workItem.description || "",
+            workLinks: existingLinks.length > 0 ? existingLinks : [""],
+            fileUrl: workItemData.workItem.fileUrl || "",
+          });
+        } catch (error: any) {
+          setError("기존 작업물을 찾을 수 없습니다.");
         }
       } catch (error: any) {
         setError(
-          "승인된 신청서를 찾을 수 없습니다. 작업물을 제출할 권한이 없습니다. 에러: " +
+          "데이터를 불러올 수 없습니다: " +
             (error?.response?.data?.error || error.message)
         );
       } finally {
@@ -79,7 +91,7 @@ export default function WorkSubmitForm() {
       }
     };
 
-    fetchAcceptedApplication();
+    fetchData();
   }, [orderId, applicationId]);
 
   const handleChange = (
@@ -147,7 +159,7 @@ export default function WorkSubmitForm() {
 
     // 링크가 하나도 입력되지 않았고 파일도 없는 경우
     const hasValidLinks = formData.workLinks.some(link => link.trim() !== "");
-    if (!hasValidLinks && !selectedFile) {
+    if (!hasValidLinks && !selectedFile && !existingWorkItem?.fileUrl) {
       setError("작업물 링크 또는 파일을 제공해주세요.");
       return;
     }
@@ -166,24 +178,19 @@ export default function WorkSubmitForm() {
       // 모든 링크를 쉼표로 구분하여 하나의 문자열로 합치기
       const validLinks = formData.workLinks.filter(link => link.trim() !== "");
       const workItemData = {
-        orderId: orderId!,
-        applicationId: acceptedApplication.id,
         description: formData.description,
         workLink: validLinks.join(', '),
-        // fileUrl: uploadedFileUrl,
+        // fileUrl: uploadedFileUrl || existingWorkItem?.fileUrl,
       };
 
-      await createWorkSubmit(workItemData);
+      await updateWorkItem(orderId!, applicationId!, workItemData);
 
-      setSuccess("작업물이 성공적으로 제출되었습니다.");
-      setFormData({
-        description: "",
-        workLinks: [""],
-        fileUrl: "",
-      });
-      setSelectedFile(null);
+      setSuccess("작업물이 성공적으로 수정되었습니다.");
+      
+      // 즉시 작업물 상세 페이지로 이동
+      navigate(`/order/work/detail/${orderId}/${applicationId}`);
     } catch (error: any) {
-      setError(error?.response?.data?.error || "작업물 제출에 실패했습니다.");
+      setError(error?.response?.data?.error || "작업물 수정에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -204,10 +211,25 @@ export default function WorkSubmitForm() {
       <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-red-600 mb-2">
-            작업물 제출 권한이 없습니다
+            작업물 수정 권한이 없습니다
           </h2>
           <p className="text-gray-600">
-            승인된 신청서가 없어 작업물을 제출할 수 없습니다.
+            승인된 신청서가 없어 작업물을 수정할 수 없습니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!existingWorkItem) {
+    return (
+      <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">
+            수정할 작업물이 없습니다
+          </h2>
+          <p className="text-gray-600">
+            먼저 작업물을 제출한 후 수정할 수 있습니다.
           </p>
         </div>
       </div>
@@ -216,20 +238,9 @@ export default function WorkSubmitForm() {
 
   return (
     <div className="rounded-lg shadow-md">
-      <div className="flex justify-between items-center mt-6 mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {existingWorkItem ? "작업물 재제출" : "작업물 제출"}
-        </h2>
-        {existingWorkItem && (
-          <button
-            type="button"
-            onClick={() => navigate(`/order/${orderId}/applications/${applicationId}/work/edit`)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
-          >
-            작업물 수정
-          </button>
-        )}
-      </div>
+      <h2 className="text-2xl font-bold text-center text-gray-900 mt-6">
+        작업물 수정
+      </h2>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -238,31 +249,8 @@ export default function WorkSubmitForm() {
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
-          <p className="text-green-800 text-sm mb-3">{success}</p>
-          <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}`)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-            >
-              작업물 상세 보기
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/order/work")}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
-            >
-              작업 게시판으로
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate(`/order/${orderId}/applications/${applicationId}/progress`)}
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
-            >
-              작업 진행 상황
-            </button>
-          </div>
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <p className="text-green-800 text-sm">{success}</p>
         </div>
       )}
 
@@ -332,27 +320,41 @@ export default function WorkSubmitForm() {
               선택된 파일: {selectedFile.name}
             </p>
           )}
+          {existingWorkItem?.fileUrl && !selectedFile && (
+            <p className="text-sm text-gray-600">
+              기존 파일: {existingWorkItem.fileUrl}
+            </p>
+          )}
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-md">
-          <h3 className="font-semibold text-blue-900 mb-2">제출 안내</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="bg-yellow-50 p-4 rounded-md">
+          <h3 className="font-semibold text-yellow-900 mb-2">수정 안내</h3>
+          <ul className="text-sm text-yellow-800 space-y-1">
             <li>• 작업물 설명은 필수 입력 항목입니다.</li>
             <li>• 작업물 링크 또는 파일 중 하나는 반드시 제공해주세요.</li>
             <li>• 링크는 여러 개 추가할 수 있습니다.</li>
-            <li>• 제출 후 수정이 어려우니 신중하게 작성해주세요.</li>
-            <li>• 구매자가 작업물을 검토한 후 승인/반려 처리됩니다.</li>
+            <li>• 수정 후 구매자가 작업물을 다시 검토합니다.</li>
+            <li>• 수정 사항은 구매자에게 알림이 갑니다.</li>
           </ul>
         </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
-        >
-          {isSubmitting ? "제출 중..." : "작업물 제출하기"}
-        </button>
+        <div className="flex space-x-3">
+          <button
+            type="button"
+            onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}`)}
+            className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-semibold"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+          >
+            {isSubmitting ? "수정 중..." : "작업물 수정하기"}
+          </button>
+        </div>
       </form>
     </div>
   );
-}
+} 

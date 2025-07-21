@@ -27,6 +27,7 @@ import {
   getWorkItemByOrderId,
   createWorkProgress,
   getWorkProgress,
+  updateWorkProgress,
   updateWorkItem,
   updateWorkItemStatus,
 } from "../controllers/workController";
@@ -106,6 +107,12 @@ router.post(
 router.get(
   "/:orderId/applications/:applicationId/progress",
   getWorkProgress
+);
+// 작업 진행 상황 수정 (판매자)
+router.put(
+  "/:orderId/applications/:applicationId/progress/:progressId",
+  requiredSeller,
+  updateWorkProgress
 );
 
 export default router;

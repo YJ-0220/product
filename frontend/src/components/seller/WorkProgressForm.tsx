@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import FormInput from "@/components/FormInput";
-import { createWorkProgress, getWorkProgress } from "@/api/order";
+import { createWorkProgress, getWorkProgress, updateWorkProgress } from "@/api/order";
 import type { WorkProgressData } from "@/types/orderTypes";
 import { useUtils } from "@/hooks/useUtils";
 
@@ -17,12 +17,14 @@ export default function WorkProgressForm() {
     orderId: string;
     applicationId: string;
   }>();
+  const navigate = useNavigate();
   const { getStatusText } = useUtils();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [workProgresses, setWorkProgresses] = useState<WorkProgressData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingProgress, setEditingProgress] = useState<WorkProgressData | null>(null);
 
   const [formData, setFormData] = useState<WorkProgressFormData>({
     title: "",
@@ -66,6 +68,26 @@ export default function WorkProgressForm() {
     }));
   };
 
+  const handleEdit = (progress: WorkProgressData) => {
+    setEditingProgress(progress);
+    setFormData({
+      title: progress.title,
+      description: progress.description || "",
+      progressPercent: progress.progressPercent.toString(),
+      status: progress.status,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingProgress(null);
+    setFormData({
+      title: "",
+      description: "",
+      progressPercent: "0",
+      status: "in_progress",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -100,13 +122,21 @@ export default function WorkProgressForm() {
         imageUrls: [], // TODO: 이미지 업로드 기능 추가
       };
 
-      await createWorkProgress({
-        ...workProgressData,
-        orderId,
-        applicationId,
-      });
+      if (editingProgress) {
+        // 수정 모드
+        await updateWorkProgress(orderId, applicationId, editingProgress.id, workProgressData);
+        setSuccess("작업 진행 상황이 수정되었습니다.");
+        setEditingProgress(null);
+      } else {
+        // 생성 모드
+        await createWorkProgress({
+          ...workProgressData,
+          orderId,
+          applicationId,
+        });
+        setSuccess("작업 진행 상황이 업데이트되었습니다.");
+      }
 
-      setSuccess("작업 진행 상황이 업데이트되었습니다.");
       setFormData({
         title: "",
         description: "",
@@ -139,9 +169,18 @@ export default function WorkProgressForm() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">
-        작업 진행 상황 업데이트
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-gray-900">
+          {editingProgress ? "작업 진행 상황 수정" : "작업 진행 상황 업데이트"}
+        </h2>
+        <button
+          type="button"
+          onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}`)}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+        >
+          작업물 수정
+        </button>
+      </div>
 
       {error && (
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -199,13 +238,25 @@ export default function WorkProgressForm() {
           />
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end space-x-3">
+          {editingProgress && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+            >
+              취소
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
           >
-            {isSubmitting ? "업데이트 중..." : "진행 상황 업데이트"}
+            {isSubmitting 
+              ? (editingProgress ? "수정 중..." : "업데이트 중...") 
+              : (editingProgress ? "진행 상황 수정" : "진행 상황 업데이트")
+            }
           </button>
         </div>
       </form>
@@ -244,7 +295,7 @@ export default function WorkProgressForm() {
                   </p>
                 )}
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-2">
                   <div className="flex-1 mr-4">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
@@ -258,9 +309,18 @@ export default function WorkProgressForm() {
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-400 mt-2">
-                  {new Date(progress.createdAt).toLocaleString("ko-KR")}
-                </p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-gray-400">
+                    {new Date(progress.createdAt).toLocaleString("ko-KR")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(progress)}
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  >
+                    수정
+                  </button>
+                </div>
               </div>
             ))}
           </div>

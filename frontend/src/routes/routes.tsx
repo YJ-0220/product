@@ -19,7 +19,9 @@ import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
 import NotFound from "@/pages/common/NotFound";
 import WorkProgress from "@/pages/common/WorkProgress";
 import WorkList from "@/pages/common/WorkList";
+import WorkDetail from "@/pages/common/WorkDetail";
 import WorkSubmitForm from "@/components/seller/WorkSubmitForm";
+import WorkEditForm from "@/components/seller/WorkEditForm";
 
 export const router = createBrowserRouter([
   {
@@ -120,12 +122,17 @@ export const router = createBrowserRouter([
                 path: "applications/:applicationId/work/submit",
                 element: <WorkSubmitForm />,
               },
+              {
+                path: "applications/:applicationId/work/edit",
+                element: <WorkEditForm />,
+              },
+
             ],
           },
           {
             path: "work",
             element: (
-              <RequireAuth allowedRoles={["seller"]}>
+              <RequireAuth allowedRoles={["seller", "buyer", "admin"]}>
                 <EmptyLayout />
               </RequireAuth>
             ),
@@ -133,6 +140,18 @@ export const router = createBrowserRouter([
               {
                 index: true,
                 element: <WorkList />,
+              },
+              {
+                path: "progress/:orderId/:applicationId",
+                element: <WorkProgress />,
+              },
+              {
+                path: "detail/:orderId/:applicationId",
+                element: (
+                  <RequireAuth allowedRoles={["seller", "buyer", "admin"]}>
+                    <WorkDetail />
+                  </RequireAuth>
+                ),
               },
             ],
           },

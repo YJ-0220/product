@@ -87,10 +87,10 @@ export default function OrderDetail() {
           </span>
           {order.status === "progress" && applications.length > 0 && (
             <Link
-              to={`/order/${order.id}/applications/${applications[0].id}/progress`}
+              to={`/order/work/detail/${order.id}/${applications[0].id}`}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              작업 진행 상황
+              주문 진행 상황
             </Link>
           )}
           <Link
@@ -154,7 +154,7 @@ export default function OrderDetail() {
                   <p className="text-sm text-blue-600">신청을 받고 있습니다</p>
                 ) : order.status === "progress" ? (
                   <p className="text-sm text-green-600">
-                    승인된 신청서가 작업물로 진행중입니다
+                    작업 진행 중... 자세한건 주문 진행 상황에서 확인해주세요.
                   </p>
                 ) : order.status === "completed" ? (
                   <p className="text-sm text-gray-600">작업이 완료되었습니다</p>
@@ -375,7 +375,7 @@ export default function OrderDetail() {
                                   작업물 상태
                                 </span>
                                 <span className="text-sm text-blue-600 font-medium">
-                                  작업물 제출 대기중
+                                  작업 진행 중...
                                 </span>
                               </div>
                             </div>

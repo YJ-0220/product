@@ -25,7 +25,7 @@ async function main() {
   });
 
   const buyer = await prisma.user.upsert({
-    where: { username: "buyer" },
+    where: { username: "test" },
     update: { password: hashedBuyerPassword },
     create: {
       username: "test",
@@ -36,7 +36,7 @@ async function main() {
   });
 
   const seller = await prisma.user.upsert({
-    where: { username: "seller" },
+    where: { username: "stest" },
     update: { password: hashedSellerPassword },
     create: {
       username: "stest",

@@ -250,6 +250,79 @@ export const getWorkProgress = async (req: Request, res: Response) => {
   }
 };
 
+// 작업 진행 상황 수정 (판매자만 가능)
+export const updateWorkProgress = async (req: Request, res: Response) => {
+  try {
+    const { orderId, applicationId, progressId } = req.params;
+    const {
+      progressPercent,
+      status,
+      title,
+      description,
+      imageUrls,
+    } = req.body;
+
+    const sellerId = req.user?.id;
+
+    // WorkItem이 존재하는지 확인
+    const workItem = await prisma.workItem.findFirst({
+      where: { 
+        orderRequestId: orderId,
+        applicationId: applicationId
+      },
+      include: {
+        application: {
+          select: { sellerId: true },
+        },
+      },
+    });
+
+    if (!workItem) {
+      res.status(404).json({ error: "작업물을 찾을 수 없습니다." });
+      return;
+    }
+
+    // 작업물 소유자 확인
+    if (workItem.application.sellerId !== sellerId) {
+      res.status(403).json({ error: "자신의 작업물만 수정할 수 있습니다." });
+      return;
+    }
+
+    // 진행 상황이 존재하는지 확인
+    const existingProgress = await prisma.workProgress.findFirst({
+      where: { 
+        id: progressId,
+        workItemId: workItem.id
+      },
+    });
+
+    if (!existingProgress) {
+      res.status(404).json({ error: "진행 상황을 찾을 수 없습니다." });
+      return;
+    }
+
+    // 진행 상황 업데이트
+    const updatedProgress = await prisma.workProgress.update({
+      where: { id: progressId },
+      data: {
+        progressPercent: Number(progressPercent),
+        status,
+        title,
+        description,
+        imageUrls: imageUrls || existingProgress.imageUrls,
+      },
+    });
+
+    res.status(200).json({
+      message: "작업 진행 상황이 수정되었습니다.",
+      workProgress: updatedProgress,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "작업 진행 상황 수정 실패" });
+  }
+};
+
 // 주문 ID와 신청서 ID로 WorkItem 조회
 export const getWorkItemByOrderId = async (req: Request, res: Response) => {
   try {
@@ -274,7 +347,7 @@ export const getWorkItemByOrderId = async (req: Request, res: Response) => {
     });
 
     if (!workItem) {
-      res.status(404).json({ error: "작업물을 찾을 수 없습니다." });
+      res.status(404).json({ error: "진행중인 작업이 없습니다." });
       return;
     }
 

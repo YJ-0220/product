@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 export default function OrderDetail() {
   // 데이터 관리 훅
-  const { order, applications, loading, error, user, refreshData, navigate } =
+  const { order, applications, workItems, loading, error, user, refreshData, navigate } =
     useOrderDetail();
 
   // 신청 관련 액션 훅
@@ -87,10 +87,10 @@ export default function OrderDetail() {
           </span>
           {order.status === "progress" && applications.length > 0 && (
             <Link
-              to={`/order/work/detail/${order.id}/${applications[0].id}`}
+              to={`/order/work/${workItems.find(item => item.applicationId === applications[0].id)?.workItem?.id || ''}`}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
-              주문 진행 상황
+              작업물 상세 보기
             </Link>
           )}
           <Link
@@ -255,7 +255,6 @@ export default function OrderDetail() {
                                       onClick={() =>
                                         handleDeleteApplication(
                                           application.id,
-                                          order.id,
                                           refreshData
                                         )
                                       }
@@ -278,7 +277,6 @@ export default function OrderDetail() {
                                   <button
                                     onClick={() =>
                                       handleApplicationStatusUpdate(
-                                        order.id,
                                         application.id,
                                         "rejected",
                                         refreshData
@@ -292,7 +290,6 @@ export default function OrderDetail() {
                                   <button
                                     onClick={() =>
                                       handleApplicationStatusUpdate(
-                                        order.id,
                                         application.id,
                                         "accepted",
                                         refreshData
@@ -347,7 +344,6 @@ export default function OrderDetail() {
                                         window.confirm("정말 삭제하시겠습니까?")
                                       ) {
                                         handleDeleteAcceptedApplication(
-                                          order.id,
                                           application.id,
                                           refreshData
                                         );
@@ -374,9 +370,32 @@ export default function OrderDetail() {
                                 <span className="text-sm text-gray-600">
                                   작업물 상태
                                 </span>
-                                <span className="text-sm text-blue-600 font-medium">
-                                  작업 진행 중...
-                                </span>
+                                {(() => {
+                                  const workItem = workItems.find(
+                                    (item) => item.applicationId === application.id
+                                  );
+                                  if (workItem?.hasWorkItem) {
+                                    return (
+                                      <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-green-600 font-medium">
+                                          작업물 제출됨
+                                        </span>
+                                        <Link
+                                          to={`/order/work/${workItems.find(item => item.applicationId === application.id)?.workItem?.id || ''}`}
+                                          className="text-xs text-blue-600 hover:text-blue-700 underline"
+                                        >
+                                          상세 보기
+                                        </Link>
+                                      </div>
+                                    );
+                                  } else {
+                                    return (
+                                      <span className="text-sm text-orange-600 font-medium">
+                                        작업물 미제출
+                                      </span>
+                                    );
+                                  }
+                                })()}
                               </div>
                             </div>
                           </div>

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FormInput from "@/components/FormInput";
 import {
-  createWorkSubmit,
+  createOrderWorkSubmit,
   getOrderApplicationsByOrder,
-  getWorkItemByOrderId,
+  getOrderWorkList,
   // uploadFile,
 } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
@@ -58,8 +58,8 @@ export default function WorkSubmitForm() {
           
           // 기존 작업물이 있는지 확인
           try {
-            const workItemData = await getWorkItemByOrderId(orderId, applicationId);
-            setExistingWorkItem(workItemData.workItem);
+            const workItemData = await getOrderWorkList(applicationId);
+            setExistingWorkItem(workItemData[0] || null);
           } catch (error) {
             // 기존 작업물이 없으면 무시 (새로 제출하는 경우)
             setExistingWorkItem(null);
@@ -166,14 +166,12 @@ export default function WorkSubmitForm() {
       // 모든 링크를 쉼표로 구분하여 하나의 문자열로 합치기
       const validLinks = formData.workLinks.filter(link => link.trim() !== "");
       const workItemData = {
-        orderId: orderId!,
-        applicationId: acceptedApplication.id,
         description: formData.description,
         workLink: validLinks.join(', '),
         // fileUrl: uploadedFileUrl,
       };
 
-      await createWorkSubmit(workItemData);
+      await createOrderWorkSubmit(acceptedApplication.id, workItemData);
 
       setSuccess("작업물이 성공적으로 제출되었습니다.");
       setFormData({
@@ -223,7 +221,7 @@ export default function WorkSubmitForm() {
         {existingWorkItem && (
           <button
             type="button"
-            onClick={() => navigate(`/order/${orderId}/applications/${applicationId}/work/edit`)}
+            onClick={() => navigate(`/order/work/edit/${orderId}/${applicationId}`)}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
           >
             작업물 수정

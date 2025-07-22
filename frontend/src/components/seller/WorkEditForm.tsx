@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import FormInput from "@/components/FormInput";
 import {
-  getWorkItemByOrderId,
-  updateWorkItem,
+  getOrderWorkItem,
+  updateOrderWorkItem,
   getOrderApplicationsByOrder,
 } from "@/api/order";
 import type { ApplicationData } from "@/types/orderTypes";
@@ -15,9 +15,10 @@ interface WorkItemData {
 }
 
 export default function WorkEditForm() {
-  const { orderId, applicationId } = useParams<{
+  const { orderId, applicationId, workItemId } = useParams<{
     orderId: string;
     applicationId: string;
+    workItemId: string;
   }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +39,7 @@ export default function WorkEditForm() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!orderId || !applicationId) {
+      if (!orderId || !applicationId || !workItemId) {
         setError("주문 ID 또는 신청서 ID가 없습니다.");
         setLoading(false);
         return;
@@ -65,18 +66,18 @@ export default function WorkEditForm() {
 
         // 기존 작업물 조회
         try {
-          const workItemData = await getWorkItemByOrderId(orderId, applicationId);
-          setExistingWorkItem(workItemData.workItem);
+          const workItemData = await getOrderWorkItem(applicationId, workItemId);
+          setExistingWorkItem(workItemData);
           
           // 기존 링크를 배열로 변환 (쉼표로 구분된 경우)
-          const existingLinks = workItemData.workItem.workLink 
-            ? workItemData.workItem.workLink.split(',').map((link: string) => link.trim()).filter((link: string) => link)
+          const existingLinks = workItemData.workLink 
+            ? workItemData.workLink.split(',').map((link: string) => link.trim()).filter((link: string) => link)
             : [""];
           
           setFormData({
-            description: workItemData.workItem.description || "",
+            description: workItemData.description || "",
             workLinks: existingLinks.length > 0 ? existingLinks : [""],
-            fileUrl: workItemData.workItem.fileUrl || "",
+            fileUrl: workItemData.fileUrl || "",
           });
         } catch (error: any) {
           setError("기존 작업물을 찾을 수 없습니다.");
@@ -92,7 +93,7 @@ export default function WorkEditForm() {
     };
 
     fetchData();
-  }, [orderId, applicationId]);
+  }, [orderId, applicationId, workItemId]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -183,7 +184,7 @@ export default function WorkEditForm() {
         // fileUrl: uploadedFileUrl || existingWorkItem?.fileUrl,
       };
 
-      await updateWorkItem(orderId!, applicationId!, workItemData);
+      await updateOrderWorkItem(applicationId!, workItemId!, workItemData);
 
       setSuccess("작업물이 성공적으로 수정되었습니다.");
       
@@ -341,7 +342,7 @@ export default function WorkEditForm() {
         <div className="flex space-x-3">
           <button
             type="button"
-            onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}`)}
+            onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}/${workItemId}`)}
             className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-semibold"
           >
             취소

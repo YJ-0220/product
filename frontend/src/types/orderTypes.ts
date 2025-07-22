@@ -44,26 +44,7 @@ export interface ApplicationData {
   };
 }
 
-export interface WorkProgressData {
-  id: string;
-  workItemId: string;
-  progressPercent: number;
-  status: "not_started" | "in_progress" | "completed";
-  title: string;
-  description?: string;
-  imageUrls: string[];
-  createdAt: string;
-  updatedAt: string;
-}
 
-export interface CreateWorkProgressData {
-  workItemId: string;
-  progressPercent: number;
-  status: "not_started" | "in_progress" | "completed";
-  title: string;
-  description?: string;
-  imageUrls?: string[];
-}
 
 // WorkList 관련 타입들
 export interface WorkItemData {

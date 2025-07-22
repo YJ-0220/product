@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getMyOrderApplication } from "@/api/myPage";
-import { updateWorkItemStatus } from "@/api/order";
+import { updateOrderWorkItemStatus } from "@/api/order";
 import { Link, useNavigate } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
 import type { WorkListApplicationData } from "@/types/orderTypes";
@@ -52,13 +52,13 @@ export default function WorkList() {
   });
 
   const handleStatusUpdate = async (
-    orderId: string,
     applicationId: string,
+    workItemId: string,
     status: string
   ) => {
     try {
-      setUpdatingStatus(`${orderId}-${applicationId}`);
-      await updateWorkItemStatus(orderId, applicationId, status);
+      setUpdatingStatus(`${applicationId}`);
+      await updateOrderWorkItemStatus(applicationId, workItemId, status);
 
       const data = await getMyOrderApplication();
       setApplications(data.applications || []);
@@ -239,14 +239,14 @@ export default function WorkList() {
                     <div className="flex space-x-2">
                       {application.workItems.length === 0 ? (
                         <Link
-                          to={`/order/${application.orderRequest.id}/applications/${application.id}/work/submit`}
+                          to={`/order/work/submit/${application.orderRequest.id}/${application.id}`}
                           className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                         >
                           작업물 제출
                         </Link>
                       ) : (
                         <Link
-                          to={`/order/${application.orderRequest.id}/applications/${application.id}/work/edit`}
+                          to={`/order/work/edit/${application.orderRequest.id}/${application.id}`}
                           className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
                         >
                           작업물 수정
@@ -293,8 +293,8 @@ export default function WorkList() {
                                     <button
                                       onClick={() =>
                                         handleStatusUpdate(
-                                          application.orderRequest.id,
                                           application.id,
+                                          workItem.id,
                                           "approved"
                                         )
                                       }
@@ -309,8 +309,8 @@ export default function WorkList() {
                                     <button
                                       onClick={() =>
                                         handleStatusUpdate(
-                                          application.orderRequest.id,
                                           application.id,
+                                          workItem.id,
                                           "rejected"
                                         )
                                       }
@@ -336,7 +336,7 @@ export default function WorkList() {
                               <button
                                 onClick={() =>
                                   navigate(
-                                    `/order/work/progress/${application.orderRequest.id}/${application.id}`
+                                    `/order/work/progress/${application.id}/${workItem.id}`
                                   )
                                 }
                               >

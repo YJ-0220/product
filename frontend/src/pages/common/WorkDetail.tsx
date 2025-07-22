@@ -2,16 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
-  getWorkItemByOrderId,
-  getOrderApplicationsByOrder,
-  getOrderById,
+  getOrderWorkItem,
 } from "@/api/order";
 import { useUtils } from "@/hooks/useUtils";
 
 export default function WorkDetail() {
-  const { orderId, applicationId } = useParams<{
-    orderId: string;
-    applicationId: string;
+  const { workItemId } = useParams<{
+    workItemId: string;
   }>();
   const { user } = useAuth();
   const { formatDate } = useUtils();
@@ -24,8 +21,8 @@ export default function WorkDetail() {
 
   useEffect(() => {
     const fetchWorkDetail = async () => {
-      if (!orderId || !applicationId) {
-        setError("주문 ID 또는 신청서 ID가 없습니다.");
+      if (!workItemId) {
+        setError("작업물 ID가 없습니다.");
         setLoading(false);
         return;
       }
@@ -33,35 +30,27 @@ export default function WorkDetail() {
       try {
         setLoading(true);
 
-        // 신청서 정보 조회
-        const applicationsData = await getOrderApplicationsByOrder(orderId);
-        const targetApplication = applicationsData.applications.find(
-          (app: any) => app.id === applicationId
-        );
-
-        if (!targetApplication) {
-          setError("신청서를 찾을 수 없습니다.");
-          setLoading(false);
-          return;
-        }
-
-        // 주문 정보도 함께 가져오기
-        try {
-          const orderData = await getOrderById(orderId);
-          setApplication({
-            ...targetApplication,
-            orderRequest: orderData,
-          });
-        } catch (error) {
-          setApplication(targetApplication);
-        }
-
         // 작업물 정보 조회
         try {
-          const workItemData = await getWorkItemByOrderId(orderId, applicationId);
-          setWorkItem(workItemData.workItem);
+          // 작업물 ID만으로 조회 (백엔드에서 작업물 ID만으로 조회 가능하도록 수정 필요)
+          const workItemData = await getOrderWorkItem("temp", workItemId);
+          setWorkItem(workItemData);
+          
+          // 작업물에서 주문 정보 가져오기
+          if (workItemData.orderRequest) {
+            setApplication({
+              id: workItemData.application.id,
+              orderRequestId: workItemData.orderRequest.id,
+              sellerId: (workItemData.application as any).sellerId || "",
+              status: "accepted",
+              createdAt: workItemData.application.createdAt,
+              updatedAt: workItemData.application.createdAt,
+              seller: workItemData.application.seller,
+              orderRequest: workItemData.orderRequest,
+            });
+          }
         } catch (error: any) {
-          setError("진행중인 작업이 없습니다.");
+          setError("작업물을 찾을 수 없습니다: " + (error?.response?.data?.error || error.message));
         }
       } catch (error: any) {
         setError(
@@ -74,13 +63,13 @@ export default function WorkDetail() {
     };
 
     fetchWorkDetail();
-  }, [orderId, applicationId]);
+  }, [workItemId]);
 
   const handleBack = () => {
     if (user?.role === "seller") {
       navigate("/order/work");
     } else {
-      navigate(`/order/${orderId}`);
+      navigate(`/order`);
     }
   };
 
@@ -120,14 +109,14 @@ export default function WorkDetail() {
           <p className="text-gray-600 mb-4">
             아직 작업물이 제출되지 않았습니다.
           </p>
-          {user?.role === "seller" && application?.status === "accepted" && (
-            <Link
-              to={`/order/${orderId}/applications/${applicationId}/work/submit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              작업물 제출하기
-            </Link>
-          )}
+                      {user?.role === "seller" && application?.status === "accepted" && (
+              <Link
+                to={`/order/work/submit`}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                작업물 제출하기
+              </Link>
+            )}
           <button
             onClick={handleBack}
             className="mt-4 ml-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
@@ -146,7 +135,7 @@ export default function WorkDetail() {
         <div className="flex space-x-2">
           {user?.role === "seller" && application?.status === "accepted" && (
             <Link
-              to={`/order/${orderId}/applications/${applicationId}/work/edit`}
+              to={`/order/work/edit/${application.orderRequestId}/${application.id}`}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             >
               작업물 수정
@@ -184,25 +173,30 @@ export default function WorkDetail() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     작업물 링크
                   </label>
-                  {workItem.workLink.includes(',') ? (
+                  {workItem.workLink.includes(",") ? (
                     // 여러 링크가 있는 경우
                     <div className="space-y-2">
-                      {workItem.workLink.split(',').map((link: string, index: number) => {
-                        const trimmedLink = link.trim();
-                        return trimmedLink ? (
-                          <div key={index} className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-500">•</span>
-                            <a
-                              href={trimmedLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 underline break-all"
+                      {workItem.workLink
+                        .split(",")
+                        .map((link: string, index: number) => {
+                          const trimmedLink = link.trim();
+                          return trimmedLink ? (
+                            <div
+                              key={index}
+                              className="flex items-center space-x-2"
                             >
-                              {trimmedLink}
-                            </a>
-                          </div>
-                        ) : null;
-                      })}
+                              <span className="text-sm text-gray-500">•</span>
+                              <a
+                                href={trimmedLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline break-all"
+                              >
+                                {trimmedLink}
+                              </a>
+                            </div>
+                          ) : null;
+                        })}
                     </div>
                   ) : (
                     // 단일 링크인 경우

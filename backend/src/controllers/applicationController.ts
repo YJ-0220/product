@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
 
-// 판매자 주문 신청
+// 판매자 신청서 생성
 export const createOrderApplication = async (req: Request, res: Response) => {
   try {
+    // 주문서 생성 시 주문서 아이디 필요
     const { orderId } = req.params;
+    // 주문서 아이디 필요
     if (!orderId) {
       res.status(400).json({ error: "유효하지 않은 orderId입니다." });
       return;
@@ -12,7 +14,9 @@ export const createOrderApplication = async (req: Request, res: Response) => {
     const { message, proposedPrice, estimatedDelivery } = req.body;
     const sellerId = req.user!.id;
 
+    // 트랜잭션 사용
     const application = await prisma.$transaction(async (tx) => {
+      // 이미 신청한 주문이 있는지 확인
       const existingApplication = await tx.orderApplication.findFirst({
         where: {
           orderRequestId: orderId,
@@ -24,6 +28,7 @@ export const createOrderApplication = async (req: Request, res: Response) => {
         throw new Error("이미 신청한 주문이 있습니다.");
       }
 
+      // 주문서 존재 확인
       const orderRequest = await tx.orderRequest.findUnique({
         where: { id: orderId },
       });
@@ -32,10 +37,12 @@ export const createOrderApplication = async (req: Request, res: Response) => {
         throw new Error("주문을 찾을 수 없습니다.");
       }
 
+      // 주문서 상태 확인
       if (orderRequest.status !== "pending") {
         throw new Error("신청 가능한 상태가 아닙니다.");
       }
 
+      // 신청서 생성
       const newApplication = await tx.orderApplication.create({
         data: {
           orderRequestId: orderId,
@@ -51,6 +58,7 @@ export const createOrderApplication = async (req: Request, res: Response) => {
       return newApplication;
     });
 
+    // 신청서 생성 후 반환
     res.status(201).json({
       message: "신청이 성공적으로 제출되었습니다.",
       application: {
@@ -82,10 +90,11 @@ export const createOrderApplication = async (req: Request, res: Response) => {
 export const deleteOrderApplication = async (req: Request, res: Response) => {
   try {
     const { applicationId } = req.params;
-    const sellerId = req.user!.id; // 미들웨어에서 무조건 보장
+    const sellerId = req.user!.id;
     const application = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
     });
+
     if (!application) {
       res.status(404).json({ error: "신청을 찾을 수 없습니다." });
       return;
@@ -94,9 +103,11 @@ export const deleteOrderApplication = async (req: Request, res: Response) => {
       res.status(403).json({ error: "자신의 신청만 삭제할 수 있습니다." });
       return;
     }
+
     await prisma.orderApplication.delete({
       where: { id: applicationId },
     });
+
     res.status(200).json({ message: "신청이 성공적으로 삭제되었습니다." });
   } catch (error) {
     res.status(500).json({ error: "신청 삭제 실패" });
@@ -112,10 +123,12 @@ export const updateOrderApplicationStatus = async (
     const { applicationId } = req.params;
     const { status } = req.body;
     const validStatuses = ["pending", "accepted", "rejected"];
+
     if (!validStatuses.includes(status)) {
       res.status(400).json({ error: "유효하지 않은 상태값입니다." });
       return;
     }
+
     const application = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
       include: {
@@ -128,10 +141,12 @@ export const updateOrderApplicationStatus = async (
         },
       },
     });
+
     if (!application) {
       res.status(404).json({ error: "신청을 찾을 수 없습니다." });
       return;
     }
+
     await prisma.$transaction(async (tx) => {
       const updatedApplication = await tx.orderApplication.update({
         where: { id: applicationId },
@@ -147,6 +162,7 @@ export const updateOrderApplicationStatus = async (
           where: { id: application.orderRequest.id },
           data: { status: "progress" },
         });
+
         await tx.orderApplication.updateMany({
           where: {
             orderRequestId: application.orderRequest.id,
@@ -184,7 +200,9 @@ export const getOrderApplicationsByOrder = async (
   try {
     const { orderId } = req.params;
     const { status } = req.query;
-    const where: any = { orderRequestId: orderId };
+    const where: any = {
+      orderRequestId: orderId,
+    };
     if (status) {
       where.status = status;
     }

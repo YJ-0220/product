@@ -52,10 +52,9 @@ export const useOrderApplication = () => {
   // 신청 삭제 (판매자용)
   const handleDeleteApplication = async (
     applicationId: string,
-    orderId: string,
     refreshData: () => void
   ) => {
-    await deleteApplication(orderId, applicationId);
+    await deleteApplication(applicationId);
     refreshData();
   };
 
@@ -100,12 +99,12 @@ export const useOrderApplication = () => {
   // 주문 상태 변경 (관리자용)
   const handleOrderStatusUpdate = async (
     orderId: string,
-    newStatus: string,
+    status: string,
     refreshData: () => void
   ) => {
     try {
       setUpdating(true);
-      await updateOrderStatus(orderId, newStatus);
+      await updateOrderStatus(orderId, status);
       refreshData();
     } catch (error: any) {
     } finally {
@@ -115,14 +114,13 @@ export const useOrderApplication = () => {
 
   // 신청 상태 변경 (관리자용)
   const handleApplicationStatusUpdate = async (
-    orderId: string,
     applicationId: string,
     newStatus: string,
     refreshData: () => void
   ) => {
     try {
       setUpdating(true);
-      await updateApplicationStatus(orderId, applicationId, newStatus);
+      await updateApplicationStatus(applicationId, newStatus);
       refreshData();
       
       // 성공 메시지
@@ -137,13 +135,12 @@ export const useOrderApplication = () => {
 
   // 관리자용 승인된 신청서 삭제
   const handleDeleteAcceptedApplication = async (
-    orderId: string,
     applicationId: string,
     refreshData: () => void
   ) => {
     try {
       setUpdating(true);
-      await deleteAcceptedApplication(orderId, applicationId);
+      await deleteAcceptedApplication(applicationId);
       refreshData();
       alert("승인된 신청서가 삭제되었습니다.");
     } catch (error: any) {

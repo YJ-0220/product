@@ -5,7 +5,6 @@ import {
   requiredBuyer,
   requiredSeller,
 } from "../../middleware/auth";
-import { getWorkItems } from "../../controllers/workController";
 import { getMyOrderApplications } from "../../controllers/applicationController";
 
 const router = express.Router();
@@ -17,7 +16,5 @@ router.use(authenticate);
 router.get("/order", requiredBuyer, getMyOrderRequest);
 // 판매자: 내 승인된 신청서 목록
 router.get("/application", requiredSeller, getMyOrderApplications);
-// 작업 목록 조회 (구매자/판매자 역할에 따라 다른 데이터)
-router.get("/work", getWorkItems);
 
 export default router;

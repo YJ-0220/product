@@ -30,13 +30,10 @@ export default function WorkDetail() {
       try {
         setLoading(true);
 
-        // 작업물 정보 조회
         try {
-          // 작업물 ID만으로 조회 (백엔드에서 작업물 ID만으로 조회 가능하도록 수정 필요)
           const workItemData = await getOrderWorkItem("temp", workItemId);
           setWorkItem(workItemData);
           
-          // 작업물에서 주문 정보 가져오기
           if (workItemData.orderRequest) {
             setApplication({
               id: workItemData.application.id,

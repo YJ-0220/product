@@ -4,85 +4,70 @@ import { prisma } from "../index";
 // 판매자 신청서 생성
 export const createOrderApplication = async (req: Request, res: Response) => {
   try {
-    // 주문서 생성 시 주문서 아이디 필요
-    const { orderId } = req.params;
-    // 주문서 아이디 필요
-    if (!orderId) {
-      res.status(400).json({ error: "유효하지 않은 orderId입니다." });
-      return;
-    }
-    const { message, proposedPrice, estimatedDelivery } = req.body;
+    const { orderId } = req.body;
     const sellerId = req.user!.id;
 
-    // 트랜잭션 사용
-    const application = await prisma.$transaction(async (tx) => {
-      // 이미 신청한 주문이 있는지 확인
-      const existingApplication = await tx.orderApplication.findFirst({
-        where: {
-          orderRequestId: orderId,
-          sellerId,
-        },
-      });
-
-      if (existingApplication) {
-        throw new Error("이미 신청한 주문이 있습니다.");
-      }
-
-      // 주문서 존재 확인
-      const orderRequest = await tx.orderRequest.findUnique({
-        where: { id: orderId },
-      });
-
-      if (!orderRequest) {
-        throw new Error("주문을 찾을 수 없습니다.");
-      }
-
-      // 주문서 상태 확인
-      if (orderRequest.status !== "pending") {
-        throw new Error("신청 가능한 상태가 아닙니다.");
-      }
-
-      // 신청서 생성
-      const newApplication = await tx.orderApplication.create({
-        data: {
-          orderRequestId: orderId,
-          sellerId,
-          message,
-          proposedPrice: proposedPrice ? Number(proposedPrice) : null,
-          estimatedDelivery: estimatedDelivery
-            ? new Date(estimatedDelivery)
-            : null,
-        },
-        include: { seller: { select: { username: true } } },
-      });
-      return newApplication;
-    });
-
-    // 신청서 생성 후 반환
-    res.status(201).json({
-      message: "신청이 성공적으로 제출되었습니다.",
-      application: {
-        ...application,
-        seller: { name: application.seller.username },
-        createdAt: application.createdAt.toISOString(),
-        updatedAt: application.updatedAt.toISOString(),
-        estimatedDelivery: application.estimatedDelivery?.toISOString(),
+    // 이미 신청한 주문이 있는지 확인
+    const existingApplication = await prisma.orderApplication.findFirst({
+      where: {
+        orderRequestId: orderId,
+        sellerId,
       },
     });
+
+    if (existingApplication) {
+      res.status(400).json({ error: "이미 신청한 주문입니다." });
+      return;
+    }
+
+    // 신청서 생성
+    const application = await prisma.orderApplication.create({
+      data: {
+        orderRequestId: orderId,
+        sellerId,
+      },
+      include: { seller: { select: { username: true } } },
+    });
+
+    res.status(201).json({
+      message: "신청이 성공적으로 제출되었습니다.",
+      application,
+    });
   } catch (error: any) {
-    if (error.message === "이미 신청한 주문이 있습니다.") {
-      res.status(400).json({ error: error.message });
-      return;
-    }
-    if (error.message === "주문을 찾을 수 없습니다.") {
-      res.status(404).json({ error: error.message });
-      return;
-    }
-    if (error.message === "신청 가능한 상태가 아닙니다.") {
-      res.status(400).json({ error: error.message });
-      return;
-    }
     res.status(500).json({ error: "신청 제출 실패", details: error.message });
+  }
+};
+
+// 주문별 신청 목록 조회
+export const getOrderApplicationsByOrder = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.query;
+    const where: any = {
+      orderRequestId: orderId,
+    };
+
+    if (status) {
+      where.status = status;
+    }
+
+    const applications = await prisma.orderApplication.findMany({
+      where,
+      include: { seller: { select: { username: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.status(200).json({
+      applications: applications.map(({ seller, ...app }) => ({
+        ...app,
+        seller: { name: seller.username },
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ error: "신청 목록 조회 실패" });
   }
 };
 
@@ -189,39 +174,6 @@ export const updateOrderApplicationStatus = async (
     });
   } catch (error) {
     res.status(500).json({ error: "신청 상태 변경 실패" });
-  }
-};
-
-// 주문별 신청 목록 조회
-export const getOrderApplicationsByOrder = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { orderId } = req.params;
-    const { status } = req.query;
-    const where: any = {
-      orderRequestId: orderId,
-    };
-    if (status) {
-      where.status = status;
-    }
-    const applications = await prisma.orderApplication.findMany({
-      where,
-      include: { seller: { select: { username: true } } },
-      orderBy: { createdAt: "desc" },
-    });
-    res.status(200).json({
-      applications: applications.map((app) => ({
-        ...app,
-        seller: { name: app.seller.username },
-        createdAt: app.createdAt.toISOString(),
-        updatedAt: app.updatedAt.toISOString(),
-        estimatedDelivery: app.estimatedDelivery?.toISOString(),
-      })),
-    });
-  } catch (error) {
-    res.status(500).json({ error: "신청 목록 조회 실패" });
   }
 };
 

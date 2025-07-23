@@ -1,73 +1,23 @@
-import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getMyOrderApplication } from "@/api/myPage";
-import { updateOrderWorkItemStatus } from "@/api/order";
 import { Link, useNavigate } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
-import type { WorkListApplicationData } from "@/types/orderTypes";
+import { useWorkList } from "@/hooks/useWorkList";
 
 export default function WorkList() {
   const { user } = useAuth();
   const { formatDate } = useUtils();
   const navigate = useNavigate();
-  const [applications, setApplications] = useState<WorkListApplicationData[]>(
-    []
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
-  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "in-progress">("all");
 
-  useEffect(() => {
-    const fetchWorkList = async () => {
-      try {
-        setLoading(true);
-        const data = await getMyOrderApplication();
-
-        const acceptedApplications = (data.applications || []).filter(
-          (app: any) => app.status === "accepted"
-        );
-
-        setApplications(acceptedApplications);
-      } catch (error: any) {
-        setError(
-          error?.response?.data?.error || "작업 목록을 불러올 수 없습니다."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWorkList();
-  }, []);
-
-  const filteredApplications = applications.filter((application) => {
-    if (filter === "in-progress") {
-      return (
-        application.workItems.length > 0 &&
-        application.orderRequest.status !== "completed"
-      );
-    }
-    return true;
-  });
-
-  const handleStatusUpdate = async (
-    applicationId: string,
-    workItemId: string,
-    status: string
-  ) => {
-    try {
-      setUpdatingStatus(`${applicationId}`);
-      await updateOrderWorkItemStatus(applicationId, workItemId, status);
-
-      const data = await getMyOrderApplication();
-      setApplications(data.applications || []);
-    } catch (error: any) {
-      setError(error?.response?.data?.error || "상태 업데이트에 실패했습니다.");
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
+  const {
+    acceptedOrder,
+    filteredApplications,
+    loading,
+    error,
+    updatingStatus,
+    filter,
+    setFilter,
+    handleStatusUpdate,
+  } = useWorkList();
 
   if (loading) {
     return (
@@ -119,7 +69,7 @@ export default function WorkList() {
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
-            전체 작업 ({applications.length})
+            전체 작업 ({acceptedOrder.length})
           </button>
           <button
             onClick={() => setFilter("in-progress")}
@@ -135,7 +85,7 @@ export default function WorkList() {
       </div>
 
       {user?.role === "seller" ? (
-        applications.length === 0 ? (
+        acceptedOrder.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
               <svg
@@ -215,16 +165,17 @@ export default function WorkList() {
                     </h4>
                     <div className="space-y-1 text-sm text-gray-600">
                       <p>신청일: {formatDate(application.createdAt)}</p>
-                      {application.proposedPrice && (
+                      {application.orderRequest.requiredPoints && (
                         <p>
                           제안 가격:{" "}
-                          {application.proposedPrice.toLocaleString()}P
+                          {application.orderRequest.requiredPoints.toLocaleString()}
+                          P
                         </p>
                       )}
-                      {application.estimatedDelivery && (
+                      {application.orderRequest.status === "progress" && (
                         <p>
                           예상 완료일:{" "}
-                          {formatDate(application.estimatedDelivery)}
+                          {formatDate(application.orderRequest.createdAt)}
                         </p>
                       )}
                     </div>
@@ -239,14 +190,14 @@ export default function WorkList() {
                     <div className="flex space-x-2">
                       {application.workItems.length === 0 ? (
                         <Link
-                          to={`/order/work/submit/${application.orderRequest.id}/${application.id}`}
+                          to="/order/work/submit"
                           className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                         >
                           작업물 제출
                         </Link>
                       ) : (
                         <Link
-                          to={`/order/work/edit/${application.orderRequest.id}/${application.id}`}
+                          to="/order/work/submit"
                           className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
                         >
                           작업물 수정
@@ -261,11 +212,7 @@ export default function WorkList() {
                         <div
                           key={workItem.id}
                           className="bg-gray-50 p-3 rounded cursor-pointer hover:bg-gray-100 transition-colors"
-                          onClick={() =>
-                            navigate(
-                              `/order/work/detail/${application.orderRequest.id}/${application.id}`
-                            )
-                          }
+                          onClick={() => navigate(`/order/work/${workItem.id}`)}
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">
@@ -291,13 +238,14 @@ export default function WorkList() {
                                 workItem.status === "submitted" && (
                                   <div className="flex space-x-1">
                                     <button
-                                      onClick={() =>
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         handleStatusUpdate(
                                           application.id,
                                           workItem.id,
                                           "approved"
-                                        )
-                                      }
+                                        );
+                                      }}
                                       disabled={
                                         updatingStatus ===
                                         `${application.orderRequest.id}-${application.id}`
@@ -307,13 +255,14 @@ export default function WorkList() {
                                       승인
                                     </button>
                                     <button
-                                      onClick={() =>
+                                      onClick={(e) => {
+                                        e.stopPropagation();
                                         handleStatusUpdate(
                                           application.id,
                                           workItem.id,
                                           "rejected"
-                                        )
-                                      }
+                                        );
+                                      }}
                                       disabled={
                                         updatingStatus ===
                                         `${application.orderRequest.id}-${application.id}`
@@ -334,11 +283,10 @@ export default function WorkList() {
                           {user?.role === "seller" && (
                             <div className="mt-2 flex space-x-2">
                               <button
-                                onClick={() =>
-                                  navigate(
-                                    `/order/work/progress/${application.id}/${workItem.id}`
-                                  )
-                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/order/work/${workItem.id}`);
+                                }}
                               >
                                 작업물이 진행 중입니다.
                               </button>

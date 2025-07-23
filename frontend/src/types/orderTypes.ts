@@ -33,9 +33,6 @@ export interface ApplicationData {
   id: string;
   orderRequestId: string;
   sellerId: string;
-  message?: string;
-  proposedPrice?: number;
-  estimatedDelivery?: string;
   status: "pending" | "accepted" | "rejected" | "cancelled";
   createdAt: string;
   updatedAt: string;
@@ -44,9 +41,6 @@ export interface ApplicationData {
   };
 }
 
-
-
-// WorkList 관련 타입들
 export interface WorkItemData {
   id: string;
   orderRequestId: string;
@@ -75,9 +69,6 @@ export interface WorkItemData {
   };
   application: {
     id: string;
-    message?: string;
-    proposedPrice?: number;
-    estimatedDelivery?: string;
     createdAt: string;
     seller?: {
       name: string;
@@ -85,19 +76,22 @@ export interface WorkItemData {
   };
 }
 
-export interface WorkListApplicationData {
+export interface WorkListData {
   id: string;
   orderRequestId: string;
   sellerId: string;
-  message?: string;
-  proposedPrice?: number;
-  estimatedDelivery?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
   orderRequest: {
     id: string;
     title: string;
+    category: {
+      name: string;
+    };
+    subcategory: {
+      name: string;
+    };
     description: string;
     requiredPoints: number;
     status: string;

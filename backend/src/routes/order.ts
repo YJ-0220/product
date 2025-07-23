@@ -50,28 +50,29 @@ router.get("/:orderId", getOrderRequestById);
 router.patch("/:orderId", requiredAdmin, updateOrderRequestStatus);
 
 // ===== 신청서 (Applications) =====
+// 신청서 생성
+router.post("/:orderId/applications", requiredSeller, createOrderApplication);
+// 주문별 신청 목록 전체 조회
 router.get(
   "/:orderId/applications",
   requiredSeller,
   getOrderApplicationsByOrder
 );
-// 신청서 생성
-router.post("/:orderId/applications", requiredSeller, createOrderApplication);
 // 신청서 삭제 (승인 되기전에 판매자가 삭제 가능)
 router.delete(
-  ":orderId/applications/:applicationId",
+  "/:orderId/applications/:applicationId",
   requiredSeller,
   deleteOrderApplication
 );
 // 신청서 상태 변경 (관리자)
 router.patch(
-  "applications/:applicationId",
+  "/:orderId/applications/:applicationId",
   requiredAdmin,
   updateOrderApplicationStatus
 );
 // 관리자용 승인된 신청서 삭제
 router.delete(
-  "applications/:applicationId/accepted",
+  "/:orderId/applications/:applicationId/accepted",
   requiredAdmin,
   deleteAcceptedOrderApplication
 );
@@ -79,27 +80,27 @@ router.delete(
 // ===== 작업물 (Work Items) =====
 // 작업물 제출 (판매자)
 router.post(
-  "applications/:applicationId/work",
+  "/:orderId/work",
   requiredSeller,
   createOrderWorkSubmit
 );
 // 작업물 목록 조회 (판매자)
 router.get(
-  "applications/:applicationId/works",
+  "/work",
   requiredSeller,
   getOrderWorkList
 );
 // 작업물 상세 조회
-router.get("applications/:applicationId/works/:workItemId", getOrderWorkItem);
+router.get("/:orderId/work/:workItemId", getOrderWorkItem);
 // 작업물 수정 (판매자)
 router.patch(
-  "applications/:applicationId/works/:workItemId",
+  "/:orderId/work/:workItemId",
   requiredSeller,
   updateOrderWorkItem
 );
 // 작업물 상태 업데이트 (관리자)
 router.patch(
-  "applications/:applicationId/works/:workItemId/status",
+  "/:orderId/work/:workItemId/status",
   requiredAdmin,
   updateOrderWorkItemStatus
 );

@@ -1,9 +1,9 @@
 import {
   createOrderApplication,
-  deleteApplication,
-  updateApplicationStatus,
+  deleteOrderApplication,
+  updateOrderApplicationStatus,
   updateOrderStatus,
-  deleteAcceptedApplication,
+  deleteAcceptedOrderApplication,
 } from "@/api/order";
 import { useState } from "react";
 import type { ApplicationData } from "@/types/orderTypes";
@@ -27,9 +27,7 @@ export const useOrderApplication = () => {
 
     try {
       const data = {
-        message: "",
         proposedPrice: 0,
-        estimatedDelivery: "",
       };
 
       await createOrderApplication(orderId, data);
@@ -51,10 +49,11 @@ export const useOrderApplication = () => {
 
   // 신청 삭제 (판매자용)
   const handleDeleteApplication = async (
+    orderId: string,
     applicationId: string,
     refreshData: () => void
   ) => {
-    await deleteApplication(applicationId);
+    await deleteOrderApplication(orderId, applicationId);
     refreshData();
   };
 
@@ -79,7 +78,6 @@ export const useOrderApplication = () => {
 
       // 간단한 신청 데이터 생성
       const applicationData = {
-        message: "신청합니다.",
         proposedPrice: requiredPoints,
       };
 
@@ -114,18 +112,22 @@ export const useOrderApplication = () => {
 
   // 신청 상태 변경 (관리자용)
   const handleApplicationStatusUpdate = async (
+    orderId: string,
     applicationId: string,
     newStatus: string,
     refreshData: () => void
   ) => {
     try {
       setUpdating(true);
-      await updateApplicationStatus(applicationId, newStatus);
+      await updateOrderApplicationStatus(orderId, applicationId, newStatus);
       refreshData();
-      
-      // 성공 메시지
+
       setTimeout(() => {
-        alert(newStatus === 'accepted' ? '신청이 수락되었습니다.' : '신청이 거절되었습니다.');
+        alert(
+          newStatus === "accepted"
+            ? "신청이 수락되었습니다."
+            : "신청이 거절되었습니다."
+        );
       }, 1000);
     } catch (error: any) {
     } finally {
@@ -135,14 +137,18 @@ export const useOrderApplication = () => {
 
   // 관리자용 승인된 신청서 삭제
   const handleDeleteAcceptedApplication = async (
+    orderId: string,
     applicationId: string,
     refreshData: () => void
   ) => {
     try {
       setUpdating(true);
-      await deleteAcceptedApplication(applicationId);
+      await deleteAcceptedOrderApplication(orderId, applicationId);
       refreshData();
-      alert("승인된 신청서가 삭제되었습니다.");
+
+      setTimeout(() => {
+        alert("승인된 신청서가 삭제되었습니다.");
+      }, 1000);
     } catch (error: any) {
     } finally {
       setUpdating(false);

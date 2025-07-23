@@ -3,7 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getOrderById, getOrderApplicationsByOrder } from "@/api/order";
 import { getOrderWorkList } from "@/api/order";
 import { useAuth } from "@/context/AuthContext";
-import type { OrderData, ApplicationData } from "@/types/orderTypes";
+import type {
+  OrderData,
+  ApplicationData,
+  WorkItemData,
+} from "@/types/orderTypes";
 
 export const useOrderDetail = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -12,7 +16,7 @@ export const useOrderDetail = () => {
 
   const [order, setOrder] = useState<OrderData | null>(null);
   const [applications, setApplications] = useState<ApplicationData[]>([]);
-  const [workItems, setWorkItems] = useState<any[]>([]);
+  const [workItems, setWorkItems] = useState<WorkItemData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
@@ -29,17 +33,17 @@ export const useOrderDetail = () => {
 
       // 신청서 목록 조회
       const applicationsData = await getOrderApplicationsByOrder(orderId);
-      setApplications(applicationsData.applications);
+      setApplications(applicationsData);
 
       // 승인된 신청서의 작업물 상태 확인
-      const acceptedApplications = applicationsData.applications.filter(
+      const acceptedApplications = applicationsData.filter(
         (app: ApplicationData) => app.status === "accepted"
       );
 
       const workItemStatuses = await Promise.allSettled(
         acceptedApplications.map(async (app: ApplicationData) => {
           try {
-            const workItemData = await getOrderWorkList(app.id);
+            const workItemData = await getOrderWorkList();
             return {
               applicationId: app.id,
               workItem: workItemData[0] || null,
@@ -67,7 +71,11 @@ export const useOrderDetail = () => {
         }
       });
 
-      setWorkItems(workItemsData);
+      setWorkItems(
+        workItemsData
+          .map((item) => item.workItem)
+          .filter((item) => item !== null) as WorkItemData[]
+      );
     } catch (error: any) {
       setError(
         "데이터를 불러올 수 없습니다: " +

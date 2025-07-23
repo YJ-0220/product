@@ -49,7 +49,7 @@ export default function WorkSubmitForm() {
         setLoading(true);
 
         const applicationsData = await getOrderApplicationsByOrder(orderId);
-        const targetApplication = applicationsData.applications.find(
+        const targetApplication = applicationsData.find(
           (app: any) => app.id === applicationId && app.status === "accepted"
         );
 
@@ -58,7 +58,7 @@ export default function WorkSubmitForm() {
           
           // 기존 작업물이 있는지 확인
           try {
-            const workItemData = await getOrderWorkList(applicationId);
+            const workItemData = await getOrderWorkList();
             setExistingWorkItem(workItemData[0] || null);
           } catch (error) {
             // 기존 작업물이 없으면 무시 (새로 제출하는 경우)
@@ -221,7 +221,7 @@ export default function WorkSubmitForm() {
         {existingWorkItem && (
           <button
             type="button"
-            onClick={() => navigate(`/order/work/edit/${orderId}/${applicationId}`)}
+            onClick={() => navigate(`/order/work/${existingWorkItem.id}/edit`)}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
           >
             작업물 수정
@@ -241,7 +241,7 @@ export default function WorkSubmitForm() {
           <div className="flex space-x-3">
             <button
               type="button"
-              onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}`)}
+              onClick={() => navigate(`/order/work/${existingWorkItem?.id}`)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
             >
               작업물 상세 보기
@@ -255,10 +255,10 @@ export default function WorkSubmitForm() {
             </button>
             <button
               type="button"
-              onClick={() => navigate(`/order/${orderId}/applications/${applicationId}/progress`)}
+              onClick={() => navigate(`/order/${orderId}`)}
               className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
             >
-              작업 진행 상황
+              주문 상세 보기
             </button>
           </div>
         </div>

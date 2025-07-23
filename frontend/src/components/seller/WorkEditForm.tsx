@@ -50,7 +50,7 @@ export default function WorkEditForm() {
 
         // 승인된 신청서 확인
         const applicationsData = await getOrderApplicationsByOrder(orderId);
-        const targetApplication = applicationsData.applications.find(
+        const targetApplication = applicationsData.find(
           (app: any) => app.id === applicationId && app.status === "accepted"
         );
 
@@ -189,7 +189,7 @@ export default function WorkEditForm() {
       setSuccess("작업물이 성공적으로 수정되었습니다.");
       
       // 즉시 작업물 상세 페이지로 이동
-      navigate(`/order/work/detail/${orderId}/${applicationId}`);
+      navigate(`/order/work/${workItemId}`);
     } catch (error: any) {
       setError(error?.response?.data?.error || "작업물 수정에 실패했습니다.");
     } finally {
@@ -342,7 +342,7 @@ export default function WorkEditForm() {
         <div className="flex space-x-3">
           <button
             type="button"
-            onClick={() => navigate(`/order/work/detail/${orderId}/${applicationId}/${workItemId}`)}
+            onClick={() => navigate(`/order/work/${workItemId}`)}
             className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-semibold"
           >
             취소

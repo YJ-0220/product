@@ -132,16 +132,22 @@ export const router = createBrowserRouter([
                 element: <WorkSubmitForm />,
               },
               {
-                path: "edit",
-                element: <WorkEditForm />,
-              },
-              {
-                path: ":workId",
+                path: ":workItemId",
                 element: (
                   <RequireAuth allowedRoles={["seller", "buyer", "admin"]}>
-                    <WorkDetail />
+                    <EmptyLayout />
                   </RequireAuth>
                 ),
+                children: [
+                  {
+                    index: true,
+                    element: <WorkDetail />,
+                  },
+                  {
+                    path: "edit",
+                    element: <WorkEditForm />,
+                  },
+                ],
               },
             ],
           },

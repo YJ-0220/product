@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
-import { getOrderRequestBoard } from "@/api/order";
+import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import type { OrderData } from "@/types/orderTypes";
-import { useUtils } from "@/hooks/useUtils";
+import { useOrderBoard } from "@/hooks/useOrderBoard";
 
 const OrderBoardTitles = [
   {
@@ -33,46 +31,15 @@ const OrderBoardTitles = [
 ];
 
 export default function OrderBoard() {
-  const [orders, setOrders] = useState<OrderData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { orders, getStatusText, getStatusColor } = useOrderBoard();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { getStatusText, getStatusColor } = useUtils();
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        const result = await getOrderRequestBoard();
-        setOrders(result.orders);
-      } catch (error) {
-        console.error("주문서 목록 조회 실패:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrders();
-
-    // 페이지 포커스 시 새로고침 (다른 페이지에서 돌아올 때)
-    const handleFocus = () => {
-      fetchOrders();
-    };
-
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">로딩 중...</div>
-      </div>
-    );
-  }
+    if (user?.role === "buyer" || user?.role === "admin") {
+      navigate("/order/request");
+    }
+  }, [user?.role, navigate]);
 
   return (
     <div className="px-10 py-4">
@@ -140,7 +107,6 @@ export default function OrderBoard() {
                     key={order.id}
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => {
-                      // 주문 상세 페이지로 이동
                       navigate(`/order/${order.id}`);
                     }}
                   >

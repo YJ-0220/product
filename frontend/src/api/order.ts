@@ -87,79 +87,82 @@ export const createOrderApplication = async (
 export const getOrderApplicationsByOrder = async (
   orderId: string,
   status?: string
-): Promise<{
-  applications: ApplicationData[];
-}> => {
+): Promise<ApplicationData[]> => {
   const params = status ? { status } : {};
   const res = await api.get(`/order/${orderId}/applications`, {
     params,
   });
-  return res.data;
+  return res.data.applications;
 };
 
 // 신청서 상태 업데이트
-export const updateApplicationStatus = async (
+export const updateOrderApplicationStatus = async (
+  orderId: string,
   applicationId: string,
   status: string
 ): Promise<ApplicationData> => {
-  const res = await api.patch(`/order/applications/${applicationId}`, {
-    status,
-  });
+  const res = await api.patch(
+    `/order/${orderId}/applications/${applicationId}`,
+    {
+      status,
+    }
+  );
   return res.data.application;
 };
 
 // 신청서 삭제
-export const deleteApplication = async (
+export const deleteOrderApplication = async (
+  orderId: string,
   applicationId: string
 ): Promise<ApplicationData> => {
-  const res = await api.delete(`/order/applications/${applicationId}`);
+  const res = await api.delete(
+    `/order/${orderId}/applications/${applicationId}`
+  );
   return res.data.application;
 };
 
 // 승인된 신청서(accepted) 관리자 삭제
-export const deleteAcceptedApplication = async (applicationId: string) => {
-  const res = await api.delete(`/order/applications/${applicationId}/accepted`);
+export const deleteAcceptedOrderApplication = async (
+  orderId: string,
+  applicationId: string
+) => {
+  const res = await api.delete(
+    `/order/${orderId}/applications/${applicationId}/accepted`
+  );
   return res.data;
 };
 
 // 작업물 제출
 export const createOrderWorkSubmit = async (
-  applicationId: string,
+  orderId: string,
   data: {
     description: string;
     workLink?: string;
     fileUrl?: string;
   }
 ) => {
-  const res = await api.post(
-    `/order/applications/${applicationId}/works`,
-    data
-  );
+  const res = await api.post(`/order/${orderId}/work`, data);
   return res.data;
 };
 
 // 작업물 목록 조회
-export const getOrderWorkList = async (
-  applicationId: string
-): Promise<WorkItemData[]> => {
-  const res = await api.get(`/order/applications/${applicationId}/works`);
-  return res.data.workList;
+export const getOrderWorkList = async (): Promise<WorkItemData[]> => {
+  const res = await api.get(`/order/work`);
+  return res.data;
 };
 
 // 작업물 상세 조회
 export const getOrderWorkItem = async (
-  applicationId: string,
+  orderId: string,
   workItemId: string
 ): Promise<WorkItemData> => {
-  const res = await api.get(
-    `/order/applications/${applicationId}/works/${workItemId}`
-  );
+  const res = await api.get(`/order/${orderId}/work/${workItemId}`);
   return res.data.workItem;
 };
 
 // 작업물 수정
 export const updateOrderWorkItem = async (
-  applicationId: string,
+  orderId: string,
   workItemId: string,
   data: {
     description?: string;
@@ -167,22 +170,18 @@ export const updateOrderWorkItem = async (
     fileUrl?: string;
   }
 ) => {
-  const res = await api.patch(
-    `/order/applications/${applicationId}/works/${workItemId}`,
-    data
-  );
+  const res = await api.patch(`/order/${orderId}/work/${workItemId}`, data);
   return res.data;
 };
 
 // 작업물 상태 업데이트
 export const updateOrderWorkItemStatus = async (
-  applicationId: string,
+  orderId: string,
   workItemId: string,
   status: string
 ) => {
-  const res = await api.patch(
-    `/order/applications/${applicationId}/works/${workItemId}/status`,
-    { status }
-  );
+  const res = await api.patch(`/order/${orderId}/work/${workItemId}/status`, {
+    status,
+  });
   return res.data;
 };

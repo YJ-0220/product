@@ -5,8 +5,16 @@ import { Link } from "react-router-dom";
 
 export default function OrderDetail() {
   // 데이터 관리 훅
-  const { order, applications, workItems, loading, error, user, refreshData, navigate } =
-    useOrderDetail();
+  const {
+    order,
+    applications,
+    workItems,
+    loading,
+    error,
+    user,
+    refreshData,
+    navigate,
+  } = useOrderDetail();
 
   // 신청 관련 액션 훅
   const {
@@ -86,12 +94,31 @@ export default function OrderDetail() {
             {getStatusText(order.status)}
           </span>
           {order.status === "progress" && applications.length > 0 && (
-            <Link
-              to={`/order/work/${workItems.find(item => item.applicationId === applications[0].id)?.workItem?.id || ''}`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              작업물 상세 보기
-            </Link>
+            (() => {
+              // 승인된 신청서에서 작업물 찾기
+              const acceptedApplication = applications.find(app => app.status === "accepted");
+              const workItem = acceptedApplication ? workItems.find(item => item.applicationId === acceptedApplication.id) : null;
+              
+              if (workItem) {
+                return (
+                  <Link
+                    to={`/order/${order.id}/work/${workItem.id}`}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    작업물 상세 보기
+                  </Link>
+                );
+              } else {
+                return (
+                  <Link
+                    to="/order/work"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    작업 게시판
+                  </Link>
+                );
+              }
+            })()
           )}
           <Link
             to="/order"
@@ -254,6 +281,7 @@ export default function OrderDetail() {
                                     <button
                                       onClick={() =>
                                         handleDeleteApplication(
+                                          order.id,
                                           application.id,
                                           refreshData
                                         )
@@ -266,17 +294,13 @@ export default function OrderDetail() {
                               </div>
                             </div>
 
-                            {application.message && (
-                              <p className="text-gray-700 mb-3 whitespace-pre-wrap">
-                                {application.message}
-                              </p>
-                            )}
                             {user?.role === "admin" &&
                               application.status === "pending" && (
                                 <div className="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200">
                                   <button
                                     onClick={() =>
                                       handleApplicationStatusUpdate(
+                                        order.id,
                                         application.id,
                                         "rejected",
                                         refreshData
@@ -290,6 +314,7 @@ export default function OrderDetail() {
                                   <button
                                     onClick={() =>
                                       handleApplicationStatusUpdate(
+                                        order.id,
                                         application.id,
                                         "accepted",
                                         refreshData
@@ -344,6 +369,7 @@ export default function OrderDetail() {
                                         window.confirm("정말 삭제하시겠습니까?")
                                       ) {
                                         handleDeleteAcceptedApplication(
+                                          order.id,
                                           application.id,
                                           refreshData
                                         );
@@ -358,12 +384,6 @@ export default function OrderDetail() {
                               </div>
                             </div>
 
-                            {application.message && (
-                              <p className="text-gray-700 mb-3 whitespace-pre-wrap">
-                                {application.message}
-                              </p>
-                            )}
-
                             {/* 작업물 제출 상태 표시 */}
                             <div className="mt-3 pt-3 border-t border-green-200">
                               <div className="flex items-center justify-between">
@@ -372,16 +392,19 @@ export default function OrderDetail() {
                                 </span>
                                 {(() => {
                                   const workItem = workItems.find(
-                                    (item) => item.applicationId === application.id
+                                    (item) =>
+                                      item.applicationId === application.id
                                   );
-                                  if (workItem?.hasWorkItem) {
+                                  if (workItem) {
                                     return (
                                       <div className="flex items-center space-x-2">
                                         <span className="text-sm text-green-600 font-medium">
                                           작업물 제출됨
                                         </span>
                                         <Link
-                                          to={`/order/work/${workItems.find(item => item.applicationId === application.id)?.workItem?.id || ''}`}
+                                          to={`/order/work/${
+                                            workItem.id || ""
+                                          }`}
                                           className="text-xs text-blue-600 hover:text-blue-700 underline"
                                         >
                                           상세 보기

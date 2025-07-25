@@ -4,19 +4,9 @@ import { useUtils } from "@/hooks/useUtils";
 import { Link } from "react-router-dom";
 
 export default function OrderDetail() {
-  // 데이터 관리 훅
-  const {
-    order,
-    applications,
-    workItems,
-    loading,
-    error,
-    user,
-    refreshData,
-    navigate,
-  } = useOrderDetail();
+  const { order, applications, workItems, error, user, refreshData, navigate } =
+    useOrderDetail();
 
-  // 신청 관련 액션 훅
   const {
     handleDeleteApplication,
     handleSimpleApplication,
@@ -27,14 +17,6 @@ export default function OrderDetail() {
   } = useOrderApplication();
 
   const { getStatusColor, getStatusText, formatDate } = useUtils();
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -93,33 +75,40 @@ export default function OrderDetail() {
           >
             {getStatusText(order.status)}
           </span>
-          {order.status === "progress" && applications.length > 0 && (
+          {order.status === "progress" &&
+            applications.length > 0 &&
             (() => {
-              // 승인된 신청서에서 작업물 찾기
-              const acceptedApplication = applications.find(app => app.status === "accepted");
-              const workItem = acceptedApplication ? workItems.find(item => item.applicationId === acceptedApplication.id) : null;
-              
-              if (workItem) {
-                return (
-                  <Link
-                    to={`/order/${order.id}/work/${workItem.id}`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    작업물 상세 보기
-                  </Link>
+              const acceptedApplication = applications.find(
+                (app) => app.status === "accepted"
+              );
+
+              if (acceptedApplication) {
+                const workItem = workItems.find(
+                  (item) => item.applicationId === acceptedApplication.id
                 );
-              } else {
-                return (
-                  <Link
-                    to="/order/work"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    작업 게시판
-                  </Link>
-                );
+
+                if (workItem) {
+                  return (
+                    <Link
+                      to={`/order/work/${workItem.id}`}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      작업물 진행 상황
+                    </Link>
+                  );
+                } else {
+                  return (
+                    <Link
+                      to="/order/work/submit"
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    >
+                      작업물 제출하기
+                    </Link>
+                  );
+                }
               }
-            })()
-          )}
+              return null;
+            })()}
           <Link
             to="/order"
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
@@ -261,7 +250,7 @@ export default function OrderDetail() {
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center space-x-3">
                                 <span className="font-medium text-gray-900">
-                                  {application.seller.name}
+                                  {application.seller.username}
                                 </span>
                                 <span
                                   className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -333,7 +322,6 @@ export default function OrderDetail() {
                   </div>
                 )}
 
-                {/* 작업 단계 (승인된 신청) */}
                 {applications.filter((app) => app.status === "accepted")
                   .length > 0 && (
                   <div>
@@ -351,7 +339,7 @@ export default function OrderDetail() {
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center space-x-3">
                                 <span className="font-medium text-gray-900">
-                                  {application.seller.name}
+                                  {application.seller.username}
                                 </span>
                                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                   작업 진행중
@@ -361,7 +349,6 @@ export default function OrderDetail() {
                                 <span className="text-sm text-gray-500">
                                   승인일: {formatDate(application.updatedAt)}
                                 </span>
-                                {/* 관리자만 삭제 버튼 노출 */}
                                 {user?.role === "admin" && (
                                   <button
                                     onClick={() => {
@@ -384,7 +371,6 @@ export default function OrderDetail() {
                               </div>
                             </div>
 
-                            {/* 작업물 제출 상태 표시 */}
                             <div className="mt-3 pt-3 border-t border-green-200">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-gray-600">
@@ -397,19 +383,9 @@ export default function OrderDetail() {
                                   );
                                   if (workItem) {
                                     return (
-                                      <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-green-600 font-medium">
-                                          작업물 제출됨
-                                        </span>
-                                        <Link
-                                          to={`/order/work/${
-                                            workItem.id || ""
-                                          }`}
-                                          className="text-xs text-blue-600 hover:text-blue-700 underline"
-                                        >
-                                          상세 보기
-                                        </Link>
-                                      </div>
+                                      <span className="text-sm text-green-600 font-medium">
+                                        작업물 제출됨
+                                      </span>
                                     );
                                   } else {
                                     return (
@@ -439,7 +415,7 @@ export default function OrderDetail() {
                 <label className="block text-sm font-medium text-gray-700">
                   구매자
                 </label>
-                <p className="text-gray-900">{order.buyer.name}</p>
+                <p className="text-gray-900">{order.buyer.username}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">

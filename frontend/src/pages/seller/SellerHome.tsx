@@ -69,7 +69,6 @@ export default function SellerHome() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-6">
-        {/* 헤더 */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             판매자 대시보드
@@ -221,13 +220,9 @@ export default function SellerHome() {
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 mb-2">
-                      구매자: {application.seller.name}
+                      판매자: {application.seller.username}
                     </div>
-                    {application.proposedPrice && (
-                      <div className="text-sm text-gray-600 mb-2">
-                        제안가: {application.proposedPrice.toLocaleString()}P
-                      </div>
-                    )}
+                    
                     <div className="text-xs text-gray-500">
                       신청일: {formatDate(application.createdAt)}
                     </div>

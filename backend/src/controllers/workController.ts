@@ -88,7 +88,6 @@ export const getOrderWorkList = async (req: Request, res: Response) => {
   }
 };
 
-
 // 작업물 상세 조회(판매자)
 export const getOrderWorkItem = async (req: Request, res: Response) => {
   try {
@@ -101,29 +100,29 @@ export const getOrderWorkItem = async (req: Request, res: Response) => {
         id: workItemId,
       },
       include: {
+        orderRequest: {
+          select: {
+            id: true,
+            title: true,
+            category: {
+              select: { name: true },
+            },
+            subcategory: {
+              select: { name: true },
+            },
+            description: true,
+            requiredPoints: true,
+            status: true,
+            createdAt: true,
+            buyer: {
+              select: { username: true },
+            },
+          },
+        },
         application: {
           include: {
             seller: {
               select: { username: true },
-            },
-            orderRequest: {
-              select: {
-                id: true,
-                title: true,
-                category: {
-                  select: { name: true },
-                },
-                subcategory: {
-                  select: { name: true },
-                },
-                description: true,
-                requiredPoints: true,
-                status: true,
-                createdAt: true,
-                buyer: {
-                  select: { username: true },
-                },
-              },
             },
           },
         },
@@ -145,7 +144,7 @@ export const getOrderWorkItem = async (req: Request, res: Response) => {
 // 작업물 수정 (판매자)
 export const updateOrderWorkItem = async (req: Request, res: Response) => {
   try {
-    const { orderId, workItemId } = req.params;
+    const { workItemId } = req.params;
     const { description, fileUrl, workLink } = req.body;
 
     const sellerId = req.user?.id;
@@ -154,7 +153,6 @@ export const updateOrderWorkItem = async (req: Request, res: Response) => {
       where: {
         id: workItemId,
         application: {
-          orderRequestId: orderId,
           sellerId: sellerId,
         },
       },

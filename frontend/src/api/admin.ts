@@ -8,6 +8,8 @@ export const getAdminDashboard = async () => {
 export const adminRegister = async (data: {
   username: string;
   password: string;
+  role: string;
+  membershipLevel?: string;
 }) => {
   const response = await api.post("/admin/register", data);
   return response.data;

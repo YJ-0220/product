@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useOrderBoard } from "@/hooks/useOrderBoard";
@@ -34,12 +33,6 @@ export default function OrderBoard() {
   const { orders, getStatusText, getStatusColor } = useOrderBoard();
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user?.role === "buyer" || user?.role === "admin") {
-      navigate("/order/request");
-    }
-  }, [user?.role, navigate]);
 
   return (
     <div className="px-10 py-4">
@@ -114,7 +107,7 @@ export default function OrderBoard() {
                       {orders.length - index}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.buyer.name}
+                      {order.buyer.username}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString()}

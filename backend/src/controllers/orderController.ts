@@ -181,7 +181,7 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
 
         return {
           ...order,
-          buyer: { name: order.buyer.username },
+          buyer: { username: order.buyer.username },
           createdAt: order.createdAt.toISOString(),
           deadline: order.deadline?.toISOString() || null,
           myApplicationStatus: myApplication ? myApplication.status : null, // 내 신청 상태
@@ -220,6 +220,16 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
             name: true,
           },
         },
+        applications: {
+          include: {
+            seller: {
+              select: {
+                username: true,
+              },
+            },
+            workItems: true,
+          },
+        },
       },
     });
 
@@ -230,7 +240,7 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
 
     res.status(200).json({
       ...order,
-      buyer: { name: order.buyer.username },
+      buyer: { username: order.buyer.username },
       createdAt: order.createdAt.toISOString(),
       deadline: order.deadline?.toISOString() || null,
     });
@@ -278,7 +288,7 @@ export const updateOrderRequestStatus = async (req: Request, res: Response) => {
       message: "주문 상태가 성공적으로 변경되었습니다.",
       order: {
         ...updatedOrder,
-        buyer: { name: updatedOrder.buyer.username },
+        buyer: { username: updatedOrder.buyer.username },
         createdAt: updatedOrder.createdAt.toISOString(),
         deadline: updatedOrder.deadline?.toISOString() || null,
       },

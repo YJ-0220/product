@@ -79,11 +79,11 @@ export default function PointWithdrawRequest() {
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                       <span className="text-blue-600 text-sm font-medium">
-                        {request.user?.name?.charAt(0)?.toUpperCase() || '?'}
+                        {request.user?.username?.charAt(0)?.toUpperCase() || '?'}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{request.user?.name || '알 수 없는 사용자'}</p>
+                      <p className="font-medium text-gray-900">{request.user?.username || '알 수 없는 사용자'}</p>
                       <p className="text-sm text-gray-500">
                         {new Date(request.requestedAt).toLocaleDateString('ko-KR')}
                       </p>

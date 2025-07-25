@@ -63,7 +63,7 @@ export const getOrderApplicationsByOrder = async (
     res.status(200).json({
       applications: applications.map(({ seller, ...app }) => ({
         ...app,
-        seller: { name: seller.username },
+        seller: { username: seller.username },
       })),
     });
   } catch (error) {
@@ -167,7 +167,7 @@ export const updateOrderApplicationStatus = async (
       message: "신청 상태가 성공적으로 변경되었습니다.",
       application: {
         ...updatedApplication,
-        seller: { name: updatedApplication!.seller.username },
+        seller: { username: updatedApplication!.seller.username },
         createdAt: updatedApplication!.createdAt.toISOString(),
         updatedAt: updatedApplication!.updatedAt.toISOString(),
       },
@@ -221,7 +221,7 @@ export const getMyOrderApplications = async (req: Request, res: Response) => {
         orderRequest: {
           ...app.orderRequest,
           createdAt: app.orderRequest.createdAt.toISOString(),
-          buyer: { name: app.orderRequest.buyer.username },
+          buyer: { username: app.orderRequest.buyer.username },
         },
         workItems: app.workItems.map((item) => ({
           ...item,

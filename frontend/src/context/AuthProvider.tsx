@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       try {
+        setLoading(true);
         const res = await getUserProfile();
         const userData = {
           ...res.user,

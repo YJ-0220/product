@@ -56,9 +56,10 @@ export const adminRegister: RequestHandler = async (
   res: Response
 ) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password, role, membershipLevel } = req.body;
 
-    const membership_level = role === "buyer" ? "bronze" : null;
+    // 구매자일 때 멤버십 등급 설정 (기본값: bronze)
+    const membership_level = role === "buyer" ? (membershipLevel || "bronze") : null;
 
     if (!username || !password) {
       res.status(400).json({ message: "빈 칸을 입력해주세요." });
@@ -74,6 +75,12 @@ export const adminRegister: RequestHandler = async (
 
     if (role !== "buyer" && role !== "seller") {
       res.status(400).json({ message: "올바른 역할을 선택해주세요." });
+      return;
+    }
+
+    // 구매자일 때 멤버십 등급 유효성 검사
+    if (role === "buyer" && !["bronze", "silver", "gold", "platinum", "vip"].includes(membership_level)) {
+      res.status(400).json({ message: "올바른 멤버십 등급을 선택해주세요." });
       return;
     }
 
@@ -136,16 +143,16 @@ export const adminRegister: RequestHandler = async (
 
 // 관리자 사용자 삭제
 export const adminDeleteUser = async (req: Request, res: Response) => {
-  const username = req.params.username;
+  const userId = req.params.userId;
 
-  if (!username) {
+  if (!userId) {
     res.status(400).json({ message: "사용자 ID가 필요합니다." });
     return;
   }
   try {
     const result = await prisma.user.delete({
       where: {
-        username: username,
+        id: userId,
       },
     });
 

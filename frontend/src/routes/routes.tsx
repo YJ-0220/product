@@ -21,6 +21,9 @@ import WorkList from "@/pages/common/WorkList";
 import WorkDetail from "@/pages/common/WorkDetail";
 import WorkSubmitForm from "@/components/seller/WorkSubmitForm";
 import WorkEditForm from "@/components/seller/WorkEditForm";
+import UserList from "@/pages/admin/UserList";
+import UserCreate from "@/pages/admin/UserCreate";
+import NoticeManagement from "@/pages/admin/NoticeManagement";
 
 export const router = createBrowserRouter([
   {
@@ -132,24 +135,18 @@ export const router = createBrowserRouter([
                 element: <WorkSubmitForm />,
               },
               {
-                path: ":workItemId",
-                element: (
-                  <RequireAuth allowedRoles={["seller", "buyer", "admin"]}>
-                    <EmptyLayout />
-                  </RequireAuth>
-                ),
-                children: [
-                  {
-                    index: true,
-                    element: <WorkDetail />,
-                  },
-                  {
-                    path: "edit",
-                    element: <WorkEditForm />,
-                  },
-                ],
+                path: ":workItemId/edit",
+                element: <WorkEditForm />,
               },
             ],
+          },
+          {
+            path: "work/:workItemId",
+            element: (
+              <RequireAuth allowedRoles={["seller", "buyer", "admin"]}>
+                <WorkDetail />
+              </RequireAuth>
+            ),
           },
         ],
       },
@@ -161,45 +158,55 @@ export const router = createBrowserRouter([
           </RequireAuth>
         ),
       },
-    ],
-  },
-  {
-    path: "/users",
-    element: (
-      <LayoutWrapper allowedRoles={["admin"]}>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">사용자 관리</h1>
-          <p>사용자 관리 페이지입니다.</p>
-        </div>
-      </LayoutWrapper>
-    ),
-  },
-  {
-    path: "/content",
-    element: (
-      <LayoutWrapper allowedRoles={["admin"]}>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">콘텐츠 관리</h1>
-          <p>콘텐츠 관리 페이지입니다.</p>
-        </div>
-      </LayoutWrapper>
-    ),
-  },
-  {
-    path: "/my",
-    element: (
-      <LayoutWrapper allowedRoles={["buyer", "seller", "admin"]}>
-        <EmptyLayout />
-      </LayoutWrapper>
-    ),
-    children: [
       {
-        index: true,
-        element: <MyPage />,
+        path: "users",
+        element: (
+          <RequireAuth allowedRoles={["admin"]}>
+            <EmptyLayout />
+          </RequireAuth>
+        ),
+        children: [
+          {
+            index: true,
+            element: <UserList />,
+          },
+          {
+            path: "create",
+            element: <UserCreate />,
+          },
+        ],
       },
       {
-        path: "order",
-        element: <OrderHistory />,
+        path: "content",
+        element: (
+          <RequireAuth allowedRoles={["admin"]}>
+            <EmptyLayout />
+          </RequireAuth>
+        ),
+        children: [
+          {
+            index: true,
+            element: <NoticeManagement />,
+          },
+        ],
+      },
+      {
+        path: "my",
+        element: (
+          <RequireAuth allowedRoles={["buyer", "seller", "admin"]}>
+            <EmptyLayout />
+          </RequireAuth>
+        ),
+        children: [
+          {
+            index: true,
+            element: <MyPage />,
+          },
+          {
+            path: "order",
+            element: <OrderHistory />,
+          },
+        ],
       },
     ],
   },

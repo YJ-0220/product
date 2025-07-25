@@ -6,7 +6,7 @@ export interface PointChargeRequest {
   requestedAt: string;
   approvedAt?: string;
   user?: {
-    name: string;
+    username: string;
   };
 }
 
@@ -21,7 +21,7 @@ export interface PointWithdrawRequest {
   requestedAt: string;
   processedAt?: string;
   user?: {
-    name: string;
+    username: string;
   };
 }
 

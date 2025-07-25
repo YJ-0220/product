@@ -76,8 +76,8 @@ export const adminChargePoint = async (req: Request, res: Response) => {
 // 관리자용 포인트 충전 (사용자에게 직접 충전)
 export const adminChargeUserPoint = async (req: Request, res: Response) => {
   const { amount, description } = req.body;
-  const { username } = req.params;
-  const userId = req.user?.id;
+  const { userId: targetUserId } = req.params;
+  const adminId = req.user?.id;
 
   if (!amount || isNaN(amount) || amount <= 0) {
     res.status(400).json({
@@ -87,9 +87,9 @@ export const adminChargeUserPoint = async (req: Request, res: Response) => {
   }
 
   try {
-    // 사용자 존재 확인(id 대신 username 사용)
+    // 사용자 존재 확인 (id 사용)
     const user = await prisma.user.findUnique({
-      where: { username: username },
+      where: { id: targetUserId },
     });
 
     if (!user) {
@@ -141,6 +141,7 @@ export const adminChargeUserPoint = async (req: Request, res: Response) => {
     res.status(200).json({
       message: "포인트 충전이 완료되었습니다.",
       amount,
+      targetUser: user.username,
       description: description || "관리자 직접 충전",
     });
   } catch (error) {

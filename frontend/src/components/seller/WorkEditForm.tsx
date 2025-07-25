@@ -4,9 +4,7 @@ import FormInput from "@/components/FormInput";
 import {
   getOrderWorkItem,
   updateOrderWorkItem,
-  getOrderApplicationsByOrder,
 } from "@/api/order";
-import type { ApplicationData } from "@/types/orderTypes";
 
 interface WorkItemData {
   description: string;
@@ -15,9 +13,7 @@ interface WorkItemData {
 }
 
 export default function WorkEditForm() {
-  const { orderId, applicationId, workItemId } = useParams<{
-    orderId: string;
-    applicationId: string;
+  const { workItemId } = useParams<{
     workItemId: string;
   }>();
   const navigate = useNavigate();
@@ -25,8 +21,6 @@ export default function WorkEditForm() {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [acceptedApplication, setAcceptedApplication] =
-    useState<ApplicationData | null>(null);
   const [existingWorkItem, setExistingWorkItem] = useState<any>(null);
 
   const [formData, setFormData] = useState<WorkItemData>({
@@ -39,8 +33,8 @@ export default function WorkEditForm() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!orderId || !applicationId || !workItemId) {
-        setError("주문 ID 또는 신청서 ID가 없습니다.");
+      if (!workItemId) {
+        setError("작업물 ID가 없습니다.");
         setLoading(false);
         return;
       }
@@ -48,25 +42,9 @@ export default function WorkEditForm() {
       try {
         setLoading(true);
 
-        // 승인된 신청서 확인
-        const applicationsData = await getOrderApplicationsByOrder(orderId);
-        const targetApplication = applicationsData.find(
-          (app: any) => app.id === applicationId && app.status === "accepted"
-        );
-
-        if (!targetApplication) {
-          setError(
-            "승인된 신청서를 찾을 수 없습니다. 작업물을 수정할 권한이 없습니다."
-          );
-          setLoading(false);
-          return;
-        }
-
-        setAcceptedApplication(targetApplication);
-
         // 기존 작업물 조회
         try {
-          const workItemData = await getOrderWorkItem(applicationId, workItemId);
+          const workItemData = await getOrderWorkItem(workItemId);
           setExistingWorkItem(workItemData);
           
           // 기존 링크를 배열로 변환 (쉼표로 구분된 경우)
@@ -93,7 +71,7 @@ export default function WorkEditForm() {
     };
 
     fetchData();
-  }, [orderId, applicationId, workItemId]);
+  }, [workItemId]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -148,11 +126,6 @@ export default function WorkEditForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!acceptedApplication) {
-      setError("승인된 신청서가 없습니다.");
-      return;
-    }
-
     if (!formData.description.trim()) {
       setError("작업물 설명을 입력해주세요.");
       return;
@@ -184,7 +157,7 @@ export default function WorkEditForm() {
         // fileUrl: uploadedFileUrl || existingWorkItem?.fileUrl,
       };
 
-      await updateOrderWorkItem(applicationId!, workItemId!, workItemData);
+      await updateOrderWorkItem(workItemId!, workItemData);
 
       setSuccess("작업물이 성공적으로 수정되었습니다.");
       
@@ -202,21 +175,6 @@ export default function WorkEditForm() {
       <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!acceptedApplication) {
-    return (
-      <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">
-            작업물 수정 권한이 없습니다
-          </h2>
-          <p className="text-gray-600">
-            승인된 신청서가 없어 작업물을 수정할 수 없습니다.
-          </p>
         </div>
       </div>
     );

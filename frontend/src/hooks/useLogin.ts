@@ -7,7 +7,7 @@ import { useLoading } from "./useLoading";
 export const useLogin = () => {
   const navigate = useNavigate();
   const { setIsAuthenticated, setUser } = useAuth();
-  const { startLoading, stopLoading, loading } = useLoading();
+  const { withLoading, loading } = useLoading();
 
   const [error, setError] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
@@ -46,12 +46,9 @@ export const useLogin = () => {
     e.preventDefault();
 
     try {
-      startLoading();
-      await login(username, password);
+      await withLoading(() => login(username, password));
     } catch (error) {
       console.error(error);
-    } finally {
-      stopLoading();
     }
   };
 

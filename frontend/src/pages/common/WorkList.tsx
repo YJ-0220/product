@@ -153,7 +153,7 @@ export default function WorkList() {
                       주문 정보
                     </h4>
                     <div className="space-y-1 text-sm text-gray-600">
-                      <p>주문자: {application.orderRequest.buyer.name}</p>
+                      <p>주문자: {application.orderRequest.buyer.username}</p>
                       <p>
                         주문일: {formatDate(application.orderRequest.createdAt)}
                       </p>

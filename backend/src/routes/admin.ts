@@ -42,6 +42,6 @@ router.put("/points/withdraw-requests/:requestId", updatePointWithdrawRequestSta
 
 // 관리자 포인트 충전/사용자 포인트 충전
 router.post("/charge", adminChargePoint);
-router.post("/users/:username/charge", adminChargeUserPoint);
+router.post("/users/:userId/charge", adminChargeUserPoint);
 
 export default router;

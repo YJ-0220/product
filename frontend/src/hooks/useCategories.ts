@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { getCategories, getSubCategories } from "@/api/order";
-import { useAuth } from "@/context/AuthContext";
 import type { OrderCategory } from "@/types/orderTypes";
+import { useLoading } from "./useLoading";
 
 export function useCategories() {
   const [categories, setCategories] = useState<OrderCategory[]>([]);
   const [subcategories, setSubcategories] = useState<OrderCategory[]>([]);
-  const { loading } = useAuth();
+  const { withLoading } = useLoading();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const categories = await getCategories();
+        const categories = await withLoading(getCategories);
         setCategories(categories);
       } catch (err) {
         console.error("카테고리 불러오기 실패", err);
@@ -19,7 +19,7 @@ export function useCategories() {
     };
 
     fetchCategories();
-  }, [loading]);
+  }, []);
 
   const fetchSubcategories = async (parentId: number) => {
     try {

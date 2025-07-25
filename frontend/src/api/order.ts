@@ -146,23 +146,21 @@ export const createOrderWorkSubmit = async (
 };
 
 // 작업물 목록 조회
-export const getOrderWorkList = async (): Promise<WorkItemData[]> => {
+export const getOrderWorkList = async () => {
   const res = await api.get(`/order/work`);
   return res.data;
 };
 
 // 작업물 상세 조회
 export const getOrderWorkItem = async (
-  orderId: string,
   workItemId: string
 ): Promise<WorkItemData> => {
-  const res = await api.get(`/order/${orderId}/work/${workItemId}`);
+  const res = await api.get(`/order/work/${workItemId}`);
   return res.data.workItem;
 };
 
 // 작업물 수정
 export const updateOrderWorkItem = async (
-  orderId: string,
   workItemId: string,
   data: {
     description?: string;
@@ -170,7 +168,7 @@ export const updateOrderWorkItem = async (
     fileUrl?: string;
   }
 ) => {
-  const res = await api.patch(`/order/${orderId}/work/${workItemId}`, data);
+  const res = await api.patch(`/order/work/${workItemId}`, data);
   return res.data;
 };
 

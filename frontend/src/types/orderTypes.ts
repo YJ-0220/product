@@ -17,7 +17,7 @@ export interface OrderData {
   status: "pending" | "progress" | "completed" | "cancelled";
   createdAt: string;
   buyer: {
-    name: string;
+    username: string;
   };
   category: {
     name: string;
@@ -37,7 +37,7 @@ export interface ApplicationData {
   createdAt: string;
   updatedAt: string;
   seller: {
-    name: string;
+    username: string;
   };
 }
 
@@ -64,14 +64,14 @@ export interface WorkItemData {
       name: string;
     };
     buyer?: {
-      name: string;
+      username: string;
     };
   };
   application: {
     id: string;
     createdAt: string;
     seller?: {
-      name: string;
+      username: string;
     };
   };
 }
@@ -97,7 +97,7 @@ export interface WorkListData {
     status: string;
     createdAt: string;
     buyer: {
-      name: string;
+      username: string;
     };
   };
   workItems: {

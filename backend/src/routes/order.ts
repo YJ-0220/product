@@ -91,13 +91,9 @@ router.get(
   getOrderWorkList
 );
 // 작업물 상세 조회
-router.get("/:orderId/work/:workItemId", getOrderWorkItem);
+router.get("/work/:workItemId", getOrderWorkItem);
 // 작업물 수정 (판매자)
-router.patch(
-  "/:orderId/work/:workItemId",
-  requiredSeller,
-  updateOrderWorkItem
-);
+router.patch("/work/:workItemId", requiredSeller, updateOrderWorkItem);
 // 작업물 상태 업데이트 (관리자)
 router.patch(
   "/:orderId/work/:workItemId/status",

@@ -55,13 +55,10 @@ const renderDropdownLink = (to: string, label: string, iconPath?: string) => (
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuth();
   const role = user?.role || "";
-  const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const toggleDropdown = (dropdownKey: string) => {
-    setOpenDropdowns(prev => ({
-      ...prev,
-      [dropdownKey]: !prev[dropdownKey]
-    }));
+    setOpenDropdown(prev => prev === dropdownKey ? null : dropdownKey);
   };
 
   if (!user) {
@@ -82,16 +79,36 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "홈",
               "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             )}
-            {renderLink(
-              "/my",
-              "마이 페이지",
-              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            )}
-            {renderLink(
-              "/users",
-              "사용자 관리",
-              "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-            )}
+            <li>
+              <button
+                onClick={() => toggleDropdown("admin-users")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  <span>사용자 관리</span>
+                </div>
+                <Icon 
+                  path={openDropdown === "admin-users" 
+                    ? "M19 9l-7 7-7-7" 
+                    : "M9 5l7 7-7 7"
+                  } 
+                />
+              </button>
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "admin-users" 
+                    ? "max-h-48 opacity-100" 
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/users", "사용자 목록")}
+                  {renderDropdownLink("/users/create", "사용자 생성")}
+                  {renderDropdownLink("/users/point-requests", "포인트 승인")}
+                </ul>
+              </div>
+            </li>
             {renderLink(
               "/content",
               "콘텐츠 관리",
@@ -107,19 +124,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <span>주문관리</span>
                 </div>
                 <Icon 
-                  path={openDropdowns["admin-order"] 
+                  path={openDropdown === "admin-order" 
                     ? "M19 9l-7 7-7-7" 
                     : "M9 5l7 7-7 7"
                   } 
                 />
               </button>
-              {openDropdowns["admin-order"] && (
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "admin-order" 
+                    ? "max-h-48 opacity-100" 
+                    : "max-h-0 opacity-0"
+                }`}
+              >
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "게시판")}
                   {renderDropdownLink("/order/history", "주문내역")}
                 </ul>
-              )}
+              </div>
             </li>
+            {renderLink(
+              "/my",
+              "마이 페이지",
+              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            )}
           </>
         );
       case "seller":
@@ -140,17 +168,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <span>주문 관리</span>
                 </div>
                 <Icon 
-                  path={openDropdowns["seller-order"] 
+                  path={openDropdown === "seller-order" 
                     ? "M19 9l-7 7-7-7" 
                     : "M9 5l7 7-7 7"
                   } 
                 />
               </button>
-              {openDropdowns["seller-order"] && (
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "seller-order" 
+                    ? "max-h-48 opacity-100" 
+                    : "max-h-0 opacity-0"
+                }`}
+              >
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "주문 게시판")}
                 </ul>
-              )}
+              </div>
             </li>
             <li>
             <button
@@ -162,17 +196,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <span>작업 관리</span>
                 </div>
                 <Icon 
-                  path={openDropdowns["seller-work"] 
+                  path={openDropdown === "seller-work" 
                     ? "M19 9l-7 7-7-7" 
                     : "M9 5l7 7-7 7"
                   } 
                 />
               </button>
-              {openDropdowns["seller-work"] && (
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "seller-work" 
+                    ? "max-h-48 opacity-100" 
+                    : "max-h-0 opacity-0"
+                }`}
+              >
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order/work", "작업 게시판")}
                 </ul>
-              )}
+              </div>
             </li>
             {renderLink(
               "/point/withdraw",
@@ -204,18 +244,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <span>주문 관리</span>
                 </div>
                 <Icon 
-                  path={openDropdowns["buyer-order"] 
+                  path={openDropdown === "buyer-order" 
                     ? "M19 9l-7 7-7-7" 
                     : "M9 5l7 7-7 7"
                   } 
                 />
               </button>
-              {openDropdowns["buyer-order"] && (
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "buyer-order" 
+                    ? "max-h-48 opacity-100" 
+                    : "max-h-0 opacity-0"
+                }`}
+              >
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/order", "주문 게시판")}
                   {renderDropdownLink("/order/request", "주문 신청")}
                 </ul>
-              )}
+              </div>
             </li>
             {renderLink(
               "/point/charge",
@@ -237,17 +283,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <span>마이 페이지</span>
                 </div>
                 <Icon 
-                  path={openDropdowns["buyer-mypage"] 
+                  path={openDropdown === "buyer-mypage" 
                     ? "M19 9l-7 7-7-7" 
                     : "M9 5l7 7-7 7"
                   } 
                 />
               </button>
-              {openDropdowns["buyer-mypage"] && (
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "buyer-mypage" 
+                    ? "max-h-48 opacity-100" 
+                    : "max-h-0 opacity-0"
+                }`}
+              >
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/my", "마이 페이지")}
                 </ul>
-              )}
+              </div>
             </li>
           </>
         );

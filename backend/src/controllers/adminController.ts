@@ -287,6 +287,7 @@ export const getAllPointWithdrawRequests = async (
             username: true,
           },
         },
+        bank: true,
       },
       orderBy: {
         requestedAt: "desc",
@@ -295,7 +296,8 @@ export const getAllPointWithdrawRequests = async (
     res.status(200).json({
       withdrawRequests: withdrawRequests.map((request) => ({
         ...request,
-        user: { name: request.user.username },
+        user: { username: request.user.username },
+        bankName: request.bank.name,
         requestedAt: request.requestedAt.toISOString(),
         processedAt: request.processedAt?.toISOString(),
       })),

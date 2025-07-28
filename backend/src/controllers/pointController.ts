@@ -293,6 +293,9 @@ export const getPointWithdrawRequests = async (req: Request, res: Response) => {
       where: {
         userId: userId,
       },
+      include: {
+        bank: true,
+      },
       orderBy: {
         requestedAt: "desc",
       },
@@ -301,6 +304,7 @@ export const getPointWithdrawRequests = async (req: Request, res: Response) => {
     res.status(200).json({
       withdrawRequests: withdrawRequests.map((request) => ({
         ...request,
+        bankName: request.bank.name,
         requestedAt: request.requestedAt.toISOString(),
         processedAt: request.processedAt?.toISOString(),
       })),

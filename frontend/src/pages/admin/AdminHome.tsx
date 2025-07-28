@@ -1,7 +1,5 @@
 import { useDashboardStats } from "@/hooks/useAdminDashboardStats";
 import { Link } from "react-router-dom";
-import PointChargeRequest from "@/components/admin/PointChargeRequest";
-import PointWithdrawRequest from "@/components/admin/PointWithdrawRequest";
 
 export default function AdminHome() {
   const { stats } = useDashboardStats();
@@ -113,9 +111,6 @@ export default function AdminHome() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PointChargeRequest />
-        <PointWithdrawRequest />
-
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">최근 주문</h3>
@@ -133,11 +128,14 @@ export default function AdminHome() {
             빠른 작업
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors">
+            <Link
+              to="/users/point-requests"
+              className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
+            >
               <div className="text-center">
-                <span className="text-sm font-medium text-blue-700">메뉴1</span>
+                <span className="text-sm font-medium text-blue-700">포인트 관리</span>
               </div>
-            </button>
+            </Link>
 
             <button className="flex items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors">
               <div className="text-center">

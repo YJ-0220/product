@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getPointChargeRequests, getPointHistory, getPointWithdrawRequests } from "@/api/points";
+import {
+  getPointChargeRequests,
+  getPointHistory,
+  getPointWithdrawRequests,
+} from "@/api/points";
 import { useUtils } from "@/hooks/useUtils";
 
 interface PointChargeRequest {
@@ -38,9 +42,9 @@ export default function MyPage() {
   const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>(
     []
   );
-  const [withdrawRequests, setWithdrawRequests] = useState<PointWithdrawRequest[]>(
-    []
-  );
+  const [withdrawRequests, setWithdrawRequests] = useState<
+    PointWithdrawRequest[]
+  >([]);
   const [pointHistory, setPointHistory] = useState<PointTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<
@@ -76,8 +80,6 @@ export default function MyPage() {
       setLoading(false);
     }
   };
-
-
 
   const getTransactionTypeText = (type: string) => {
     switch (type) {
@@ -162,7 +164,9 @@ export default function MyPage() {
                       <label className="block text-sm font-medium text-gray-700">
                         사용자명
                       </label>
-                      <p className="mt-1 text-sm text-gray-900">{user?.username}</p>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {user?.username}
+                      </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
@@ -284,7 +288,9 @@ export default function MyPage() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">
-                    {user?.role === "seller" ? "포인트 환전 신청 내역" : "포인트 충전 신청 내역"}
+                    {user?.role === "seller"
+                      ? "포인트 환전 신청 내역"
+                      : "포인트 충전 신청 내역"}
                   </h3>
                   <button
                     onClick={fetchData}
@@ -335,9 +341,9 @@ export default function MyPage() {
                           {withdrawRequests.map((request) => (
                             <tr key={request.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {new Date(request.requestedAt).toLocaleDateString(
-                                  "ko-KR"
-                                )}
+                                {new Date(
+                                  request.requestedAt
+                                ).toLocaleDateString("ko-KR")}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {request.amount.toLocaleString()}P
@@ -370,66 +376,64 @@ export default function MyPage() {
                       </table>
                     </div>
                   )
+                ) : // 구매자: 충전 신청 내역 표시
+                chargeRequests.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">
+                      포인트 충전 신청 내역이 없습니다.
+                    </p>
+                  </div>
                 ) : (
-                  // 구매자: 충전 신청 내역 표시
-                  chargeRequests.length === 0 ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">
-                        포인트 충전 신청 내역이 없습니다.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              신청일
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              충전 포인트
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              상태
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              처리일
-                            </th>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            신청일
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            충전 포인트
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            상태
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            처리일
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {chargeRequests.map((request) => (
+                          <tr key={request.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(request.requestedAt).toLocaleDateString(
+                                "ko-KR"
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {request.amount.toLocaleString()}P
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                                  request.status
+                                )}`}
+                              >
+                                {getStatusText(request.status)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {request.approvedAt
+                                ? new Date(
+                                    request.approvedAt
+                                  ).toLocaleDateString("ko-KR")
+                                : "-"}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {chargeRequests.map((request) => (
-                            <tr key={request.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {new Date(request.requestedAt).toLocaleDateString(
-                                  "ko-KR"
-                                )}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {request.amount.toLocaleString()}P
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span
-                                  className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                                    request.status
-                                  )}`}
-                                >
-                                  {getStatusText(request.status)}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {request.approvedAt
-                                  ? new Date(
-                                      request.approvedAt
-                                    ).toLocaleDateString("ko-KR")
-                                  : "-"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
             )}

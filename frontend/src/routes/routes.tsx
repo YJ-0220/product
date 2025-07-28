@@ -24,6 +24,7 @@ import WorkEditForm from "@/components/seller/WorkEditForm";
 import UserList from "@/pages/admin/UserList";
 import UserCreate from "@/pages/admin/UserCreate";
 import NoticeManagement from "@/pages/admin/NoticeManagement";
+import PointRequests from "@/pages/admin/PointRequests";
 
 export const router = createBrowserRouter([
   {
@@ -173,6 +174,10 @@ export const router = createBrowserRouter([
           {
             path: "create",
             element: <UserCreate />,
+          },
+          {
+            path: "point-requests",
+            element: <PointRequests />,
           },
         ],
       },

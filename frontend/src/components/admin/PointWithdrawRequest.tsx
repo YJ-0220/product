@@ -1,6 +1,5 @@
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { getAllPointWithdrawRequests, updatePointWithdrawRequest } from "@/api/admin";
-import type { PointWithdrawRequest } from "@/types/pointRequestTypes";
+import { forwardRef, useImperativeHandle } from "react";
+import { usePointManagement } from "@/hooks/usePointManagement";
 
 interface PointWithdrawRequestRef {
   refresh: () => void;
@@ -8,44 +7,15 @@ interface PointWithdrawRequestRef {
 
 const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
   (props, ref) => {
-    const [withdrawRequests, setWithdrawRequests] = useState<PointWithdrawRequest[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-      fetchWithdrawRequests();
-    }, []);
-
-    const fetchWithdrawRequests = async () => {
-      try {
-        setLoading(true);
-        const response = await getAllPointWithdrawRequests();
-        setWithdrawRequests(response.withdrawRequests || []);
-      } catch (error) {
-        console.error("포인트 환전 신청 목록 조회 실패:", error);
-        setWithdrawRequests([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const { pointWithdrawRequests, fetchPointWithdrawRequests, handleWithdrawUpdate } = usePointManagement();
 
     useImperativeHandle(ref, () => ({
-      refresh: fetchWithdrawRequests,
+      refresh: fetchPointWithdrawRequests,
     }));
 
-    const handleUpdateRequest = async (requestId: string, status: 'approved' | 'rejected') => {
-      try {
-        await updatePointWithdrawRequest(requestId, status);
-        alert(`포인트 환전 신청이 ${status === 'approved' ? '승인' : '거절'}되었습니다.`);
-        fetchWithdrawRequests();
-      } catch (error) {
-        console.error("포인트 환전 신청 처리 실패:", error);
-        alert("처리에 실패했습니다.");
-      }
-    };
+    const pendingRequests = pointWithdrawRequests.filter(req => req.status === 'pending').slice(0, 3);
 
-    const pendingRequests = withdrawRequests.filter(req => req.status === 'pending').slice(0, 3);
-
-    if (loading) {
+    if (pointWithdrawRequests.length === 0) {
       return (
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center justify-center h-32">
@@ -108,13 +78,13 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
                   </div>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => handleUpdateRequest(request.id, 'approved')}
+                      onClick={() => handleWithdrawUpdate(request.id, 'approved')}
                       className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
                     >
                       승인
                     </button>
                     <button
-                      onClick={() => handleUpdateRequest(request.id, 'rejected')}
+                      onClick={() => handleWithdrawUpdate(request.id, 'rejected')}
                       className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium"
                     >
                       거절
@@ -127,7 +97,7 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
           </div>
         )}
 
-        {withdrawRequests.length > 0 && (
+        {pointWithdrawRequests.length > 0 && (
           <div className="mt-4 pt-4 border-t">
             <p className="text-sm text-gray-500">
               총 {pendingRequests.length}건 대기중

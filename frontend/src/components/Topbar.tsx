@@ -1,37 +1,12 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../hooks/store/useAuthStore";
 
 export default function Topbar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const role = user?.role || "";
-
-  const getNotifications = () => {
-    switch (role) {
-      case "admin":
-        return [
-          { message: "새로운 사용자가 등록되었습니다", time: "5분 전" },
-          { message: "시스템 업데이트 완료", time: "1시간 전" },
-          { message: "데이터베이스 백업 완료", time: "3시간 전" },
-        ];
-      case "seller":
-        return [
-          { message: "새로운 주문이 접수되었습니다", time: "10분 전" },
-          { message: "상품 재고가 부족합니다", time: "30분 전" },
-          { message: "판매 통계 업데이트", time: "2시간 전" },
-        ];
-      case "buyer":
-        return [
-          { message: "주문 상품이 배송 중입니다", time: "1시간 전" },
-          { message: "관심 상품 가격이 변동되었습니다", time: "3시간 전" },
-          { message: "새로운 할인 쿠폰이 발급되었습니다", time: "1일 전" },
-        ];
-      default:
-        return [];
-    }
-  };
 
   const getSettingsMenuItems = () => {
     const commonItems = [
@@ -112,7 +87,6 @@ export default function Topbar() {
     window.location.reload();
   };
 
-  const notifications = getNotifications();
   const settingsMenuItems = getSettingsMenuItems();
   const profileMenuItems = getProfileMenuItems();
 
@@ -159,11 +133,6 @@ export default function Topbar() {
                   d="M15 17h5l-5 5v-5zM9 17H4l5 5v-5zM12 8v4l-4-4h8l-4 4z"
                 />
               </svg>
-              {notifications.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {notifications.length}
-                </span>
-              )}
             </button>
 
             {showNotifications && (
@@ -172,25 +141,9 @@ export default function Topbar() {
                   <h3 className="font-semibold text-gray-900">알림</h3>
                 </div>
                 <div className="max-h-64 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification, index) => (
-                      <div
-                        key={index}
-                        className="p-3 hover:bg-gray-50 border-b last:border-b-0"
-                      >
-                        <p className="text-sm text-gray-900">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {notification.time}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-gray-500">
-                      새로운 알림이 없습니다
-                    </div>
-                  )}
+                  <div className="p-4 text-center text-gray-500">
+                    새로운 알림이 없습니다
+                  </div>
                 </div>
               </div>
             )}
@@ -279,7 +232,11 @@ export default function Topbar() {
                     등급: {user?.membershipLevel}
                   </p>
                   <p className="text-sm text-gray-500">
-                    보유 포인트: {user?.points != null ? Math.floor(user.points).toLocaleString() : 0}P
+                    보유 포인트:{" "}
+                    {user?.points != null
+                      ? Math.floor(user.points).toLocaleString()
+                      : 0}
+                    P
                   </p>
                 </div>
                 <div className="py-1">

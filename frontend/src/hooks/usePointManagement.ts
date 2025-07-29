@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   getAllPointChargeRequests,
   getAllPointWithdrawRequests,
@@ -20,30 +20,39 @@ export const usePointManagement = () => {
   >([]);
   const { withLoading } = useLoading();
 
+  // 에러 메시지 추출 함수
+  const getErrorMessage = useCallback((error: any): string => {
+    return error.response?.data?.message || "알 수 없는 오류가 발생했습니다.";
+  }, []);
+
   // 충전 신청 목록 조회
-  const fetchPointChargeRequests = async () => {
+  const fetchPointChargeRequests = useCallback(async () => {
     try {
       const response = await withLoading(getAllPointChargeRequests);
       setPointChargeRequests(response.chargeRequests || []);
     } catch (error) {
       console.error("포인트 충전 신청 목록 조회 실패:", error);
+      const errorMessage = getErrorMessage(error);
+      alert(`충전 신청 목록 조회 실패: ${errorMessage}`);
       setPointChargeRequests([]);
     }
-  };
+  }, [withLoading, getErrorMessage]);
 
   // 환전 신청 목록 조회
-  const fetchPointWithdrawRequests = async () => {
+  const fetchPointWithdrawRequests = useCallback(async () => {
     try {
       const response = await withLoading(getAllPointWithdrawRequests);
       setPointWithdrawRequests(response.withdrawRequests || []);
     } catch (error) {
       console.error("포인트 환전 신청 목록 조회 실패:", error);
+      const errorMessage = getErrorMessage(error);
+      alert(`환전 신청 목록 조회 실패: ${errorMessage}`);
       setPointWithdrawRequests([]);
     }
-  };
+  }, [withLoading, getErrorMessage]);
 
   // 충전 신청 업데이트
-  const handleChargeUpdate = async (
+  const handleChargeUpdate = useCallback(async (
     requestId: string,
     status: "approved" | "rejected"
   ) => {
@@ -57,12 +66,13 @@ export const usePointManagement = () => {
       fetchPointChargeRequests();
     } catch (error) {
       console.error("포인트 충전 신청 처리 실패:", error);
-      alert("처리에 실패했습니다.");
+      const errorMessage = getErrorMessage(error);
+      alert(`충전 신청 처리 실패: ${errorMessage}`);
     }
-  };
+  }, [fetchPointChargeRequests, getErrorMessage]);
 
   // 환전 신청 업데이트
-  const handleWithdrawUpdate = async (
+  const handleWithdrawUpdate = useCallback(async (
     requestId: string,
     status: "approved" | "rejected"
   ) => {
@@ -76,9 +86,10 @@ export const usePointManagement = () => {
       fetchPointWithdrawRequests();
     } catch (error) {
       console.error("환전 신청 처리 실패:", error);
-      alert("처리에 실패했습니다.");
+      const errorMessage = getErrorMessage(error);
+      alert(`환전 신청 처리 실패: ${errorMessage}`);
     }
-  };
+  }, [fetchPointWithdrawRequests, getErrorMessage]);
 
   return {
     pointChargeRequests,

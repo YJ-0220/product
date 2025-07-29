@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyOrderRequest } from "@/api/myPage";
 import type { OrderData } from "@/types/orderTypes";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { useUtils } from "@/hooks/useUtils";
 
 interface OrderStats {
@@ -12,7 +12,7 @@ interface OrderStats {
 }
 
 export default function BuyerHome() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { getStatusText, getStatusColor } = useUtils();
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [stats, setStats] = useState<OrderStats>({

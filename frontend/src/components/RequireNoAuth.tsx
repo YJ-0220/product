@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
 
@@ -7,7 +7,7 @@ interface RequireNoAuthProps {
 }
 
 export default function RequireNoAuth({ children }: RequireNoAuthProps) {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, loading } = useAuthStore();
 
   const roleHomeMap: Record<string, string> = {
     admin: "/",

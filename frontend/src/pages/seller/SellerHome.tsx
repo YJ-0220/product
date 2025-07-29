@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { Link } from "react-router-dom";
 import type { ApplicationData } from "@/types/orderTypes";
 import { useUtils } from "@/hooks/useUtils";
@@ -13,7 +13,7 @@ interface SellerStats {
 }
 
 export default function SellerHome() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { getStatusText, getStatusColor, formatDate } = useUtils();
   const [stats, setStats] = useState<SellerStats>({
     totalApplications: 0,

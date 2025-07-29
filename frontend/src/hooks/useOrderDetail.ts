@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "react-router-dom";
 import { getOrderById } from "@/api/order";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import type {
   OrderData,
   ApplicationData,
@@ -11,15 +11,14 @@ import { useLoading } from "./useLoading";
 
 export const useOrderDetail = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { withLoading } = useLoading();
   const [order, setOrder] = useState<OrderData | null>(null);
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [workItems, setWorkItems] = useState<WorkItemData[]>([]);
   const [error, setError] = useState<string>("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!orderId) return;
 
     try {
@@ -51,15 +50,15 @@ export const useOrderDetail = () => {
           (error?.response?.data?.error || error.message)
       );
     }
-  };
+  }, [orderId, withLoading]);
 
   useEffect(() => {
     fetchData();
-  }, [orderId]);
+  }, [fetchData]);
 
-  const refreshData = () => {
+  const refreshData = useCallback(() => {
     fetchData();
-  };
+  }, [fetchData]);
 
   return {
     order,
@@ -68,6 +67,5 @@ export const useOrderDetail = () => {
     error,
     user,
     refreshData,
-    navigate,
   };
 };

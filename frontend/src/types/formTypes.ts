@@ -13,6 +13,9 @@ export interface FormInputProps {
   placeholder?: string;
   min?: string;
   max?: string;
+  error?: string;
+  showErrorIcon?: boolean;
+  icon?: React.ReactNode;
 }
 
 export interface OrderRequestData {

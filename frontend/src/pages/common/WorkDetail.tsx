@@ -4,7 +4,7 @@ import { useUtils } from "@/hooks/useUtils";
 
 export default function WorkDetail() {
   const { workItem, loading, error, user, handleBack } = useWorkDetail();
-  const { formatDate } = useUtils();
+  const { formatDateOnly } = useUtils();
 
   if (loading) {
     return (
@@ -62,7 +62,7 @@ export default function WorkDetail() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-4xl mx-auto my-10 p-10 bg-white rounded-lg shadow-md">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">작업물 상세</h1>
         <div className="flex space-x-2">
@@ -86,7 +86,6 @@ export default function WorkDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* 작업물 정보 */}
           <div className="bg-gray-50 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               작업물 정보
@@ -108,7 +107,6 @@ export default function WorkDetail() {
                     작업물 링크
                   </label>
                   {workItem.workLink.includes(",") ? (
-                    // 여러 링크가 있는 경우
                     <div className="space-y-2">
                       {workItem.workLink
                         .split(",")
@@ -133,7 +131,6 @@ export default function WorkDetail() {
                         })}
                     </div>
                   ) : (
-                    // 단일 링크인 경우
                     <a
                       href={workItem.workLink}
                       target="_blank"
@@ -162,14 +159,14 @@ export default function WorkDetail() {
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  제출일
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-blue-700 mb-1">
+                  📅 제출일
                 </label>
-                <p className="text-gray-900">
+                <p className="text-blue-900 font-semibold">
                   {workItem.submittedAt
-                    ? formatDate(workItem.submittedAt)
-                    : "제출일 없음"}
+                    ? formatDateOnly(workItem.submittedAt)
+                    : "아직 제출되지 않았습니다"}
                 </p>
               </div>
 
@@ -198,7 +195,6 @@ export default function WorkDetail() {
         </div>
 
         <div className="space-y-6">
-          {/* 주문 정보 */}
           {workItem?.orderRequest && (
             <div className="bg-gray-50 rounded-lg p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -228,7 +224,7 @@ export default function WorkDetail() {
                   </label>
                   <p className="text-gray-900">
                     {workItem.orderRequest.createdAt
-                      ? formatDate(workItem.orderRequest.createdAt)
+                      ? formatDateOnly(workItem.orderRequest.createdAt)
                       : "주문일 없음"}
                   </p>
                 </div>
@@ -236,7 +232,6 @@ export default function WorkDetail() {
             </div>
           )}
 
-          {/* 판매자 정보 */}
           {workItem?.application && (
             <div className="bg-gray-50 rounded-lg p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -258,7 +253,7 @@ export default function WorkDetail() {
                   </label>
                   <p className="text-gray-900">
                     {workItem.application.createdAt
-                      ? formatDate(workItem.application.createdAt)
+                      ? formatDateOnly(workItem.application.createdAt)
                       : "신청일 없음"}
                   </p>
                 </div>

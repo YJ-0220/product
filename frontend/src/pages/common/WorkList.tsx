@@ -1,10 +1,10 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { Link, useNavigate } from "react-router-dom";
 import { useUtils } from "@/hooks/useUtils";
 import { useWorkList } from "@/hooks/useWorkList";
 
 export default function WorkList() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { formatDate } = useUtils();
   const navigate = useNavigate();
 

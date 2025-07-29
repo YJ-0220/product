@@ -28,9 +28,21 @@ export const getAdminNotices = async (req: Request, res: Response) => {
         endDate: notice.endDate?.toISOString(),
       })),
     });
-  } catch (error) {
-    console.error("공지사항 목록 조회 실패:", error);
-    res.status(500).json({ error: "공지사항 목록 조회에 실패했습니다." });
+  } catch (error: any) {
+    console.error("공지사항 목록 조회 에러:", error);
+    
+    let userMessage = "공지사항을 불러오는 중 오류가 발생했습니다.";
+    
+    if (error.code === 'P2025') {
+      userMessage = "공지사항 데이터를 찾을 수 없습니다.";
+    } else if (process.env.NODE_ENV === 'development') {
+      userMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -107,9 +119,21 @@ export const getNoticeById = async (req: Request, res: Response) => {
         endDate: notice.endDate?.toISOString(),
       },
     });
-  } catch (error) {
-    console.error("공지사항 상세 조회 실패:", error);
-    res.status(500).json({ error: "공지사항 조회에 실패했습니다." });
+  } catch (error: any) {
+    console.error("공지사항 상세 조회 에러:", error);
+    
+    let userMessage = "공지사항 상세 정보를 불러오는 중 오류가 발생했습니다.";
+    
+    if (error.code === 'P2025') {
+      userMessage = "해당 공지사항을 찾을 수 없습니다.";
+    } else if (process.env.NODE_ENV === 'development') {
+      userMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -153,9 +177,23 @@ export const createNotice = async (req: Request, res: Response) => {
         endDate: notice.endDate?.toISOString(),
       },
     });
-  } catch (error) {
-    console.error("공지사항 생성 실패:", error);
-    res.status(500).json({ error: "공지사항 생성에 실패했습니다." });
+  } catch (error: any) {
+    console.error("공지사항 생성 에러:", error);
+    
+    let userMessage = "공지사항 생성 중 오류가 발생했습니다.";
+    
+    if (error.name === 'ValidationError') {
+      userMessage = "입력 데이터가 올바르지 않습니다.";
+    } else if (error.code === 'P2002') {
+      userMessage = "중복된 공지사항 제목입니다.";
+    } else if (process.env.NODE_ENV === 'development') {
+      userMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

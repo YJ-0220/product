@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import AdminHome from "@/pages/admin/AdminHome";
 import BuyerHome from "@/pages/buyer/BuyerHome";
 import SellerHome from "@/pages/seller/SellerHome";
@@ -10,7 +10,7 @@ const HomeContent: Record<string, React.ReactNode> = {
   };
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthStore();
 
   if (loading) {
     return <div>기다리는 중...</div>;

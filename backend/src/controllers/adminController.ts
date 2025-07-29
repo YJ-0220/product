@@ -44,9 +44,21 @@ export const getAdminDashboard: RequestHandler = async (
     };
 
     res.json(stats);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  } catch (error: any) {
+    console.error("대시보드 통계 조회 에러:", error);
+    
+    let userMessage = "대시보드 데이터를 불러오는 중 오류가 발생했습니다.";
+    
+    if (error.code === 'P2002') {
+      userMessage = "데이터베이스 연결 문제가 발생했습니다.";
+    } else if (process.env.NODE_ENV === 'development') {
+      userMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -135,9 +147,23 @@ export const adminRegister: RequestHandler = async (
       role: result.role,
       membershipLevel: result.membershipLevel,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "아이디 생성에 실패했습니다." });
+  } catch (error: any) {
+    console.error("관리자 회원가입 에러:", error);
+    
+    let userMessage = "회원가입 처리 중 오류가 발생했습니다.";
+    
+    if (error.code === 'P2002') {
+      userMessage = "이미 존재하는 아이디입니다.";
+    } else if (error.name === 'ValidationError') {
+      userMessage = "입력 데이터가 올바르지 않습니다.";
+    } else if (process.env.NODE_ENV === 'development') {
+      userMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
@@ -232,10 +258,20 @@ export const getAllUserList = async (req: Request, res: Response) => {
     res.status(200).json({
       users,
     });
-  } catch (error) {
-    console.error("사용자 목록 조회 오류:", error);
-    res.status(500).json({
-      message: "사용자 목록 조회에 실패했습니다.",
+  } catch (error: any) {
+    console.error("사용자 목록 조회 에러:", error);
+    
+    let userMessage = "사용자 목록을 불러오는 중 오류가 발생했습니다.";
+    
+    if (error.code === 'P2025') {
+      userMessage = "데이터를 찾을 수 없습니다.";
+    } else if (process.env.NODE_ENV === 'development') {
+      userMessage = error.message;
+    }
+    
+    res.status(500).json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

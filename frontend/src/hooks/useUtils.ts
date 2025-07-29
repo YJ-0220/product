@@ -57,9 +57,18 @@ export const useUtils = () => {
     });
   };
 
+  const formatDateOnly = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return {
     getStatusText,
     getStatusColor,
     formatDate,
+    formatDateOnly,
   };
 }; 

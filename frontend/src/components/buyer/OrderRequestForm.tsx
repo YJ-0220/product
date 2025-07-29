@@ -1,14 +1,16 @@
 import { useOrderRequest } from "@/hooks/useOrderRequest";
 import { useCategories } from "@/hooks/useCategories";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { useEffect } from "react";
 import FormInput from "@/components/FormInput";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderRequestForm() {
+  const navigate = useNavigate();
   const { formData, error, isSubmitting, handleChange, handleSubmit } =
     useOrderRequest();
   const { categories, subcategories, fetchSubcategories } = useCategories();
-  const { loading } = useAuth();
+  const { loading } = useAuthStore();
 
   useEffect(() => {
     if (formData.categoryId) {
@@ -22,7 +24,17 @@ export default function OrderRequestForm() {
   return (
     <div className="w-full mx-auto mt-4 px-4 sm:px-6 lg:px-8">
       <div className="">
-        <h2 className="text-3xl font-bold mb-8 text-gray-900">주문 요청</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-3xl font-bold text-gray-900">주문 요청</h2>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm"
+            onClick={() => {
+              navigate("/order");
+            }}
+          >
+            게시판으로 돌아가기
+          </button>
+        </div>
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">

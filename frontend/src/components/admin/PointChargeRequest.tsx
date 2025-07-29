@@ -6,7 +6,7 @@ interface PointChargeRequestRef {
 }
 
 const PointChargeRequestComponent = forwardRef<PointChargeRequestRef, {}>(
-  (props, ref) => {
+  (_props, ref) => {
     const {
       pointChargeRequests,
       fetchPointChargeRequests,
@@ -15,7 +15,7 @@ const PointChargeRequestComponent = forwardRef<PointChargeRequestRef, {}>(
 
     useEffect(() => {
       fetchPointChargeRequests();
-    }, []);
+    }, [fetchPointChargeRequests]);
 
     useImperativeHandle(ref, () => ({
       refresh: fetchPointChargeRequests,

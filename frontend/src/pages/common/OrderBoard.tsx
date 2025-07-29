@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { Link, useNavigate } from "react-router-dom";
 import { useOrderBoard } from "@/hooks/useOrderBoard";
 
@@ -31,7 +31,7 @@ const OrderBoardTitles = [
 
 export default function OrderBoard() {
   const { orders, getStatusText, getStatusColor } = useOrderBoard();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
 
   return (

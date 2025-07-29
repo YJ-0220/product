@@ -1,11 +1,12 @@
 import { useOrderDetail } from "@/hooks/useOrderDetail";
 import { useOrderApplication } from "@/hooks/useOrderApplication";
 import { useUtils } from "@/hooks/useUtils";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function OrderDetail() {
-  const { order, applications, workItems, error, user, refreshData, navigate } =
+  const { order, applications, workItems, error, user, refreshData } =
     useOrderDetail();
+  const navigate = useNavigate();
 
   const {
     handleDeleteApplication,

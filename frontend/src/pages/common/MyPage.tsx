@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import {
   getPointChargeRequests,
   getPointHistory,
@@ -37,7 +37,7 @@ interface PointTransaction {
 }
 
 export default function MyPage() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { getStatusText, getStatusColor } = useUtils();
   const [chargeRequests, setChargeRequests] = useState<PointChargeRequest[]>(
     []

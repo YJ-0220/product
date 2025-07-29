@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { useState } from "react";
 import Footer from "./Footer";
 
@@ -53,7 +53,7 @@ const renderDropdownLink = (to: string, label: string, iconPath?: string) => (
 );
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
   const role = user?.role || "";
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -104,7 +104,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               >
                 <ul className="bg-gray-800">
                   {renderDropdownLink("/users", "사용자 목록")}
-                  {renderDropdownLink("/users/create", "사용자 생성")}
                   {renderDropdownLink("/users/point-requests", "포인트 승인")}
                 </ul>
               </div>

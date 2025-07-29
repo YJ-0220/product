@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { WorkListData } from "@/types/orderTypes";
 import { updateOrderWorkItemStatus } from "@/api/order";
 import { getMyOrderApplication } from "@/api/myPage";
@@ -11,9 +11,10 @@ export const useWorkList = () => {
   const [filter, setFilter] = useState<"all" | "in-progress">("all");
 
   const { loading, withLoading } = useLoading();
+
   // 작업 목록 조회
-  useEffect(() => {
-    const fetchWorkList = async () => {
+  const fetchWorkList = useCallback(async () => {
+    try {
       const data = await withLoading(getMyOrderApplication);
 
       // 신청 승인된 주문서만 필터링
@@ -22,10 +23,14 @@ export const useWorkList = () => {
       );
 
       setAcceptedOrder(acceptedOrder);
-    };
+    } catch (error: any) {
+      setError(error?.response?.data?.error || "작업 목록을 불러오는데 실패했습니다.");
+    }
+  }, [withLoading]);
 
+  useEffect(() => {
     fetchWorkList();
-  }, []);
+  }, [fetchWorkList]);
 
   const filteredApplications = acceptedOrder.filter((application) => {
     if (filter === "in-progress") {
@@ -37,7 +42,7 @@ export const useWorkList = () => {
     return true;
   });
 
-  const handleStatusUpdate = async (
+  const handleStatusUpdate = useCallback(async (
     applicationId: string,
     workItemId: string,
     status: string
@@ -53,7 +58,7 @@ export const useWorkList = () => {
     } finally {
       setUpdatingStatus(null);
     }
-  };
+  }, []);
 
   return {
     acceptedOrder,

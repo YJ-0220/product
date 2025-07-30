@@ -14,7 +14,9 @@ model User {
   username              String                 @unique
   password              String
   role                  UserRole
+  createdAt             DateTime?              @default(now())
   membershipLevel       MembershipLevel?       @map("membership_level")
+  isDeleted             Boolean                @default(false)
   point                 Point?
   pointChargeRequests   PointChargeRequest[]
   pointTransactions     PointTransaction[]
@@ -30,33 +32,33 @@ model User {
 model Point {
   userId  String @id
   balance Int
-  user    User   @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@schema("app")
 }
 
 model PointTransaction {
   id          String               @id @default(dbgenerated("gen_random_uuid()"))
-  userId      String
+  userId      String?
   type        PointTransactionType
   amount      Int
   createdAt   DateTime             @default(now())
   description String?
 
-  user        User                 @relation(fields: [userId], references: [id])
+  user        User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@schema("app")
 }
 
 model PointChargeRequest {
   id          String    @id @default(dbgenerated("gen_random_uuid()"))
-  userId      String
+  userId      String?
   amount      Int
   status      String    @default("pending")
   requestedAt DateTime  @default(now())
   approvedAt  DateTime?
 
-  user        User      @relation(fields: [userId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@schema("app")
 }
@@ -73,7 +75,7 @@ model Bank {
 
 model PointWithdrawRequest {
   id          String    @id @default(dbgenerated("gen_random_uuid()"))
-  userId      String
+  userId      String?
   bankId      String
   accountNum  String
   amount      Int
@@ -82,14 +84,14 @@ model PointWithdrawRequest {
   processedAt DateTime?
 
   bank        Bank      @relation("BankWithdrawRequests", fields: [bankId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@schema("app")
 }
 
 model OrderRequest {
   id              String             @id @default(dbgenerated("gen_random_uuid()"))
-  buyerId         String
+  buyerId         String?
   categoryId      Int
   subcategoryId   Int
   title           String
@@ -102,7 +104,7 @@ model OrderRequest {
   applications    OrderApplication[]
   workItem        WorkItem?
 
-  buyer           User               @relation("UserOrderRequests", fields: [buyerId], references: [id])
+  buyer           User?              @relation("UserOrderRequests", fields: [buyerId], references: [id], onDelete: SetNull)
   category        Category           @relation(fields: [categoryId], references: [id])
   subcategory     Subcategory        @relation(fields: [subcategoryId], references: [id])
 
@@ -112,7 +114,7 @@ model OrderRequest {
 model OrderApplication {
   id                String            @id @default(dbgenerated("gen_random_uuid()"))
   orderRequestId    String
-  sellerId          String
+  sellerId          String?
   message           String?
   proposedPrice     Int?
   estimatedDelivery DateTime?
@@ -121,7 +123,7 @@ model OrderApplication {
   updatedAt         DateTime          @updatedAt
 
   orderRequest      OrderRequest      @relation(fields: [orderRequestId], references: [id], onDelete: Cascade)
-  seller            User              @relation("UserApplications", fields: [sellerId], references: [id])
+  seller            User?             @relation("UserApplications", fields: [sellerId], references: [id], onDelete: SetNull)
   workItems         WorkItem[]
 
   @@schema("app")
@@ -168,7 +170,7 @@ model Notice {
   id        String          @id @default(dbgenerated("gen_random_uuid()"))
   title     String
   content   String
-  authorId  String
+  authorId  String?
   priority  NoticePriority  @default(normal)
   isActive  Boolean         @default(true)
   isPinned  Boolean         @default(false)
@@ -177,7 +179,7 @@ model Notice {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
-  author    User            @relation("UserNotices", fields: [authorId], references: [id])
+  author    User?           @relation("UserNotices", fields: [authorId], references: [id], onDelete: SetNull)
 
   @@schema("app")
 }

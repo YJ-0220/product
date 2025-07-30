@@ -4,10 +4,9 @@ import { prisma } from "../index";
 // 판매자 신청서 생성
 export const createOrderApplication = async (req: Request, res: Response) => {
   try {
-    const { orderId } = req.body;
+    const { orderId } = req.params;
     const sellerId = req.user!.id;
 
-    // 이미 신청한 주문이 있는지 확인
     const existingApplication = await prisma.orderApplication.findFirst({
       where: {
         orderRequestId: orderId,
@@ -63,7 +62,7 @@ export const getOrderApplicationsByOrder = async (
     res.status(200).json({
       applications: applications.map(({ seller, ...app }) => ({
         ...app,
-        seller: { username: seller.username },
+        seller: { username: seller?.username || "삭제된 사용자" },
       })),
     });
   } catch (error) {
@@ -167,7 +166,7 @@ export const updateOrderApplicationStatus = async (
       message: "신청 상태가 성공적으로 변경되었습니다.",
       application: {
         ...updatedApplication,
-        seller: { username: updatedApplication!.seller.username },
+        seller: { username: updatedApplication!.seller?.username || "삭제된 사용자" },
         createdAt: updatedApplication!.createdAt.toISOString(),
         updatedAt: updatedApplication!.updatedAt.toISOString(),
       },
@@ -221,7 +220,7 @@ export const getMyOrderApplications = async (req: Request, res: Response) => {
         orderRequest: {
           ...app.orderRequest,
           createdAt: app.orderRequest.createdAt.toISOString(),
-          buyer: { username: app.orderRequest.buyer.username },
+          buyer: { username: app.orderRequest.buyer?.username || "삭제된 사용자" },
         },
         workItems: app.workItems.map((item) => ({
           ...item,

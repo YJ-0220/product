@@ -256,7 +256,7 @@ export const createPointWithdrawRequest = async (
   }
 };
 
-// 사용자의 포인트 충전 신청 목록 조회
+// 포인트 충전 신청 목록 조회
 export const getPointChargeRequests = async (req: Request, res: Response) => {
   const userId = req.user?.id;
 
@@ -284,7 +284,7 @@ export const getPointChargeRequests = async (req: Request, res: Response) => {
   }
 };
 
-// 사용자의 포인트 환전 신청 목록 조회
+// 포인트 환전 신청 목록 조회
 export const getPointWithdrawRequests = async (req: Request, res: Response) => {
   const userId = req.user?.id;
 

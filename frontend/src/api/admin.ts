@@ -78,7 +78,19 @@ export const updateUserRole = async (userId: string, role: string) => {
 
 // 사용자 삭제
 export const deleteUser = async (userId: string) => {
-  const response = await api.delete(`/admin/users/${userId}/delete`);
+  const response = await api.delete(`/admin/users/${userId}`);
+  return response.data;
+};
+
+// 사용자 완전 삭제
+export const deleteUserHard = async (userId: string) => {
+  const response = await api.delete(`/admin/users/${userId}/hard`);
+  return response.data;
+};
+
+// 사용자 복구
+export const restoreUser = async (userId: string) => {
+  const response = await api.put(`/admin/users/${userId}/restore`);
   return response.data;
 };
 
@@ -92,5 +104,11 @@ export const chargeUserPoint = async (
     amount,
     description: description || "관리자 직접 충전",
   });
+  return response.data;
+};
+
+// 관리자용: 전체 포인트 거래 내역 조회
+export const getAllPointTransactions = async () => {
+  const response = await api.get("/admin/points/transactions");
   return response.data;
 };

@@ -6,7 +6,6 @@ import {
   deleteAcceptedOrderApplication,
 } from "@/api/order";
 import { useState } from "react";
-import type { ApplicationData } from "@/types/orderTypes";
 
 export const useOrderApplication = () => {
   const [editingApplicationId, setEditingApplicationId] = useState<
@@ -61,20 +60,12 @@ export const useOrderApplication = () => {
   const handleSimpleApplication = async (
     orderId: string,
     requiredPoints: number,
-    currentApplications: ApplicationData[],
-    currentUserId: string,
     refreshData: () => void
   ) => {
-    try {
-      // 이미 신청했는지 확인
-      const hasApplied = currentApplications.some(
-        (app) => app.sellerId === currentUserId
-      );
+    if (updating) return; // 이미 처리 중이면 무시
 
-      if (hasApplied) {
-        alert("이미 신청한 주문입니다.");
-        return;
-      }
+    try {
+      setUpdating(true);
 
       // 간단한 신청 데이터 생성
       const applicationData = {
@@ -87,10 +78,20 @@ export const useOrderApplication = () => {
       // 성공 메시지
       alert("신청되었습니다!");
 
-      // 데이터 새로고침
-      refreshData();
+      // 약간의 지연 후 데이터 새로고침 (백엔드 처리 시간 고려)
+      setTimeout(() => {
+        try {
+          refreshData();
+        } catch (error) {
+          console.error("데이터 새로고침 실패:", error);
+        }
+      }, 500);
     } catch (error: any) {
       alert(error?.response?.data?.error || "신청에 실패했습니다.");
+    } finally {
+      setTimeout(() => {
+        setUpdating(false);
+      }, 1000); // 1초 후 버튼 다시 활성화
     }
   };
 

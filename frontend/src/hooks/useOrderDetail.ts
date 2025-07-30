@@ -36,13 +36,15 @@ export const useOrderDetail = () => {
       const allWorkItems: WorkItemData[] = [];
       applicationsData.forEach((app: any) => {
         if (app.workItems && app.workItems.length > 0) {
-          allWorkItems.push(...app.workItems.map((workItem: any) => ({
-            ...workItem,
-            applicationId: app.id,
-          })));
+          allWorkItems.push(
+            ...app.workItems.map((workItem: any) => ({
+              ...workItem,
+              applicationId: app.id,
+            }))
+          );
         }
       });
-      
+
       setWorkItems(allWorkItems);
     } catch (error: any) {
       setError(
@@ -56,8 +58,12 @@ export const useOrderDetail = () => {
     fetchData();
   }, [fetchData]);
 
-  const refreshData = useCallback(() => {
-    fetchData();
+  const refreshData = useCallback(async () => {
+    try {
+      await fetchData();
+    } catch (error) {
+      console.error("데이터 새로고침 실패:", error);
+    }
   }, [fetchData]);
 
   return {

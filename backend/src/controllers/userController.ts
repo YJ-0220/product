@@ -1,15 +1,13 @@
-import { Request, RequestHandler, Response } from "express";
+import { Request, Response } from "express";
 import { prisma } from "../index";
 
-export const getUserProfile: RequestHandler = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+// 내 프로필 조회
+export const getUsers = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId, isDeleted: false },
       select: {
         id: true,
         username: true,

@@ -107,7 +107,7 @@ export default function OrderBoard() {
                       {orders.length - index}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.buyer.username}
+                      {order.buyer?.username}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString()}

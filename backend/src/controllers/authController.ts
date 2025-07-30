@@ -1,10 +1,11 @@
-import { Request, Response, RequestHandler } from "express";
+import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/jwt";
 import { prisma } from "../index";
 import { env } from "../config/env";
 
-export const register = (async (req: Request, res: Response) => {
+// 회원가입
+export const register = async (req: Request, res: Response) => {
   try {
     const { username, password, role } = req.body;
 
@@ -83,15 +84,15 @@ export const register = (async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       message: "아이디 생성에 실패했습니다.",
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
-}) as RequestHandler;
+};
 
 // 로그인
-export const login = (async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
@@ -140,14 +141,14 @@ export const login = (async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "로그인에 실패했습니다." });
   }
-}) as RequestHandler;
+};
 
 // 로그아웃
-export const logout = (async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
   try {
     res.clearCookie("token");
     res.status(200).json({ message: "로그아웃이 완료되었습니다." });
   } catch (e) {
     res.status(500).json({ message: "서버 오류" });
   }
-}) as RequestHandler;
+};

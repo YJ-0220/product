@@ -47,7 +47,7 @@ export const getMyOrderRequest = async (req: Request, res: Response) => {
   res.status(200).json({
     orderRequests: orderRequests.map((order) => ({
       ...order,
-      buyer: { name: order.buyer.username },
+      buyer: { name: order.buyer?.username },
       createdAt: order.createdAt.toISOString(),
       deadline: order.deadline?.toISOString() || null,
     })),

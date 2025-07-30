@@ -202,14 +202,17 @@ export default function OrderDetail() {
                             handleSimpleApplication(
                               order.id,
                               order.requiredPoints,
-                              applications,
-                              user?.id || "",
                               refreshData
                             )
                           }
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                          disabled={updating}
+                          className={`px-4 py-2 text-white rounded-md transition-colors ${
+                            updating
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-blue-600 hover:bg-blue-700"
+                          }`}
                         >
-                          신청하기
+                          {updating ? "신청 중..." : "신청하기"}
                         </button>
                       </div>
                     );

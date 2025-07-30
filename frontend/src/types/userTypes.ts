@@ -4,4 +4,7 @@ export interface User {
   role: string;
   membershipLevel?: string;
   points?: number;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

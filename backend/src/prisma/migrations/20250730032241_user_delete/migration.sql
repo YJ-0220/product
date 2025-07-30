@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "app"."User" ADD COLUMN     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "isDeleted" BOOLEAN NOT NULL DEFAULT false;

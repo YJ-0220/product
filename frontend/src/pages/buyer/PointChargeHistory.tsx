@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { PointChargeRequest } from "@/types/pointRequestTypes";
+import type { PointChargeRequest } from "@/types/myPageTypes";
 import { getPointChargeRequests } from "@/api/points";
 import { useUtils } from "@/hooks/useUtils";
 

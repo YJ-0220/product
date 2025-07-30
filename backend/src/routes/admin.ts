@@ -1,15 +1,18 @@
 import express from "express";
 import { authenticate, requiredAdmin } from "../middleware/auth";
-import { 
-  getAdminDashboard, 
-  adminRegister, 
-  createAdmin, 
+import {
+  getAdminDashboard,
+  adminRegister,
+  createAdmin,
   adminDeleteUser,
   getAllUserList,
   getAllPointChargeRequests,
   updatePointChargeRequestStatus,
   updatePointWithdrawRequestStatus,
   getAllPointWithdrawRequests,
+  getAllPointTransactions,
+  adminRestoreUser,
+  adminDeleteUserHard,
 } from "../controllers/adminController";
 import {
   adminChargePoint,
@@ -30,15 +33,26 @@ router.post("/create", createAdmin);
 
 // 사용자 관리/삭제
 router.get("/users", getAllUserList);
-router.delete("/users/:userId/delete", adminDeleteUser);
+router.delete("/users/:userId", adminDeleteUser);
+router.put("/users/:userId/restore", adminRestoreUser);
+router.delete("/users/:userId/hard", adminDeleteUserHard);
 
 // 포인트 충전 신청 관리/승인,거절
 router.get("/points/charge-requests", getAllPointChargeRequests);
-router.put("/points/charge-requests/:requestId", updatePointChargeRequestStatus);
+router.put(
+  "/points/charge-requests/:requestId",
+  updatePointChargeRequestStatus
+);
 
 // 포인트 환전 신청 관리/승인,거절
 router.get("/points/withdraw-requests", getAllPointWithdrawRequests);
-router.put("/points/withdraw-requests/:requestId", updatePointWithdrawRequestStatus);
+router.put(
+  "/points/withdraw-requests/:requestId",
+  updatePointWithdrawRequestStatus
+);
+
+// 전체 포인트 거래 내역 조회
+router.get("/points/transactions", getAllPointTransactions);
 
 // 관리자 포인트 충전/사용자 포인트 충전
 router.post("/charge", adminChargePoint);

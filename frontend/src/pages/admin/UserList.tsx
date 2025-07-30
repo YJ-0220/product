@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { getAllUsers, deleteUser, chargeUserPoint } from "@/api/admin";
+import {
+  getAllUsers,
+  deleteUser,
+  chargeUserPoint,
+  restoreUser,
+  deleteUserHard,
+} from "@/api/admin";
 import { Link } from "react-router-dom";
-
-interface User {
-  id: string;
-  username: string;
-  role: string;
-  membershipLevel?: string;
-}
+import type { User } from "@/types/userTypes";
 
 interface PointChargeModal {
   isOpen: boolean;
@@ -23,6 +23,8 @@ export default function UserList() {
   const [error, setError] = useState<string>("");
   const [deleting, setDeleting] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [restoring, setRestoring] = useState<string>("");
+  const [hardDeleting, setHardDeleting] = useState<string>("");
 
   const [pointModal, setPointModal] = useState<PointChargeModal>({
     isOpen: false,
@@ -69,6 +71,61 @@ export default function UserList() {
     }
   };
 
+  const handleRestoreUser = async (userId: string, username: string) => {
+    if (!window.confirm(`정말로 사용자 "${username}"를 복구하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      setRestoring(userId);
+      await restoreUser(userId);
+      await fetchUsers();
+      setSuccess(`사용자 "${username}"가 복구되었습니다.`);
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error: any) {
+      setError(error?.response?.data?.message || "사용자 복구에 실패했습니다.");
+    } finally {
+      setRestoring("");
+    }
+  };
+
+  // 사용자 완전 삭제
+  const handleDeleteUserHard = async (userId: string, username: string) => {
+    if (
+      !window.confirm(
+        `⚠️ 경고: 사용자 "${username}"를 완전히 삭제하시겠습니까?\n\n` +
+          `완전 삭제된 사용자는 복구할 수 없으며, 관련된 모든 데이터가 영구적으로 삭제됩니다.\n\n` +
+          `정말로 진행하시겠습니까?`
+      )
+    ) {
+      return;
+    }
+
+    // 한 번 더 확인
+    if (
+      !window.confirm(
+        `최종 확인: "${username}" 사용자를 완전히 삭제합니다.\n\n` +
+          `이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setHardDeleting(userId);
+      await deleteUserHard(userId);
+      await fetchUsers(); // 목록 새로고침
+      setSuccess(`사용자 "${username}"가 완전히 삭제되었습니다.`);
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error: any) {
+      setError(
+        error?.response?.data?.message || "사용자 완전 삭제에 실패했습니다."
+      );
+    } finally {
+      setHardDeleting("");
+    }
+  };
+
   // 포인트 충전 모달 열기
   const openPointModal = (user: User) => {
     setPointModal({
@@ -104,7 +161,7 @@ export default function UserList() {
     }
 
     try {
-      setPointModal(prev => ({ ...prev, loading: true }));
+      setPointModal((prev) => ({ ...prev, loading: true }));
       setError("");
 
       await chargeUserPoint(
@@ -113,13 +170,17 @@ export default function UserList() {
         pointModal.description || "관리자 직접 충전"
       );
 
-      setSuccess(`${pointModal.user.username}에게 ${amount.toLocaleString()}P를 충전했습니다.`);
+      setSuccess(
+        `${
+          pointModal.user.username
+        }에게 ${amount.toLocaleString()}P를 충전했습니다.`
+      );
       setTimeout(() => setSuccess(""), 3000);
       closePointModal();
     } catch (error: any) {
       setError(error?.response?.data?.message || "포인트 충전에 실패했습니다.");
     } finally {
-      setPointModal(prev => ({ ...prev, loading: false }));
+      setPointModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -128,22 +189,26 @@ export default function UserList() {
 
     const badges = {
       bronze: "bg-orange-100 text-orange-800",
-      silver: "bg-gray-100 text-gray-800", 
+      silver: "bg-gray-100 text-gray-800",
       gold: "bg-yellow-100 text-yellow-800",
       platinum: "bg-purple-100 text-purple-800",
-      vip: "bg-red-100 text-red-800"
+      vip: "bg-red-100 text-red-800",
     };
 
     const labels = {
       bronze: "브론즈",
-      silver: "실버", 
+      silver: "실버",
       gold: "골드",
       platinum: "플래티넘",
-      vip: "VIP"
+      vip: "VIP",
     };
 
     return (
-      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${badges[level as keyof typeof badges] || 'bg-gray-100 text-gray-800'}`}>
+      <span
+        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          badges[level as keyof typeof badges] || "bg-gray-100 text-gray-800"
+        }`}
+      >
         {labels[level as keyof typeof labels] || level}
       </span>
     );
@@ -155,14 +220,26 @@ export default function UserList() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">사용자 관리</h1>
-            <p className="text-gray-600 mt-2">전체 사용자 목록을 확인하고 관리할 수 있습니다.</p>
+            <p className="text-gray-600 mt-2">
+              전체 사용자 목록을 확인하고 관리할 수 있습니다.
+            </p>
           </div>
           <Link
             to="/users/create"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
             </svg>
             새 계정 생성
           </Link>
@@ -171,8 +248,18 @@ export default function UserList() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5 text-red-400 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <p className="text-red-600 text-sm font-medium">{error}</p>
             </div>
@@ -182,8 +269,18 @@ export default function UserList() {
         {success && (
           <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-5 h-5 text-green-400 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               <p className="text-green-600 text-sm font-medium">{success}</p>
             </div>
@@ -194,18 +291,40 @@ export default function UserList() {
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-flex items-center">
-                <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <svg
+                  className="w-5 h-5 mr-2 animate-spin"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
                 </svg>
                 <p className="text-gray-600">사용자 목록을 불러오는 중...</p>
               </div>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12">
-              <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              <svg
+                className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
               </svg>
-              <p className="text-gray-600 text-lg mb-4">등록된 사용자가 없습니다.</p>
+              <p className="text-gray-600 text-lg mb-4">
+                등록된 사용자가 없습니다.
+              </p>
               <Link
                 to="/users/create"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -227,6 +346,9 @@ export default function UserList() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       멤버십 등급
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      상태
+                    </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       작업
                     </th>
@@ -234,39 +356,121 @@ export default function UserList() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={user.id}
+                      className={`hover:bg-gray-50 transition-colors ${
+                        user.isDeleted ? "bg-gray-50 opacity-75" : ""
+                      }`}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                        <div className="text-sm text-gray-500">ID: {user.id}</div>
+                        <div
+                          className={`text-sm font-medium ${
+                            user.isDeleted
+                              ? "text-gray-500 line-through"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          {user.username}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          ID: {user.id.substring(0, 8)}...
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          user.role === 'buyer' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                        }`}>
-                          {user.role === 'buyer' ? '구매자' : '판매자'}
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.isDeleted
+                              ? "bg-gray-100 text-gray-500"
+                              : user.role === "buyer"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {user.role === "buyer" ? "구매자" : "판매자"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {getMembershipBadge(user.membershipLevel)}
+                        {user.isDeleted ? (
+                          <span className="text-gray-400">-</span>
+                        ) : (
+                          getMembershipBadge(user.membershipLevel)
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {user.isDeleted ? (
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                            삭제됨
+                          </span>
+                        ) : (
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            활성
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center space-x-2">
-                          <button
-                            onClick={() => openPointModal(user)}
-                            className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors flex items-center"
-                          >
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            포인트
-                          </button>
-                          <button
-                            onClick={() => handleDeleteUser(user.id, user.username)}
-                            disabled={deleting === user.id}
-                            className="text-red-600 hover:text-red-700 text-sm font-medium disabled:text-gray-400 transition-colors"
-                          >
-                            {deleting === user.id ? "삭제 중..." : "삭제"}
-                          </button>
+                          {!user.isDeleted && (
+                            <>
+                              <button
+                                onClick={() => openPointModal(user)}
+                                className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors flex items-center"
+                              >
+                                <svg
+                                  className="w-4 h-4 mr-1"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                포인트
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteUser(user.id, user.username)
+                                }
+                                disabled={deleting === user.id}
+                                className="text-red-600 hover:text-red-700 text-sm font-medium disabled:text-gray-400 transition-colors"
+                              >
+                                {deleting === user.id ? "삭제 중..." : "삭제"}
+                              </button>
+                            </>
+                          )}
+                          {user.isDeleted && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleRestoreUser(user.id, user.username)
+                                }
+                                disabled={
+                                  restoring === user.id ||
+                                  hardDeleting === user.id
+                                }
+                                className="text-green-600 hover:text-green-700 text-sm font-medium disabled:text-gray-400 transition-colors"
+                              >
+                                {restoring === user.id ? "복구 중..." : "복구"}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteUserHard(user.id, user.username)
+                                }
+                                disabled={
+                                  hardDeleting === user.id ||
+                                  restoring === user.id
+                                }
+                                className="text-red-800 hover:text-red-900 text-sm font-medium disabled:text-gray-400 transition-colors bg-red-50 hover:bg-red-100 px-2 py-1 rounded border border-red-200"
+                              >
+                                {hardDeleting === user.id
+                                  ? "완전삭제 중..."
+                                  : "완전삭제"}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -279,7 +483,9 @@ export default function UserList() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            총 <span className="font-semibold text-gray-900">{users.length}</span>명의 사용자가 등록되어 있습니다.
+            총{" "}
+            <span className="font-semibold text-gray-900">{users.length}</span>
+            명의 사용자가 등록되어 있습니다.
           </p>
         </div>
       </div>
@@ -296,8 +502,18 @@ export default function UserList() {
                 onClick={closePointModal}
                 className="text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -310,7 +526,12 @@ export default function UserList() {
                 <input
                   type="number"
                   value={pointModal.amount}
-                  onChange={(e) => setPointModal(prev => ({ ...prev, amount: e.target.value }))}
+                  onChange={(e) =>
+                    setPointModal((prev) => ({
+                      ...prev,
+                      amount: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="예: 1000"
                   min="1"
@@ -324,7 +545,12 @@ export default function UserList() {
                 </label>
                 <textarea
                   value={pointModal.description}
-                  onChange={(e) => setPointModal(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setPointModal((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="예: 오류 보상, 이벤트 지급 등"
                   rows={3}
@@ -348,8 +574,18 @@ export default function UserList() {
               >
                 {pointModal.loading ? (
                   <>
-                    <svg className="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <svg
+                      className="w-4 h-4 mr-2 animate-spin"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
                     </svg>
                     충전 중...
                   </>

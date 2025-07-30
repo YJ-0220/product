@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getUserProfile } from "@/api/users";
+import { getUsers } from "@/api/users";
 import { loginRequest } from "@/api/auth";
 import type { User } from "@/types/userTypes";
 
@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>((set) => {
         localStorage.setItem("token", token);
         set({ isAuthenticated: true });
 
-        const res = await getUserProfile();
+        const res = await getUsers();
         const userData = { ...res.user, points: Number(res.points) };
         localStorage.setItem("role", userData.role || "");
         set({ user: userData });
@@ -55,7 +55,7 @@ export const useAuthStore = create<AuthState>((set) => {
 
     fetchUserInfo: async () => {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
         set({ loading: false, isAuthenticated: false });
         return;
@@ -63,24 +63,24 @@ export const useAuthStore = create<AuthState>((set) => {
 
       try {
         set({ loading: true });
-        const res = await getUserProfile();
+        const res = await getUsers();
         const userData = { ...res.user, points: Number(res.points) };
         localStorage.setItem("role", userData.role || "");
         set({ user: userData, isAuthenticated: true, error: null });
       } catch (err: any) {
         let errorMessage = "인증이 만료되었습니다. 다시 로그인해주세요.";
-        
+
         if (err.response?.status === 401) {
-          errorMessage = "토큰이 만료되었습니다. 다시 로그인해주세요.";
+          errorMessage = "인증 정보가 만료되었습니다. 다시 로그인해주세요.";
         } else if (err.response?.data?.message) {
           errorMessage = err.response.data.message;
         }
-        
+
         localStorage.clear();
-        set({ 
-          isAuthenticated: false, 
-          user: null, 
-          error: errorMessage 
+        set({
+          isAuthenticated: false,
+          user: null,
+          error: errorMessage,
         });
       } finally {
         set({ loading: false });

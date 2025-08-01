@@ -54,29 +54,20 @@ const renderDropdownLink = (to: string, label: string, iconPath?: string) => (
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
-  const role = user?.role || "";
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const toggleDropdown = (dropdownKey: string) => {
-    setOpenDropdown(prev => prev === dropdownKey ? null : dropdownKey);
+    setOpenDropdown((prev) => (prev === dropdownKey ? null : dropdownKey));
   };
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-white">로그인 후 이용해주세요.</p>
-      </div>
-    );
-  }
-
   const renderMenuItems = () => {
-    switch (role) {
+    switch (user?.role || "") {
       case "admin":
         return (
           <>
             {renderLink(
               "/",
-              "홈",
+              "대시보드",
               "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             )}
             <li>
@@ -86,19 +77,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               >
                 <div className="flex items-center space-x-3">
                   <Icon path="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  <span>사용자 관리</span>
+                  <span>회원 관리</span>
                 </div>
-                <Icon 
-                  path={openDropdown === "admin-users" 
-                    ? "M19 9l-7 7-7-7" 
-                    : "M9 5l7 7-7 7"
-                  } 
+                <Icon
+                  path={
+                    openDropdown === "admin-users"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
                 />
               </button>
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "admin-users" 
-                    ? "max-h-48 opacity-100" 
+                  openDropdown === "admin-users"
+                    ? "max-h-48 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
@@ -120,25 +112,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               >
                 <div className="flex items-center space-x-3">
                   <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  <span>주문관리</span>
+                  <span>주문 관리</span>
                 </div>
-                <Icon 
-                  path={openDropdown === "admin-order" 
-                    ? "M19 9l-7 7-7-7" 
-                    : "M9 5l7 7-7 7"
-                  } 
+                <Icon
+                  path={
+                    openDropdown === "admin-order"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
                 />
               </button>
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "admin-order" 
-                    ? "max-h-48 opacity-100" 
+                  openDropdown === "admin-order"
+                    ? "max-h-48 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
                 <ul className="bg-gray-800">
-                  {renderDropdownLink("/order", "게시판")}
-                  {renderDropdownLink("/order/history", "주문내역")}
+                  {renderDropdownLink("/order", "주문 게시판")}
                 </ul>
               </div>
             </li>
@@ -166,17 +158,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   <span>주문 관리</span>
                 </div>
-                <Icon 
-                  path={openDropdown === "seller-order" 
-                    ? "M19 9l-7 7-7-7" 
-                    : "M9 5l7 7-7 7"
-                  } 
+                <Icon
+                  path={
+                    openDropdown === "seller-order"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
                 />
               </button>
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "seller-order" 
-                    ? "max-h-48 opacity-100" 
+                  openDropdown === "seller-order"
+                    ? "max-h-48 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
@@ -186,7 +179,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             </li>
             <li>
-            <button
+              <button
                 onClick={() => toggleDropdown("seller-work")}
                 className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
               >
@@ -194,17 +187,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <Icon path="M12 4v16m8-8H4" />
                   <span>작업 관리</span>
                 </div>
-                <Icon 
-                  path={openDropdown === "seller-work" 
-                    ? "M19 9l-7 7-7-7" 
-                    : "M9 5l7 7-7 7"
-                  } 
+                <Icon
+                  path={
+                    openDropdown === "seller-work"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
                 />
               </button>
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "seller-work" 
-                    ? "max-h-48 opacity-100" 
+                  openDropdown === "seller-work"
+                    ? "max-h-48 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
@@ -242,17 +236,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   <span>주문 관리</span>
                 </div>
-                <Icon 
-                  path={openDropdown === "buyer-order" 
-                    ? "M19 9l-7 7-7-7" 
-                    : "M9 5l7 7-7 7"
-                  } 
+                <Icon
+                  path={
+                    openDropdown === "buyer-order"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
                 />
               </button>
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "buyer-order" 
-                    ? "max-h-48 opacity-100" 
+                  openDropdown === "buyer-order"
+                    ? "max-h-48 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >
@@ -281,17 +276,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   <span>마이 페이지</span>
                 </div>
-                <Icon 
-                  path={openDropdown === "buyer-mypage" 
-                    ? "M19 9l-7 7-7-7" 
-                    : "M9 5l7 7-7 7"
-                  } 
+                <Icon
+                  path={
+                    openDropdown === "buyer-mypage"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
                 />
               </button>
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "buyer-mypage" 
-                    ? "max-h-48 opacity-100" 
+                  openDropdown === "buyer-mypage"
+                    ? "max-h-48 opacity-100"
                     : "max-h-0 opacity-0"
                 }`}
               >

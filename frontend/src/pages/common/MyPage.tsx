@@ -89,11 +89,27 @@ export default function MyPage() {
           <p className="text-sm text-gray-600">
             총{" "}
             <span className="font-semibold text-gray-900">
-              {user?.role === "admin"
-                ? allTransactions.length ||
-                  adminChargeRequests.length + adminWithdrawRequests.length
-                : pointHistory.length ||
-                  chargeRequests.length + withdrawRequests.length}
+              {(() => {
+                if (user?.role === "admin") {
+                  switch (activeTab) {
+                    case "admin-transactions":
+                      return allTransactions.length;
+                    case "admin-approvals":
+                      return adminChargeRequests.length + adminWithdrawRequests.length;
+                    default:
+                      return 0;
+                  }
+                } else {
+                  switch (activeTab) {
+                    case "points":
+                      return pointHistory.length;
+                    case "charge-history":
+                      return chargeRequests.length + withdrawRequests.length;
+                    default:
+                      return 0;
+                  }
+                }
+              })()}
             </span>
             건의 기록이 있습니다.
           </p>

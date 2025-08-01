@@ -126,18 +126,16 @@ export default function UserList() {
     }
   };
 
-  // 포인트 충전 모달 열기
   const openPointModal = (user: User) => {
     setPointModal({
       isOpen: true,
       user,
       amount: "",
-      description: "오류 보상 포인트",
+      description: "",
       loading: false,
     });
   };
 
-  // 포인트 충전 모달 닫기
   const closePointModal = () => {
     setPointModal({
       isOpen: false,
@@ -148,7 +146,6 @@ export default function UserList() {
     });
   };
 
-  // 포인트 충전 실행
   const handleChargePoint = async () => {
     if (!pointModal.user || !pointModal.amount) {
       return;
@@ -490,7 +487,6 @@ export default function UserList() {
         </div>
       </div>
 
-      {/* 포인트 충전 모달 */}
       {pointModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">

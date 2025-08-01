@@ -133,17 +133,22 @@ export default function AdminHome() {
               className="flex items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
             >
               <div className="text-center">
-                <span className="text-sm font-medium text-blue-700">포인트 관리</span>
+                <span className="text-sm font-medium text-blue-700">
+                  포인트 관리
+                </span>
               </div>
             </Link>
 
-            <button className="flex items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors">
+            <Link
+              to="/users"
+              className="flex items-center justify-center p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors"
+            >
               <div className="text-center">
                 <span className="text-sm font-medium text-green-700">
-                  메뉴2
+                  사용자 관리
                 </span>
               </div>
-            </button>
+            </Link>
 
             <button className="flex items-center justify-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors">
               <div className="text-center">

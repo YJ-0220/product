@@ -3,6 +3,24 @@ import { getUsers } from "@/api/users";
 import { loginRequest } from "@/api/auth";
 import type { User } from "@/types/userTypes";
 
+// JWT 토큰을 디코딩하는 함수
+const decodeJWTPayload = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('JWT 디코딩 실패:', error);
+    return null;
+  }
+};
+
 type AuthState = {
   isAuthenticated: boolean;
   user: User | null;
@@ -62,11 +80,52 @@ export const useAuthStore = create<AuthState>((set) => {
       }
 
       try {
-        set({ loading: true });
+        set({ loading: true, error: null });
+        
+        // 방법 1: JWT 디코딩으로 빠른 UI (보안 검증 없음)
+        const decoded = decodeJWTPayload(token);
+        
+        if (decoded && decoded.userId && decoded.role) {
+          // 임시 사용자 정보로 UI 먼저 렌더링
+          const tempUserData = {
+            id: decoded.userId,
+            username: decoded.username || "",
+            role: decoded.role,
+            membershipLevel: decoded.membershipLevel || "bronze",
+            points: 0,
+          };
+          
+          localStorage.setItem("role", tempUserData.role);
+          set({ 
+            user: tempUserData, 
+            isAuthenticated: true, 
+            error: null,
+            loading: false  // 로딩 상태 해제로 빠른 UI
+          });
+          
+          // 방법 2: 서버 검증으로 실제 데이터 확인 (보안 검증 포함)
+          try {
+            const res = await getUsers(); // 🔒 서버에서 JWT 검증
+            const verifiedUserData = { ...res.user, points: Number(res.points) };
+            set({ user: verifiedUserData }); // 검증된 데이터로 업데이트
+          } catch (verifyError: any) {
+            // 서버 검증 실패시 로그아웃 처리
+            if (verifyError.response?.status === 401) {
+              console.warn('서버 검증 실패, 로그아웃 처리');
+              localStorage.clear();
+              set({ isAuthenticated: false, user: null });
+            }
+          }
+          
+          return;
+        }
+        
+        // JWT 디코딩 실패시 완전히 서버 검증 방식 사용
         const res = await getUsers();
         const userData = { ...res.user, points: Number(res.points) };
         localStorage.setItem("role", userData.role || "");
         set({ user: userData, isAuthenticated: true, error: null });
+        
       } catch (err: any) {
         let errorMessage = "인증이 만료되었습니다. 다시 로그인해주세요.";
 

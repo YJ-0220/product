@@ -2,58 +2,86 @@ import { Request, Response } from "express";
 import { prisma } from "../index";
 import bcrypt from "bcrypt";
 
-// 대시보드 관리
-export const getAdminDashboard = async (req: Request, res: Response) => {
+// KPI 차트 데이터 조회
+export const getKPIChartData = async (req: Request, res: Response) => {
   try {
-    // 총 사용자 수
-    const userCountResult = await prisma.user.count({
-      where: {
-        isDeleted: false,
-        role: {
-          in: ["buyer", "seller"],
+    // 1. 사용자 증가 추이 (지난 7일)
+    const userGrowthData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+
+      const userCount = await prisma.user.count({
+        where: {
+          isDeleted: false,
+          role: { in: ["buyer", "seller"] },
+          createdAt: { gte: date, lt: nextDate },
         },
-      },
-    });
+      });
 
-    // 총 주문 수
-    const orderRequestCountResult = await prisma.orderRequest.count({
-      where: {
-        status: {
-          in: ["pending", "progress", "completed", "cancelled"],
-        },
-      },
-    });
-
-    // 지난 1개월 동안 대기중인 총 주문 요청 수
-    const orderRequestMonthCountResult = await prisma.orderRequest.count({
-      where: {
-        status: "pending",
-        createdAt: {
-          gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-        },
-      },
-    });
-
-    const stats = {
-      totalUsers: userCountResult,
-      totalOrderRequests: orderRequestCountResult,
-      totalOrderRequestsMonth: orderRequestMonthCountResult,
-    };
-
-    res.json(stats);
-  } catch (error: any) {
-    console.error("대시보드 통계 조회 에러:", error);
-
-    let userMessage = "대시보드 데이터를 불러오는 중 오류가 발생했습니다.";
-
-    if (error.code === "P2002") {
-      userMessage = "데이터베이스 연결 문제가 발생했습니다.";
-    } else if (process.env.NODE_ENV === "development") {
-      userMessage = error.message;
+      userGrowthData.push({
+        date: date.toISOString().split("T")[0],
+        count: userCount,
+      });
     }
 
+    // 2. 주문 상태별 분포
+    const orderStatusData = await Promise.all([
+      prisma.orderRequest.count({ where: { status: "pending" } }),
+      prisma.orderRequest.count({ where: { status: "progress" } }),
+      prisma.orderRequest.count({ where: { status: "completed" } }),
+      prisma.orderRequest.count({ where: { status: "cancelled" } }),
+    ]);
+
+    // 3. 역할별 사용자 분포
+    const userRoleData = await Promise.all([
+      prisma.user.count({ where: { role: "buyer", isDeleted: false } }),
+      prisma.user.count({ where: { role: "seller", isDeleted: false } }),
+      prisma.user.count({ where: { role: "admin", isDeleted: false } }),
+    ]);
+
+    // 4. 포인트 거래 통계 (지난 30일)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const pointStats = await prisma.pointTransaction.groupBy({
+      by: ["type"],
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      _sum: { amount: true },
+      _count: { _all: true },
+    });
+
+    const kpiData = {
+      userGrowth: {
+        labels: userGrowthData.map((d) => d.date),
+        data: userGrowthData.map((d) => d.count),
+      },
+      orderStatus: {
+        labels: ["대기중", "진행중", "완료", "취소"],
+        data: orderStatusData,
+      },
+      userRole: {
+        labels: ["구매자", "판매자", "관리자"],
+        data: userRoleData,
+      },
+      pointTransactions: pointStats.map((stat) => ({
+        type: stat.type,
+        totalAmount: stat._sum.amount || 0,
+        count: stat._count._all,
+      })),
+    };
+
+    res.json(kpiData);
+  } catch (error: any) {
+    console.error("KPI 데이터 조회 에러:", error);
     res.status(500).json({
-      message: userMessage,
+      message: "KPI 데이터를 불러오는 중 오류가 발생했습니다.",
       error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
@@ -223,7 +251,7 @@ export const adminDeleteUserHard = async (req: Request, res: Response) => {
 
       // 2. 작업물이 없는 신청서들 찾기
       const applicationsWithoutWork = userApplications.filter(
-        app => app.workItems.length === 0
+        (app) => app.workItems.length === 0
       );
 
       // 3. 작업물이 없는 신청서들 직접 삭제
@@ -231,9 +259,9 @@ export const adminDeleteUserHard = async (req: Request, res: Response) => {
         await tx.orderApplication.deleteMany({
           where: {
             id: {
-              in: applicationsWithoutWork.map(app => app.id)
-            }
-          }
+              in: applicationsWithoutWork.map((app) => app.id),
+            },
+          },
         });
       }
 
@@ -245,7 +273,8 @@ export const adminDeleteUserHard = async (req: Request, res: Response) => {
       return {
         deletedUser,
         deletedApplicationsCount: applicationsWithoutWork.length,
-        preservedApplicationsCount: userApplications.length - applicationsWithoutWork.length,
+        preservedApplicationsCount:
+          userApplications.length - applicationsWithoutWork.length,
       };
     });
 
@@ -604,10 +633,7 @@ export const updatePointWithdrawRequestStatus = async (
 };
 
 // 관리자용: 전체 포인트 거래 내역 조회
-export const getAllPointTransactions = async (
-  req: Request,
-  res: Response
-) => {
+export const getAllPointTransactions = async (req: Request, res: Response) => {
   try {
     const transactions = await prisma.pointTransaction.findMany({
       include: {
@@ -626,9 +652,9 @@ export const getAllPointTransactions = async (
     res.status(200).json({
       transactions: transactions.map((transaction) => ({
         ...transaction,
-        user: { 
+        user: {
           username: transaction.user?.username,
-          role: transaction.user?.role 
+          role: transaction.user?.role,
         },
         createdAt: transaction.createdAt.toISOString(),
       })),

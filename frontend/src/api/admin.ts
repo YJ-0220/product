@@ -1,10 +1,5 @@
 import api from "./axios";
 
-export const getAdminDashboard = async () => {
-  const response = await api.get("/admin/dashboard");
-  return response.data;
-};
-
 export const adminRegister = async (data: {
   username: string;
   password: string;
@@ -61,6 +56,12 @@ export const updatePointWithdrawRequest = async (
 // 대시보드 통계 조회
 export const getDashboardStats = async () => {
   const response = await api.get("/admin/dashboard-stats");
+  return response.data;
+};
+
+// KPI 차트 데이터 조회
+export const getKPIChartData = async () => {
+  const response = await api.get("/admin/kpi-chart-data");
   return response.data;
 };
 

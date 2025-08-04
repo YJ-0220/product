@@ -25,7 +25,7 @@ export const authenticate = async (
     // 3. 사용자 정보 조회
     const result = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, username: true, role: true, membershipLevel: true },
+      select: { id: true, role: true, username: true, membershipLevel: true },
     });
 
     if (!result) {

@@ -9,6 +9,7 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
   (_props, ref) => {
     const {
       pointWithdrawRequests,
+      isLoadingWithdrawRequests,
       fetchPointWithdrawRequests,
       handleWithdrawUpdate,
     } = usePointManagement();
@@ -25,11 +26,17 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
       .filter((req) => req.status === "pending")
       .slice(0, 3);
 
-    if (pointWithdrawRequests.length === 0) {
+    if (isLoadingWithdrawRequests) {
       return (
         <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              포인트 환전 신청
+            </h3>
+          </div>
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">환전 신청 목록을 불러오는 중...</span>
           </div>
         </div>
       );
@@ -111,7 +118,8 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
                         onClick={() =>
                           handleWithdrawUpdate(request.id, "approved")
                         }
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
+                        disabled={isLoadingWithdrawRequests}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
                         승인
                       </button>
@@ -119,7 +127,8 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
                         onClick={() =>
                           handleWithdrawUpdate(request.id, "rejected")
                         }
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium"
+                        disabled={isLoadingWithdrawRequests}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
                         거절
                       </button>

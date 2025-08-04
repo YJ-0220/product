@@ -18,7 +18,7 @@ export const usePointManagement = () => {
   const [pointWithdrawRequests, setPointWithdrawRequests] = useState<
     PointWithdrawRequest[]
   >([]);
-  const { withLoading } = useLoading();
+  const { withKeyLoading, isLoading } = useLoading();
 
   // 에러 메시지 추출 함수
   const getErrorMessage = useCallback((error: any): string => {
@@ -28,28 +28,32 @@ export const usePointManagement = () => {
   // 충전 신청 목록 조회
   const fetchPointChargeRequests = useCallback(async () => {
     try {
-      const response = await withLoading(getAllPointChargeRequests);
-      setPointChargeRequests(response.chargeRequests || []);
+      await withKeyLoading('chargeRequests', async () => {
+        const response = await getAllPointChargeRequests();
+        setPointChargeRequests(response.chargeRequests || []);
+      });
     } catch (error) {
       console.error("포인트 충전 신청 목록 조회 실패:", error);
       const errorMessage = getErrorMessage(error);
       alert(`충전 신청 목록 조회 실패: ${errorMessage}`);
       setPointChargeRequests([]);
     }
-  }, [withLoading, getErrorMessage]);
+  }, [withKeyLoading, getErrorMessage]);
 
   // 환전 신청 목록 조회
   const fetchPointWithdrawRequests = useCallback(async () => {
     try {
-      const response = await withLoading(getAllPointWithdrawRequests);
-      setPointWithdrawRequests(response.withdrawRequests || []);
+      await withKeyLoading('withdrawRequests', async () => {
+        const response = await getAllPointWithdrawRequests();
+        setPointWithdrawRequests(response.withdrawRequests || []);
+      });
     } catch (error) {
       console.error("포인트 환전 신청 목록 조회 실패:", error);
       const errorMessage = getErrorMessage(error);
       alert(`환전 신청 목록 조회 실패: ${errorMessage}`);
       setPointWithdrawRequests([]);
     }
-  }, [withLoading, getErrorMessage]);
+  }, [withKeyLoading, getErrorMessage]);
 
   // 충전 신청 업데이트
   const handleChargeUpdate = useCallback(async (
@@ -94,6 +98,8 @@ export const usePointManagement = () => {
   return {
     pointChargeRequests,
     pointWithdrawRequests,
+    isLoadingChargeRequests: isLoading('chargeRequests'),
+    isLoadingWithdrawRequests: isLoading('withdrawRequests'),
     fetchPointChargeRequests,
     fetchPointWithdrawRequests,
     handleChargeUpdate,

@@ -9,6 +9,7 @@ const PointChargeRequestComponent = forwardRef<PointChargeRequestRef, {}>(
   (_props, ref) => {
     const {
       pointChargeRequests,
+      isLoadingChargeRequests,
       fetchPointChargeRequests,
       handleChargeUpdate,
     } = usePointManagement();
@@ -25,11 +26,17 @@ const PointChargeRequestComponent = forwardRef<PointChargeRequestRef, {}>(
       .filter((req) => req.status === "pending")
       .slice(0, 3);
 
-    if (pointChargeRequests.length === 0) {
+    if (isLoadingChargeRequests) {
       return (
         <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              포인트 충전 신청
+            </h3>
+          </div>
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">충전 신청 목록을 불러오는 중...</span>
           </div>
         </div>
       );
@@ -101,7 +108,8 @@ const PointChargeRequestComponent = forwardRef<PointChargeRequestRef, {}>(
                         onClick={() =>
                           handleChargeUpdate(request.id, "approved")
                         }
-                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
+                        disabled={isLoadingChargeRequests}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
                         승인
                       </button>
@@ -109,7 +117,8 @@ const PointChargeRequestComponent = forwardRef<PointChargeRequestRef, {}>(
                         onClick={() =>
                           handleChargeUpdate(request.id, "rejected")
                         }
-                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium"
+                        disabled={isLoadingChargeRequests}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
                         거절
                       </button>

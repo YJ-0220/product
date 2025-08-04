@@ -1,7 +1,7 @@
 import express from "express";
 import { authenticate, requiredAdmin } from "../middleware/auth";
 import {
-  getAdminDashboard,
+  getKPIChartData,
   adminRegister,
   createAdmin,
   adminDeleteUser,
@@ -25,7 +25,7 @@ const router = express.Router();
 router.use(authenticate, requiredAdmin);
 
 // 대시보드
-router.get("/dashboard", getAdminDashboard);
+router.get("/kpi-chart-data", getKPIChartData);
 
 // 관리자용 사용자 생성/관리자 생성
 router.post("/register", adminRegister);

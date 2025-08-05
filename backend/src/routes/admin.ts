@@ -2,6 +2,7 @@ import express from "express";
 import { authenticate, requiredAdmin } from "../middleware/auth";
 import {
   getKPIChartData,
+  getAdminNotificationStats,
   adminRegister,
   createAdmin,
   adminDeleteUser,
@@ -26,6 +27,7 @@ router.use(authenticate, requiredAdmin);
 
 // 대시보드
 router.get("/kpi-chart-data", getKPIChartData);
+router.get("/notification-stats", getAdminNotificationStats);
 
 // 관리자용 사용자 생성/관리자 생성
 router.post("/register", adminRegister);

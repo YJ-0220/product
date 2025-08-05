@@ -2,6 +2,38 @@ import { Request, Response } from "express";
 import { prisma } from "../index";
 import bcrypt from "bcrypt";
 
+// 관리자 알림용 통계 데이터 조회
+export const getAdminNotificationStats = async (req: Request, res: Response) => {
+  try {
+    const [pendingChargeRequests, pendingWithdrawRequests, pendingApplications] = await Promise.all([
+      // 대기 중인 포인트 충전 요청 개수
+      prisma.pointChargeRequest.count({
+        where: { status: "pending" }
+      }),
+      // 대기 중인 포인트 환전 요청 개수
+      prisma.pointWithdrawRequest.count({
+        where: { status: "pending" }
+      }),
+      // 대기 중인 주문 신청서 개수
+      prisma.orderApplication.count({
+        where: { status: "pending" }
+      }),
+    ]);
+
+    res.status(200).json({
+      pendingChargeRequests,
+      pendingWithdrawRequests,
+      pendingApplications,
+      totalPending: pendingChargeRequests + pendingWithdrawRequests + pendingApplications,
+    });
+  } catch (error) {
+    console.error("관리자 알림 통계 조회 오류:", error);
+    res.status(500).json({
+      message: "알림 통계를 불러오는 중 오류가 발생했습니다.",
+    });
+  }
+};
+
 // KPI 차트 데이터 조회
 export const getKPIChartData = async (req: Request, res: Response) => {
   try {

@@ -65,6 +65,12 @@ export const getKPIChartData = async () => {
   return response.data;
 };
 
+// 관리자 알림 통계 조회
+export const getAdminNotificationStats = async () => {
+  const response = await api.get("/admin/notification-stats");
+  return response.data;
+};
+
 // 모든 사용자 조회
 export const getAllUsers = async () => {
   const response = await api.get("/admin/users");

@@ -7,8 +7,12 @@ interface TabNavigationProps {
   user: User | null;
 }
 
-export default function TabNavigation({ activeTab, setActiveTab, user }: TabNavigationProps) {
-  const getTabClassName = (tabName: TabType) => 
+export default function TabNavigation({
+  activeTab,
+  setActiveTab,
+  user,
+}: TabNavigationProps) {
+  const getTabClassName = (tabName: TabType) =>
     `py-4 px-1 border-b-2 font-medium text-sm ${
       activeTab === tabName
         ? "border-blue-500 text-blue-600"
@@ -24,14 +28,14 @@ export default function TabNavigation({ activeTab, setActiveTab, user }: TabNavi
         >
           프로필
         </button>
-        
+
         <button
           onClick={() => setActiveTab("points")}
           className={getTabClassName("points")}
         >
           포인트 내역
         </button>
-        
+
         {user?.role !== "admin" && (
           <button
             onClick={() => setActiveTab("charge-history")}

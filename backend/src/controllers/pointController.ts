@@ -205,7 +205,7 @@ export const createPointWithdrawRequest = async (
     return;
   }
 
-  if (amount > 10000) {
+  if (amount < 10000) {
     res.status(400).json({
       message: "최소 10000원 이상 환전 가능합니다.",
     });

@@ -1,4 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 import { verifyToken } from "../utils/jwt";
@@ -46,11 +46,11 @@ export const authenticate = async (
   }
 };
 
-export const requiredAdmin: RequestHandler = (
+export const requiredAdmin = (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
+) => {
   const user = req.user as { role?: string };
   if (!user || user.role !== "admin") {
     res.status(403).json({ message: "관리자 권한이 필요합니다." });
@@ -59,11 +59,11 @@ export const requiredAdmin: RequestHandler = (
   next();
 };
 
-export const requiredBuyer: RequestHandler = (
+export const requiredBuyer = (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
+) => {
   const user = req.user as { role?: string };
   if (!user || user.role !== "buyer") {
     res.status(403).json({
@@ -74,11 +74,11 @@ export const requiredBuyer: RequestHandler = (
   next();
 };
 
-export const requiredSeller: RequestHandler = (
+export const requiredSeller = (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
+) => {
   const user = req.user as { role?: string };
   if (!user || user.role !== "seller") {
     res.status(403).json({

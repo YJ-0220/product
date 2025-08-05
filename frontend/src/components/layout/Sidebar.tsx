@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { useState } from "react";
 import Footer from "./Footer";
@@ -53,8 +53,14 @@ const renderDropdownLink = (to: string, label: string, iconPath?: string) => (
 );
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   const toggleDropdown = (dropdownKey: string) => {
     setOpenDropdown((prev) => (prev === dropdownKey ? null : dropdownKey));
@@ -338,7 +344,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <li>
               <button
                 aria-label="로그아웃"
-                onClick={logout}
+                onClick={handleLogout}
                 className="w-full flex items-center space-x-3 p-4 text-red-400 hover:bg-gray-900 transition-colors"
               >
                 <Icon path="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

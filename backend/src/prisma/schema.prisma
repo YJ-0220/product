@@ -140,7 +140,7 @@ model WorkItem {
   submittedAt     DateTime?
 
   orderRequest    OrderRequest     @relation(fields: [orderRequestId], references: [id])
-  application     OrderApplication @relation(fields: [applicationId], references: [id])
+  application     OrderApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@schema("app")
 }

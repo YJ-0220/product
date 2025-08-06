@@ -25,8 +25,7 @@ export interface OrderData {
   subcategory: {
     name: string;
   };
-  myApplicationStatus?: "pending" | "accepted" | "rejected" | null;
-  hasApplied?: boolean;
+  applications?: ApplicationData[];
 }
 
 export interface ApplicationData {

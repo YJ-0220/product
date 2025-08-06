@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { Link, useNavigate } from "react-router-dom";
 import { useOrderBoard } from "@/hooks/useOrderBoard";
+import { useState } from "react";
 
 const OrderBoardTitles = [
   {
@@ -25,6 +26,10 @@ const OrderBoardTitles = [
   },
   {
     id: 6,
+    title: "신청",
+  },
+  {
+    id: 7,
     title: "상태",
   },
 ];
@@ -33,6 +38,34 @@ export default function OrderBoard() {
   const { orders, getStatusText, getStatusColor } = useOrderBoard();
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const [filter, setFilter] = useState<
+    "all" | "no-applications" | "has-applications" | "in-progress" | "completed"
+  >("all");
+
+  const filteredOrders = orders.filter((order) => {
+    if (filter === "no-applications") {
+      return !order.applications || order.applications.length === 0;
+    }
+    if (filter === "has-applications") {
+      return (
+        order.applications &&
+        order.applications.length > 0 &&
+        order.applications.some((app) => app.status === "pending") &&
+        order.status === "pending"
+      );
+    }
+    if (filter === "in-progress") {
+      return (
+        order.status === "progress" &&
+        order.applications &&
+        order.applications.some((app) => app.status === "accepted")
+      );
+    }
+    if (filter === "completed") {
+      return order.status === "completed";
+    }
+    return true;
+  });
 
   return (
     <div className="px-10 py-4">
@@ -45,7 +78,7 @@ export default function OrderBoard() {
             </p>
           </div>
 
-          {(user?.role === "buyer" || user?.role === "admin") && (
+          {user?.role === "buyer" && (
             <Link
               to="/order/request"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -67,6 +100,94 @@ export default function OrderBoard() {
             </Link>
           )}
         </div>
+
+        {user?.role === "admin" && (
+          <div className="flex items-center space-x-4 my-4">
+            <span className="text-sm font-medium text-gray-700">필터:</span>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setFilter("all")}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  filter === "all"
+                    ? "bg-blue-100 text-blue-800 border border-blue-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                전체 ({orders.length})
+              </button>
+              <button
+                onClick={() => setFilter("no-applications")}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  filter === "no-applications"
+                    ? "bg-gray-100 text-gray-800 border border-gray-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                신청 대기 (
+                {
+                  orders.filter(
+                    (order) =>
+                      !order.applications || order.applications.length === 0
+                  ).length
+                }
+                )
+              </button>
+              <button
+                onClick={() => setFilter("has-applications")}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  filter === "has-applications"
+                    ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                신청 있음 (
+                {
+                  orders.filter(
+                    (order) =>
+                      order.applications &&
+                      order.applications.some(
+                        (app) => app.status === "pending"
+                      ) &&
+                      order.status === "pending"
+                  ).length
+                }
+                )
+              </button>
+              <button
+                onClick={() => setFilter("in-progress")}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  filter === "in-progress"
+                    ? "bg-blue-100 text-blue-800 border border-blue-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                작업 진행 중 (
+                {
+                  orders.filter(
+                    (order) =>
+                      order.status === "progress" &&
+                      order.applications &&
+                      order.applications.some(
+                        (app) => app.status === "accepted"
+                      )
+                  ).length
+                }
+                )
+              </button>
+              <button
+                onClick={() => setFilter("completed")}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  filter === "completed"
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                완료 (
+                {orders.filter((order) => order.status === "completed").length})
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -85,64 +206,128 @@ export default function OrderBoard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {orders.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-4 text-center text-gray-500"
                   >
-                    등록된 주문서가 없습니다.
+                    {filter === "all"
+                      ? "등록된 주문서가 없습니다."
+                      : filter === "no-applications"
+                      ? "신청 대기 중인 주문이 없습니다."
+                      : filter === "has-applications"
+                      ? "신청이 있는 주문이 없습니다."
+                      : filter === "in-progress"
+                      ? "작업 진행 중인 주문이 없습니다."
+                      : "완료된 주문이 없습니다."}
                   </td>
                 </tr>
               ) : (
-                orders.map((order, index) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => {
-                      navigate(`/order/${order.id}`);
-                    }}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {orders.length - index}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.buyer?.username}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                      <div className="font-medium">{order.title}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex flex-col">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {order.category.name}
+                filteredOrders.map((order, index) => {
+                  const hasApplications = (order.applications?.length || 0) > 0;
+                  const hasPendingApplications = order.applications?.some(
+                    (app) => app.status === "pending"
+                  );
+
+                  return (
+                    <tr
+                      key={order.id}
+                      className={`cursor-pointer transition-colors ${
+                        hasApplications
+                          ? hasPendingApplications
+                            ? "bg-yellow-50 hover:bg-yellow-100 border-l-4 border-l-yellow-400"
+                            : "bg-green-50 hover:bg-green-100 border-l-4 border-l-green-400"
+                          : "hover:bg-gray-50"
+                      }`}
+                      onClick={() => {
+                        navigate(`/order/${order.id}`);
+                      }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {filteredOrders.length - index}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {order.buyer?.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        <div className="font-medium">{order.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex flex-col">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {order.category.name}
+                          </span>
+                          <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded mt-1">
+                            {order.subcategory.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {(() => {
+                          const applicationCount =
+                            order.applications?.length || 0;
+                          const pendingCount =
+                            order.applications?.filter(
+                              (app) => app.status === "pending"
+                            )?.length || 0;
+                          const acceptedCount =
+                            order.applications?.filter(
+                              (app) => app.status === "accepted"
+                            )?.length || 0;
+
+                          if (applicationCount === 0) {
+                            return (
+                              <span className="text-gray-400 text-xs">
+                                신청 없음
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <div className="flex flex-col space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs font-medium text-gray-700">
+                                  총 {applicationCount}개
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1 text-xs">
+                                {pendingCount > 0 && (
+                                  <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                                    대기 {pendingCount}
+                                  </span>
+                                )}
+                                {acceptedCount > 0 && (
+                                  <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                                    승인 {acceptedCount}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                            order.status
+                          )}`}
+                        >
+                          {getStatusText(order.status)}
                         </span>
-                        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded mt-1">
-                          {order.subcategory.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                          order.status
-                        )}`}
-                      >
-                        {getStatusText(order.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* 페이지네이션 (추후 구현) */}
       <div className="mt-6 flex justify-center">
         <nav className="flex items-center space-x-2">
           <button className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">

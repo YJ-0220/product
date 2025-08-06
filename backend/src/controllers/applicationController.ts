@@ -166,7 +166,9 @@ export const updateOrderApplicationStatus = async (
       message: "신청 상태가 성공적으로 변경되었습니다.",
       application: {
         ...updatedApplication,
-        seller: { username: updatedApplication!.seller?.username || "삭제된 사용자" },
+        seller: {
+          username: updatedApplication!.seller?.username || "삭제된 사용자",
+        },
         createdAt: updatedApplication!.createdAt.toISOString(),
         updatedAt: updatedApplication!.updatedAt.toISOString(),
       },
@@ -220,7 +222,9 @@ export const getMyOrderApplications = async (req: Request, res: Response) => {
         orderRequest: {
           ...app.orderRequest,
           createdAt: app.orderRequest.createdAt.toISOString(),
-          buyer: { username: app.orderRequest.buyer?.username || "삭제된 사용자" },
+          buyer: {
+            username: app.orderRequest.buyer?.username || "삭제된 사용자",
+          },
         },
         workItems: app.workItems.map((item) => ({
           ...item,
@@ -242,6 +246,9 @@ export const deleteAcceptedOrderApplication = async (
     const { applicationId } = req.params;
     const application = await prisma.orderApplication.findUnique({
       where: { id: applicationId },
+      include: {
+        orderRequest: true,
+      },
     });
     if (!application) {
       res.status(404).json({ error: "신청서를 찾을 수 없습니다." });
@@ -253,13 +260,32 @@ export const deleteAcceptedOrderApplication = async (
         .json({ error: "승인된(accepted) 신청서만 삭제할 수 있습니다." });
       return;
     }
-    await prisma.orderApplication.delete({
-      where: { id: applicationId },
+
+    await prisma.$transaction(async (tx) => {
+      await tx.orderApplication.delete({
+        where: { id: applicationId },
+      });
+
+      const remainingAcceptedApplications = await tx.orderApplication.findMany({
+        where: {
+          orderRequestId: application.orderRequestId,
+          status: "accepted",
+        },
+      });
+
+      if (remainingAcceptedApplications.length === 0) {
+        await tx.orderRequest.update({
+          where: { id: application.orderRequestId },
+          data: { status: "pending" },
+        });
+      }
     });
+
     res
       .status(200)
       .json({ message: "승인된 신청서가 성공적으로 삭제되었습니다." });
   } catch (error) {
+    console.error("승인된 신청서 삭제 오류:", error);
     res.status(500).json({ error: "신청서 삭제 실패" });
   }
 };

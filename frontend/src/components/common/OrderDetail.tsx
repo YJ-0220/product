@@ -76,7 +76,7 @@ export default function OrderDetail() {
           >
             {getStatusText(order.status)}
           </span>
-          {order.status === "progress" &&
+          {(order.status === "progress" || order.status === "completed") &&
             applications.length > 0 &&
             (() => {
               const acceptedApplication = applications.find(
@@ -94,10 +94,10 @@ export default function OrderDetail() {
                       to={`/order/work/${workItem.id}`}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
-                      작업물 진행 상황
+                      {order.status === "completed" ? "완료된 작업물 보기" : "작업물 진행 상황"}
                     </Link>
                   );
-                } else {
+                } else if (order.status === "progress") {
                   return (
                     <Link
                       to="/order/work/submit"
@@ -272,13 +272,28 @@ export default function OrderDetail() {
                                   user?.id === application.sellerId &&
                                   application.status === "pending" && (
                                     <button
-                                      onClick={() =>
-                                        handleDeleteApplication(
-                                          order.id,
-                                          application.id,
-                                          refreshData
-                                        )
-                                      }
+                                      onClick={() => {
+                                        // 해당 신청에 연관된 작업물이 있는지 확인
+                                        const hasWorkItem = workItems.some(
+                                          (item) => item.applicationId === application.id
+                                        );
+                                        
+                                        let confirmMessage = "정말 삭제하시겠습니까?";
+                                        if (hasWorkItem) {
+                                          confirmMessage = 
+                                            "⚠️ 경고: 이 신청서에는 작업물이 있습니다.\n\n" +
+                                            "신청서를 삭제하면 연관된 작업물도 함께 삭제됩니다.\n\n" +
+                                            "정말로 삭제하시겠습니까?";
+                                        }
+                                        
+                                        if (window.confirm(confirmMessage)) {
+                                          handleDeleteApplication(
+                                            order.id,
+                                            application.id,
+                                            refreshData
+                                          );
+                                        }
+                                      }}
                                       className="text-red-600 hover:text-red-700 text-sm font-medium"
                                     >
                                       삭제
@@ -356,9 +371,21 @@ export default function OrderDetail() {
                                 {user?.role === "admin" && (
                                   <button
                                     onClick={() => {
-                                      if (
-                                        window.confirm("정말 삭제하시겠습니까?")
-                                      ) {
+                                      // 해당 신청에 연관된 작업물이 있는지 확인
+                                      const hasWorkItem = workItems.some(
+                                        (item) => item.applicationId === application.id
+                                      );
+                                      
+                                      let confirmMessage = "정말 삭제하시겠습니까?";
+                                      if (hasWorkItem) {
+                                        confirmMessage = 
+                                          "⚠️ 경고: 이 승인된 신청서에는 작업물이 있습니다.\n\n" +
+                                          "신청서를 삭제하면 연관된 작업물도 함께 삭제됩니다.\n" +
+                                          "이 작업은 되돌릴 수 없습니다.\n\n" +
+                                          "정말로 삭제하시겠습니까?";
+                                      }
+                                      
+                                      if (window.confirm(confirmMessage)) {
                                         handleDeleteAcceptedApplication(
                                           order.id,
                                           application.id,

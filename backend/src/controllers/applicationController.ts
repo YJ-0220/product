@@ -226,10 +226,14 @@ export const getMyOrderApplications = async (req: Request, res: Response) => {
             username: app.orderRequest.buyer?.username || "삭제된 사용자",
           },
         },
-        workItems: app.workItems.map((item) => ({
-          ...item,
-          submittedAt: item.submittedAt?.toISOString(),
-        })),
+        workItems: app.workItems
+          ? [
+              {
+                ...app.workItems,
+                submittedAt: app.workItems.submittedAt?.toISOString(),
+              },
+            ]
+          : [],
       })),
     });
   } catch (error) {

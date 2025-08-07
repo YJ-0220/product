@@ -14,17 +14,16 @@ model User {
   username              String                 @unique
   password              String
   role                  UserRole
-  createdAt             DateTime?              @default(now())
   membershipLevel       MembershipLevel?       @map("membership_level")
+  createdAt             DateTime?              @default(now())
   isDeleted             Boolean                @default(false)
+  notices               Notice[]               @relation("UserNotices")
+  applications          OrderApplication[]     @relation("UserApplications")
+  orderRequests         OrderRequest[]         @relation("UserOrderRequests")
   point                 Point?
   pointChargeRequests   PointChargeRequest[]
   pointTransactions     PointTransaction[]
   pointWithdrawRequests PointWithdrawRequest[]
-
-  applications          OrderApplication[]     @relation("UserApplications")
-  orderRequests         OrderRequest[]         @relation("UserOrderRequests")
-  notices               Notice[]               @relation("UserNotices")
 
   @@schema("app")
 }
@@ -44,8 +43,7 @@ model PointTransaction {
   amount      Int
   createdAt   DateTime             @default(now())
   description String?
-
-  user        User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user        User?                @relation(fields: [userId], references: [id])
 
   @@schema("app")
 }
@@ -57,18 +55,16 @@ model PointChargeRequest {
   status      String    @default("pending")
   requestedAt DateTime  @default(now())
   approvedAt  DateTime?
-
-  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user        User?     @relation(fields: [userId], references: [id])
 
   @@schema("app")
 }
 
 model Bank {
-  id                String                 @id @default(dbgenerated("gen_random_uuid()"))
-  name              String                 @unique
-  accountNumLength  Int?
-
-  withdrawRequests  PointWithdrawRequest[] @relation("BankWithdrawRequests")
+  id               String                 @id @default(dbgenerated("gen_random_uuid()"))
+  name             String                 @unique
+  accountNumLength Int?
+  withdrawRequests PointWithdrawRequest[] @relation("BankWithdrawRequests")
 
   @@schema("app")
 }
@@ -82,9 +78,8 @@ model PointWithdrawRequest {
   status      String    @default("pending")
   requestedAt DateTime  @default(now())
   processedAt DateTime?
-
   bank        Bank      @relation("BankWithdrawRequests", fields: [bankId], references: [id])
-  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user        User?     @relation(fields: [userId], references: [id])
 
   @@schema("app")
 }
@@ -102,11 +97,10 @@ model OrderRequest {
   status          OrderStatus        @default(pending)
   createdAt       DateTime           @default(now())
   applications    OrderApplication[]
-  workItem        WorkItem?
-
-  buyer           User?              @relation("UserOrderRequests", fields: [buyerId], references: [id], onDelete: SetNull)
+  buyer           User?              @relation("UserOrderRequests", fields: [buyerId], references: [id])
   category        Category           @relation(fields: [categoryId], references: [id])
   subcategory     Subcategory        @relation(fields: [subcategoryId], references: [id])
+  workItem        WorkItem?
 
   @@schema("app")
 }
@@ -121,26 +115,24 @@ model OrderApplication {
   status            ApplicationStatus @default(pending)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-
   orderRequest      OrderRequest      @relation(fields: [orderRequestId], references: [id], onDelete: Cascade)
-  seller            User?             @relation("UserApplications", fields: [sellerId], references: [id], onDelete: SetNull)
-  workItems         WorkItem[]
+  seller            User?             @relation("UserApplications", fields: [sellerId], references: [id])
+  workItems         WorkItem?
 
   @@schema("app")
 }
 
 model WorkItem {
-  id              String    @id @default(dbgenerated("gen_random_uuid()"))
-  orderRequestId  String    @unique
-  applicationId   String    @unique
-  fileUrl         String?  
-  workLink        String?  
-  description     String?
-  status          WorkStatus   @default(submitted)
-  submittedAt     DateTime?
-
-  orderRequest    OrderRequest     @relation(fields: [orderRequestId], references: [id])
-  application     OrderApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id             String           @id @default(dbgenerated("gen_random_uuid()"))
+  orderRequestId String           @unique
+  applicationId  String           @unique
+  fileUrl        String?
+  workLink       String?
+  description    String?
+  submittedAt    DateTime?
+  status         WorkStatus       @default(submitted)
+  application    OrderApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  orderRequest   OrderRequest     @relation(fields: [orderRequestId], references: [id])
 
   @@schema("app")
 }
@@ -149,7 +141,6 @@ model Category {
   id            Int            @id @default(autoincrement())
   name          String         @unique
   orderRequests OrderRequest[]
-
   subcategories Subcategory[]  @relation("CategoryToSub")
 
   @@schema("app")
@@ -160,26 +151,24 @@ model Subcategory {
   name          String
   parentId      Int
   orderRequests OrderRequest[]
-
   parent        Category       @relation("CategoryToSub", fields: [parentId], references: [id])
 
   @@schema("app")
 }
 
 model Notice {
-  id        String          @id @default(dbgenerated("gen_random_uuid()"))
+  id        String         @id @default(dbgenerated("gen_random_uuid()"))
   title     String
   content   String
   authorId  String?
-  priority  NoticePriority  @default(normal)
-  isActive  Boolean         @default(true)
-  isPinned  Boolean         @default(false)
-  startDate DateTime        @default(now())
+  priority  NoticePriority @default(normal)
+  isActive  Boolean        @default(true)
+  isPinned  Boolean        @default(false)
+  startDate DateTime       @default(now())
   endDate   DateTime?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-
-  author    User?           @relation("UserNotices", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  author    User?          @relation("UserNotices", fields: [authorId], references: [id])
 
   @@schema("app")
 }

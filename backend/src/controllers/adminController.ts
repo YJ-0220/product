@@ -283,7 +283,7 @@ export const adminDeleteUserHard = async (req: Request, res: Response) => {
 
       // 2. 작업물이 없는 신청서들 찾기
       const applicationsWithoutWork = userApplications.filter(
-        (app) => app.workItems.length === 0
+        (app) => !app.workItems
       );
 
       // 3. 작업물이 없는 신청서들 직접 삭제

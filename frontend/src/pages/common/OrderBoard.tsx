@@ -259,10 +259,10 @@ export default function OrderBoard() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex flex-col">
                           <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                            {order.category?.name ?? "카테고리 없음"}
+                            {order.category.name}
                           </span>
                           <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded mt-1">
-                            {order.subcategory?.name ?? "하위 카테고리 없음"}
+                            {order.subcategory.name}
                           </span>
                         </div>
                       </td>

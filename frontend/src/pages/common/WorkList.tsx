@@ -190,14 +190,14 @@ export default function WorkList() {
                     <div className="flex space-x-2">
                       {application.workItems.length === 0 ? (
                         <Link
-                          to="/order/work/submit"
-                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                        >
-                          작업물 제출
-                        </Link>
+                        to={`/order/work/submit/${application.orderRequest.id}/${application.id}`}
+                        className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        작업물 제출
+                      </Link>
                       ) : (
                         <Link
-                          to="/order/work/submit"
+                          to={`/order/work/${application.workItems[0].id}/edit`}
                           className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
                         >
                           작업물 수정

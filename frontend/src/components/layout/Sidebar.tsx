@@ -106,11 +106,36 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </ul>
               </div>
             </li>
-            {renderLink(
-              "/content",
-              "콘텐츠 관리",
-              "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-            )}
+            <li>
+              <button
+                onClick={() => toggleDropdown("admin-content")}
+                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon path="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  <span>콘텐츠 관리</span>
+                </div>
+                <Icon
+                  path={
+                    openDropdown === "admin-content"
+                      ? "M19 9l-7 7-7-7"
+                      : "M9 5l7 7-7 7"
+                  }
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  openDropdown === "admin-content"
+                    ? "max-h-48 opacity-100"
+                    : "max-h-0 opacity-0"
+                }`}
+              >
+                <ul className="bg-gray-800">
+                  {renderDropdownLink("/content", "공지 관리")}
+                  {renderDropdownLink("/content/categories", "카테고리 관리")}
+                </ul>
+              </div>
+            </li>
             <li>
               <button
                 onClick={() => toggleDropdown("admin-order")}

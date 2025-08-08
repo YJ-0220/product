@@ -4,7 +4,8 @@ import { prisma } from "../index";
 // 신청이 승인된 주문서에 대한 작업물 생성(판매자)
 export const createOrderWorkSubmit = async (req: Request, res: Response) => {
   try {
-    const { orderId, description, fileUrl, workLink } = req.body;
+    const { orderId } = req.params;
+    const { description, fileUrl, workLink } = req.body;
 
     const sellerId = req.user?.id;
 

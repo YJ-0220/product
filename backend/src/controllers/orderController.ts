@@ -121,7 +121,7 @@ export const getOrderRequestBoard = async (req: Request, res: Response) => {
 
     // 필터 조건 구성
     const where: any = {};
-    
+
     if (categoryId) where.categoryId = Number(categoryId);
     if (subcategoryId) where.subcategoryId = Number(subcategoryId);
 
@@ -241,9 +241,17 @@ export const getOrderRequestById = async (req: Request, res: Response) => {
     res.status(200).json({
       ...order,
       buyer: { username: order.buyer?.username || "삭제된 사용자" },
-      applications: order.applications.map(app => ({
+      applications: order.applications.map((app) => ({
         ...app,
         seller: { username: app.seller?.username || "삭제된 사용자" },
+        workItems: app.workItems
+          ? [
+              {
+                ...app.workItems,
+                submittedAt: app.workItems.submittedAt?.toISOString(),
+              },
+            ]
+          : [],
       })),
       createdAt: order.createdAt.toISOString(),
       deadline: order.deadline?.toISOString() || null,
@@ -299,5 +307,42 @@ export const updateOrderRequestStatus = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ error: "주문 상태 변경 실패" });
+  }
+};
+
+// 관리자: 주문서 완전 삭제 (신청서/작업물 포함)
+export const adminDeleteOrderRequest = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params as { orderId: string };
+
+    await prisma.$transaction(async (tx) => {
+      // 해당 주문의 작업물(WorkItem)은 OrderRequest와 1:1이므로 우선 삭제
+      await tx.workItem.deleteMany({ where: { orderRequestId: orderId } });
+
+      // 해당 주문의 신청서들에 연결된 작업물(안전망) 제거
+      const apps = await tx.orderApplication.findMany({
+        where: { orderRequestId: orderId },
+        select: { id: true },
+      });
+      if (apps.length > 0) {
+        await tx.workItem.deleteMany({
+          where: { applicationId: { in: apps.map((a) => a.id) } },
+        });
+      }
+
+      // 신청서들 삭제
+      await tx.orderApplication.deleteMany({
+        where: { orderRequestId: orderId },
+      });
+
+      // 주문서 삭제
+      await tx.orderRequest.delete({ where: { id: orderId } });
+    });
+
+    res.status(200).json({ message: "주문서가 삭제되었습니다." });
+  } catch (error: any) {
+    res
+      .status(500)
+      .json({ error: "주문서 삭제 실패", details: error?.message });
   }
 };

@@ -12,7 +12,6 @@ import OrderBoard from "@/pages/common/OrderBoard";
 import OrderDetail from "@/components/common/OrderDetail";
 import OrderRequest from "@/pages/buyer/OrderRequest";
 import OrderSuccess from "@/pages/buyer/OrderSuccess";
-import OrderHistory from "@/pages/common/OrderHistory";
 import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
 import PointChargeForm from "@/components/buyer/PointChargeForm";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
@@ -25,6 +24,7 @@ import UserList from "@/pages/admin/UserList";
 import UserCreate from "@/pages/admin/UserCreate";
 import NoticeManagement from "@/pages/admin/NoticeManagement";
 import PointRequests from "@/pages/admin/PointRequests";
+import CategoryManagement from "@/pages/admin/CategoryManagement";
 
 export const router = createBrowserRouter([
   {
@@ -132,7 +132,7 @@ export const router = createBrowserRouter([
                 element: <WorkList />,
               },
               {
-                path: "submit",
+                path: "submit/:orderId/:applicationId",
                 element: <WorkSubmitForm />,
               },
               {
@@ -193,6 +193,10 @@ export const router = createBrowserRouter([
             index: true,
             element: <NoticeManagement />,
           },
+          {
+            path: "categories",
+            element: <CategoryManagement />,
+          },
         ],
       },
       {
@@ -206,10 +210,6 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <MyPage />,
-          },
-          {
-            path: "order",
-            element: <OrderHistory />,
           },
         ],
       },

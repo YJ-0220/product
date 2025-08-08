@@ -41,7 +41,7 @@ export const getOrderById = async (orderId: string): Promise<OrderData> => {
   return res.data;
 };
 
-// 주문 삭제
+// 관리자용 주문 삭제
 export const deleteOrderRequest = async (orderId: string) => {
   const res = await api.delete(`/order/${orderId}`);
   return res.data;
@@ -69,6 +69,46 @@ export const getSubCategories = async (
   parentId: number
 ): Promise<OrderCategory[]> => {
   const res = await api.get(`/order/categories/${parentId}/subcategories`);
+  return res.data;
+};
+
+// 관리자용 카테고리/서브카테고리 CRUD
+export const createCategory = async (name: string) => {
+  const res = await api.post(`/order/categories`, { name });
+  return res.data;
+};
+
+export const updateCategory = async (categoryId: number, name: string) => {
+  const res = await api.put(`/order/categories/${categoryId}`, { name });
+  return res.data;
+};
+
+export const deleteCategory = async (categoryId: number) => {
+  const res = await api.delete(`/order/categories/${categoryId}`);
+  return res.data;
+};
+
+export const createSubcategory = async (categoryId: number, name: string) => {
+  const res = await api.post(`/order/categories/${categoryId}/subcategories`, { name });
+  return res.data;
+};
+
+export const updateSubcategory = async (
+  categoryId: number,
+  subcategoryId: number,
+  name: string
+) => {
+  const res = await api.put(
+    `/order/categories/${categoryId}/subcategories/${subcategoryId}`,
+    { name }
+  );
+  return res.data;
+};
+
+export const deleteSubcategory = async (categoryId: number, subcategoryId: number) => {
+  const res = await api.delete(
+    `/order/categories/${categoryId}/subcategories/${subcategoryId}`
+  );
   return res.data;
 };
 

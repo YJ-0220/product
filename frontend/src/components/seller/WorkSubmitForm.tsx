@@ -171,7 +171,7 @@ export default function WorkSubmitForm() {
         // fileUrl: uploadedFileUrl,
       };
 
-      await createOrderWorkSubmit(acceptedApplication.id, workItemData);
+      await createOrderWorkSubmit(orderId!, workItemData);
 
       setSuccess("작업물이 성공적으로 제출되었습니다.");
       setFormData({

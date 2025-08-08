@@ -2,11 +2,14 @@ import { useOrderDetail } from "@/hooks/useOrderDetail";
 import { useOrderApplication } from "@/hooks/useOrderApplication";
 import { useUtils } from "@/hooks/useUtils";
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { deleteOrderRequest } from "@/api/order";
 
 export default function OrderDetail() {
   const { order, applications, workItems, error, user, refreshData } =
     useOrderDetail();
   const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
 
   const {
     handleDeleteApplication,
@@ -94,13 +97,18 @@ export default function OrderDetail() {
                       to={`/order/work/${workItem.id}`}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
-                      {order.status === "completed" ? "완료된 작업물 보기" : "작업물 진행 상황"}
+                      {order.status === "completed"
+                        ? "완료된 작업물 보기"
+                        : "작업물 진행 상황"}
                     </Link>
                   );
-                } else if (order.status === "progress") {
+                } else if (
+                  user?.role === "seller" &&
+                  order.status === "progress"
+                ) {
                   return (
                     <Link
-                      to="/order/work/submit"
+                      to={`/order/work/submit/${order.id}/${acceptedApplication.id}`}
                       className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                     >
                       작업물 제출하기
@@ -273,19 +281,21 @@ export default function OrderDetail() {
                                   application.status === "pending" && (
                                     <button
                                       onClick={() => {
-                                        // 해당 신청에 연관된 작업물이 있는지 확인
                                         const hasWorkItem = workItems.some(
-                                          (item) => item.applicationId === application.id
+                                          (item) =>
+                                            item.applicationId ===
+                                            application.id
                                         );
-                                        
-                                        let confirmMessage = "정말 삭제하시겠습니까?";
+
+                                        let confirmMessage =
+                                          "정말 삭제하시겠습니까?";
                                         if (hasWorkItem) {
-                                          confirmMessage = 
+                                          confirmMessage =
                                             "⚠️ 경고: 이 신청서에는 작업물이 있습니다.\n\n" +
                                             "신청서를 삭제하면 연관된 작업물도 함께 삭제됩니다.\n\n" +
                                             "정말로 삭제하시겠습니까?";
                                         }
-                                        
+
                                         if (window.confirm(confirmMessage)) {
                                           handleDeleteApplication(
                                             order.id,
@@ -371,20 +381,21 @@ export default function OrderDetail() {
                                 {user?.role === "admin" && (
                                   <button
                                     onClick={() => {
-                                      // 해당 신청에 연관된 작업물이 있는지 확인
                                       const hasWorkItem = workItems.some(
-                                        (item) => item.applicationId === application.id
+                                        (item) =>
+                                          item.applicationId === application.id
                                       );
-                                      
-                                      let confirmMessage = "정말 삭제하시겠습니까?";
+
+                                      let confirmMessage =
+                                        "정말 삭제하시겠습니까?";
                                       if (hasWorkItem) {
-                                        confirmMessage = 
+                                        confirmMessage =
                                           "⚠️ 경고: 이 승인된 신청서에는 작업물이 있습니다.\n\n" +
                                           "신청서를 삭제하면 연관된 작업물도 함께 삭제됩니다.\n" +
                                           "이 작업은 되돌릴 수 없습니다.\n\n" +
                                           "정말로 삭제하시겠습니까?";
                                       }
-                                      
+
                                       if (window.confirm(confirmMessage)) {
                                         handleDeleteAcceptedApplication(
                                           order.id,
@@ -436,6 +447,60 @@ export default function OrderDetail() {
               </div>
             )}
           </div>
+
+          {user?.role === "admin" && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                주문서 삭제
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                주문서를 삭제하면 관련 데이터가 모두 삭제됩니다.
+              </p>
+              <button
+                onClick={async () => {
+                  if (!order) return;
+                  const appCount = applications.length;
+                  const pendingCount = applications.filter(
+                    (a) => a.status === "pending"
+                  ).length;
+                  const acceptedCount = applications.filter(
+                    (a) => a.status === "accepted"
+                  ).length;
+                  const workCount = workItems.length;
+
+                  const message =
+                    "⚠️ 경고: 이 주문서를 삭제하면 아래 항목이 영구적으로 삭제됩니다.\n\n" +
+                    `- 신청서 전체 (${appCount}건, 대기 ${pendingCount}, 승인 ${acceptedCount})\n` +
+                    `- 작업물 전체 (${workCount}건, 진행/완료 포함)\n` +
+                    "- 주문서 자체\n\n" +
+                    "정말로 삭제하시겠습니까?`";
+
+                  if (!window.confirm(message)) return;
+
+                  try {
+                    setDeleting(true);
+                    await deleteOrderRequest(order.id);
+                    alert("주문서가 삭제되었습니다.");
+                    navigate("/order");
+                  } catch (e: any) {
+                    alert(
+                      e?.response?.data?.error || "주문서 삭제에 실패했습니다."
+                    );
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+                disabled={deleting}
+                className={`w-full px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  deleting
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
+              >
+                {deleting ? "삭제 중..." : "주문서 영구 삭제"}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">

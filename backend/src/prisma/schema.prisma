@@ -87,8 +87,8 @@ model PointWithdrawRequest {
 model OrderRequest {
   id              String             @id @default(dbgenerated("gen_random_uuid()"))
   buyerId         String?
-  categoryId      Int
-  subcategoryId   Int
+  categoryId      Int?
+  subcategoryId   Int?
   title           String
   description     String?
   desiredQuantity Int
@@ -98,8 +98,8 @@ model OrderRequest {
   createdAt       DateTime           @default(now())
   applications    OrderApplication[]
   buyer           User?              @relation("UserOrderRequests", fields: [buyerId], references: [id])
-  category        Category           @relation(fields: [categoryId], references: [id])
-  subcategory     Subcategory        @relation(fields: [subcategoryId], references: [id])
+  category        Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategory     Subcategory?       @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
   workItem        WorkItem?
 
   @@schema("app")
@@ -140,6 +140,7 @@ model WorkItem {
 model Category {
   id            Int            @id @default(autoincrement())
   name          String         @unique
+  isDeleted     Boolean        @default(false)
   orderRequests OrderRequest[]
   subcategories Subcategory[]  @relation("CategoryToSub")
 
@@ -150,6 +151,7 @@ model Subcategory {
   id            Int            @id @default(autoincrement())
   name          String
   parentId      Int
+  isDeleted     Boolean        @default(false)
   orderRequests OrderRequest[]
   parent        Category       @relation("CategoryToSub", fields: [parentId], references: [id])
 

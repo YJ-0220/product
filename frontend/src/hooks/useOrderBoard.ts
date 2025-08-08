@@ -28,6 +28,5 @@ export const useOrderBoard = () => {
       window.removeEventListener("focus", handleFocus);
     };
   }, []);
-
   return { orders, loading, getStatusText, getStatusColor };
 };

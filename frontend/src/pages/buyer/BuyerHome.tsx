@@ -43,8 +43,6 @@ export default function BuyerHome() {
     fetchOrders();
   }, []);
 
-
-
   return (
     <div className="px-8">
       <div className="bg-white rounded-lg shadow-md p-6 my-8">
@@ -75,15 +73,21 @@ export default function BuyerHome() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900">대기중</h3>
-          <p className="text-3xl font-bold text-yellow-600 mt-2">{stats.pending}</p>
+          <p className="text-3xl font-bold text-yellow-600 mt-2">
+            {stats.pending}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900">진행중</h3>
-          <p className="text-3xl font-bold text-blue-600 mt-2">{stats.progress}</p>
+          <p className="text-3xl font-bold text-blue-600 mt-2">
+            {stats.progress}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900">완료</h3>
-          <p className="text-3xl font-bold text-green-600 mt-2">{stats.completed}</p>
+          <p className="text-3xl font-bold text-green-600 mt-2">
+            {stats.completed}
+          </p>
         </div>
       </div>
 
@@ -106,7 +110,8 @@ export default function BuyerHome() {
               <div>
                 <h3 className="font-medium text-gray-900">{order.title}</h3>
                 <p className="text-sm text-gray-500">
-                  {order.category.name} &gt; {order.subcategory.name}
+                  {order.category?.name ?? "카테고리 없음"} &gt;{" "}
+                  {order.subcategory?.name ?? "하위 카테고리 없음"}
                 </p>
               </div>
               <div className="text-right">
@@ -118,7 +123,10 @@ export default function BuyerHome() {
                   {getStatusText(order.status)}
                 </span>
                 <p className="text-sm text-gray-500 mt-1">
-                  마감일: {order.deadline ? new Date(order.deadline).toLocaleDateString() : "미정"}
+                  마감일:{" "}
+                  {order.deadline
+                    ? new Date(order.deadline).toLocaleDateString()
+                    : "미정"}
                 </p>
               </div>
             </div>

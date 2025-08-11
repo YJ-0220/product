@@ -74,6 +74,7 @@ model PointWithdrawRequest {
   userId      String?
   bankId      String
   accountNum  String
+  accountHolderName String?
   amount      Int
   status      String    @default("pending")
   requestedAt DateTime  @default(now())

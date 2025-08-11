@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createPointChargeRequest } from "@/api/points";
 
-export default function PointChargeForm() {
+export default function PointCharge() {
   const [amount, setAmount] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,13 +28,19 @@ export default function PointChargeForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-center text-black mb-4">
         포인트 충전 신청
       </h2>
       <div className="mb-4 p-3 bg-blue-50 rounded-md">
         <p className="text-sm text-blue-800">
-          충전 신청을 하시면 관리자 검토 후 포인트가 충전됩니다.
+          충전 신청을 하시면 관리자가 검토 후에 포인트가 충전됩니다.  
+          <br />
+          계좌 번호: 123-45-67890
+          <br />
+          은행: 국민은행
+          <br />
+          예금주: 홍길동
         </p>
       </div>
       <form onSubmit={handleSubmit}>
@@ -51,7 +57,7 @@ export default function PointChargeForm() {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className="w-full px-3 py-2 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="충전 신청할 포인트를 입력하세요"
+            placeholder="원하시는 포인트를 입력해주세요"
             min="1"
             disabled={isSubmitting}
           />

@@ -487,6 +487,7 @@ export const getAllPointWithdrawRequests = async (
         ...request,
         user: { username: request.user?.username },
         bankName: request.bank.name,
+        accountHolderName: request.accountHolderName || null,
         requestedAt: request.requestedAt.toISOString(),
         processedAt: request.processedAt?.toISOString(),
       })),

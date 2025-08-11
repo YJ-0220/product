@@ -1,94 +1,26 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../hooks/store/useAuthStore";
+import { Link } from "react-router-dom";
 
 export default function Topbar() {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const { user, logout } = useAuthStore();
-  const role = user?.role || "";
-
-  const getSettingsMenuItems = () => {
-    const commonItems = [
-      { label: "환경 설정", action: () => console.log("환경 설정") },
-      { label: "알림 설정", action: () => console.log("알림 설정") },
-      { label: "테마 설정", action: () => console.log("테마 설정") },
-    ];
-
-    const roleSpecificItems = (() => {
-      switch (role) {
-        case "admin":
-          return [
-            { label: "시스템 설정", action: () => console.log("시스템 설정") },
-            { label: "보안 설정", action: () => console.log("보안 설정") },
-            { label: "백업 설정", action: () => console.log("백업 설정") },
-          ];
-        case "seller":
-          return [
-            { label: "판매 설정", action: () => console.log("판매 설정") },
-            { label: "배송 설정", action: () => console.log("배송 설정") },
-            { label: "결제 설정", action: () => console.log("결제 설정") },
-          ];
-        case "buyer":
-          return [
-            { label: "주문 설정", action: () => console.log("주문 설정") },
-            { label: "배송지 관리", action: () => console.log("배송지 관리") },
-            {
-              label: "결제 수단 관리",
-              action: () => console.log("결제 수단 관리"),
-            },
-          ];
-        default:
-          return [];
-      }
-    })();
-
-    return [...commonItems, ...roleSpecificItems];
-  };
-
-  const getProfileMenuItems = () => {
-    const commonItems = [
-      { label: "프로필 설정", action: () => console.log("프로필 설정") },
-      { label: "계정 설정", action: () => console.log("계정 설정") },
-    ];
-
-    const roleSpecificItems = (() => {
-      switch (role) {
-        case "admin":
-          return [
-            { label: "시스템 관리", action: () => console.log("시스템 관리") },
-            { label: "사용자 관리", action: () => console.log("사용자 관리") },
-          ];
-        case "seller":
-          return [
-            { label: "상품 관리", action: () => console.log("상품 관리") },
-            { label: "주문 관리", action: () => console.log("주문 관리") },
-            { label: "판매 통계", action: () => console.log("판매 통계") },
-          ];
-        case "buyer":
-          return [
-            { label: "주문 내역", action: () => console.log("주문 내역") },
-            { label: "관심 상품", action: () => console.log("관심 상품") },
-            { label: "쿠폰함", action: () => console.log("쿠폰함") },
-          ];
-        default:
-          return [];
-      }
-    })();
-
-    return [
-      ...commonItems,
-      ...roleSpecificItems,
-      { label: "도움말", action: () => console.log("도움말") },
-    ];
-  };
+  const [showProfile, setShowProfile] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const handleRefresh = () => {
     window.location.reload();
   };
 
-  const settingsMenuItems = getSettingsMenuItems();
-  const profileMenuItems = getProfileMenuItems();
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowProfile(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="sticky bg-[#f2f7fb] top-0 z-10">
@@ -96,7 +28,7 @@ export default function Topbar() {
         <div className="flex items-center space-x-2">
           <button
             onClick={handleRefresh}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-600 rounded-lg transition-colors cursor-pointer"
             title="새로고침"
           >
             <svg
@@ -116,90 +48,8 @@ export default function Topbar() {
 
           <div className="relative">
             <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors relative"
-              title="알림"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-5 5v-5zM9 17H4l5 5v-5zM12 8v4l-4-4h8l-4 4z"
-                />
-              </svg>
-            </button>
-
-            {showNotifications && (
-              <div className="absolute right-0 top-12 w-80 bg-white rounded-lg shadow-lg border z-50">
-                <div className="p-4 border-b">
-                  <h3 className="font-semibold text-gray-900">알림</h3>
-                </div>
-                <div className="max-h-64 overflow-y-auto">
-                  <div className="p-4 text-center text-gray-500">
-                    새로운 알림이 없습니다
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="relative">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="환경설정"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </button>
-
-            {showSettings && (
-              <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border z-50">
-                <div className="p-3 border-b">
-                  <p className="font-semibold text-gray-900">환경설정</p>
-                </div>
-                <div className="py-1">
-                  {settingsMenuItems.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={item.action}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-900 text-sm"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="relative">
-            <button
               onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center space-x-2 p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="flex items-center space-x-2 p-2 text-gray-600 rounded-lg transition-colors"
               title="사용자 설정"
             >
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -223,14 +73,14 @@ export default function Topbar() {
             </button>
 
             {showProfile && (
-              <div className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border z-50">
+              <div
+                ref={menuRef}
+                className="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border z-50"
+              >
                 <div className="p-3 border-b">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {user?.username}님
+                  <h2 className="pb-1 text-lg font-semibold text-gray-900">
+                    {user?.username}님 어서오세요
                   </h2>
-                  <p className="text-sm text-gray-500">
-                    등급: {user?.membershipLevel}
-                  </p>
                   <p className="text-sm text-gray-500">
                     보유 포인트:{" "}
                     {user?.points != null
@@ -238,25 +88,21 @@ export default function Topbar() {
                       : 0}
                     P
                   </p>
+                  <p className="text-sm text-gray-500">
+                    등급: {user?.membershipLevel}
+                  </p>
                 </div>
-                <div className="py-1">
-                  {profileMenuItems.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={item.action}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-900"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                  <hr className="my-1" />
-                  <button
-                    onClick={logout}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-red-600"
-                  >
-                    로그아웃
-                  </button>
-                </div>
+                <Link to="/my">
+                  <div className="px-4 py-2 border-b hover:bg-gray-50 text-sm text-gray-900 flex flex-col">
+                    마이페이지
+                  </div>
+                </Link>
+                <button
+                  onClick={logout}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                >
+                  로그아웃
+                </button>
               </div>
             )}
           </div>

@@ -188,7 +188,7 @@ export const createPointWithdrawRequest = async (
   req: Request,
   res: Response
 ) => {
-  const { amount, bankId, accountNum } = req.body;
+  const { amount, bankId, accountNum, accountHolderName } = req.body;
   const userId = req.user?.id;
 
   if (!amount || isNaN(amount) || amount <= 0) {
@@ -201,6 +201,13 @@ export const createPointWithdrawRequest = async (
   if (!bankId || !accountNum) {
     res.status(400).json({
       message: "은행명과 계좌번호를 입력해주세요.",
+    });
+    return;
+  }
+
+  if (!accountHolderName || !String(accountHolderName).trim()) {
+    res.status(400).json({
+      message: "예금주명을 입력해주세요.",
     });
     return;
   }
@@ -232,6 +239,7 @@ export const createPointWithdrawRequest = async (
         amount: amount,
         bankId: bankId,
         accountNum: accountNum,
+        accountHolderName: String(accountHolderName).trim(),
         status: "pending",
       },
     });
@@ -305,6 +313,7 @@ export const getPointWithdrawRequests = async (req: Request, res: Response) => {
       withdrawRequests: withdrawRequests.map((request) => ({
         ...request,
         bankName: request.bank.name,
+        accountHolderName: request.accountHolderName || null,
         requestedAt: request.requestedAt.toISOString(),
         processedAt: request.processedAt?.toISOString(),
       })),

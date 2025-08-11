@@ -110,6 +110,10 @@ const PointWithdrawRequestComponent = forwardRef<PointWithdrawRequestRef, {}>(
                             <span className="font-medium">계좌:</span>{" "}
                             {request.accountNum || "정보 없음"}
                           </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">예금주:</span>{" "}
+                            {request.accountHolderName || "정보 없음"}
+                          </p>
                         </div>
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "@/hooks/store/useAuthStore";
 import { useState } from "react";
 import Footer from "./Footer";
@@ -53,14 +53,8 @@ const renderDropdownLink = (to: string, label: string, iconPath?: string) => (
 );
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   const toggleDropdown = (dropdownKey: string) => {
     setOpenDropdown((prev) => (prev === dropdownKey ? null : dropdownKey));
@@ -165,11 +159,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </ul>
               </div>
             </li>
-            {renderLink(
-              "/my",
-              "마이 페이지",
-              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            )}
           </>
         );
       case "seller":
@@ -243,11 +232,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "포인트 환전",
               "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             )}
-            {renderLink(
-              "/my",
-              "마이 페이지",
-              "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            )}
           </>
         );
       case "buyer":
@@ -298,35 +282,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               "멤버십",
               "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
             )}
-            <li>
-              <button
-                onClick={() => toggleDropdown("buyer-mypage")}
-                className="w-full flex items-center justify-between p-4 text-white hover:bg-gray-900 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon path="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  <span>마이 페이지</span>
-                </div>
-                <Icon
-                  path={
-                    openDropdown === "buyer-mypage"
-                      ? "M19 9l-7 7-7-7"
-                      : "M9 5l7 7-7 7"
-                  }
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  openDropdown === "buyer-mypage"
-                    ? "max-h-48 opacity-100"
-                    : "max-h-0 opacity-0"
-                }`}
-              >
-                <ul className="bg-gray-800">
-                  {renderDropdownLink("/my", "마이 페이지")}
-                </ul>
-              </div>
-            </li>
           </>
         );
       default:
@@ -366,19 +321,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto">
           <ul>
             {renderMenuItems()}
-            <li>
-              <button
-                aria-label="로그아웃"
-                onClick={handleLogout}
-                className="w-full flex items-center space-x-3 p-4 text-red-400 hover:bg-gray-900 transition-colors"
-              >
-                <Icon path="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                <span>로그아웃</span>
-              </button>
-            </li>
           </ul>
         </nav>
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 mt-auto">
           <Footer />
         </div>
       </aside>

@@ -13,7 +13,7 @@ import OrderDetail from "@/components/common/OrderDetail";
 import OrderRequest from "@/pages/buyer/OrderRequest";
 import OrderSuccess from "@/pages/buyer/OrderSuccess";
 import PointChargeHistory from "@/pages/buyer/PointChargeHistory";
-import PointChargeForm from "@/components/buyer/PointChargeForm";
+import PointCharge from "@/pages/buyer/PointCharge";
 import PointWithdrawForm from "@/components/seller/PointWithdrawForm";
 import NotFound from "@/pages/common/NotFound";
 import WorkList from "@/pages/common/WorkList";
@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
             path: "charge",
             element: (
               <RequireAuth allowedRoles={["buyer"]}>
-                <PointChargeForm />
+                <PointCharge />
               </RequireAuth>
             ),
           },

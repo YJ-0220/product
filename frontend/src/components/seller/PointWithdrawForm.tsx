@@ -6,6 +6,7 @@ export default function PointWithdrawForm() {
   const [amount, setAmount] = useState<string>("");
   const [bankId, setBankId] = useState<string>("");
   const [accountNum, setAccountNum] = useState<string>("");
+  const [accountHolderName, setAccountHolderName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [isLoadingBanks, setIsLoadingBanks] = useState(false);
@@ -51,17 +52,24 @@ export default function PointWithdrawForm() {
       return;
     }
 
+    if (!accountHolderName.trim()) {
+      alert("예금주명을 입력해주세요.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const response = await createPointWithdrawRequest({
         amount: pointAmount,
         bankId,
         accountNum,
+        accountHolderName: accountHolderName.trim(),
       });
       alert(response.message);
       setAmount("");
       setBankId("");
       setAccountNum("");
+      setAccountHolderName("");
     } catch (error) {
       console.error("포인트 환전 신청 실패:", error);
       alert("포인트 환전 신청에 실패했습니다.");
@@ -134,6 +142,17 @@ export default function PointWithdrawForm() {
             type="text"
             value={accountNum}
             onChange={(e) => setAccountNum(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-900">
+            예금주명
+          </label>
+          <input
+            type="text"
+            value={accountHolderName}
+            onChange={(e) => setAccountHolderName(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
           />
         </div>

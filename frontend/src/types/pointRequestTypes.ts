@@ -17,6 +17,7 @@ export interface PointWithdrawRequest {
   bankId: string;
   bankName: string;
   accountNum: string;
+  accountHolderName?: string | null;
   status: string;
   requestedAt: string;
   processedAt?: string;

@@ -17,6 +17,7 @@ export const createPointWithdrawRequest = async (data: {
   amount: number;
   bankId: string;
   accountNum: string;
+  accountHolderName: string;
 }) => {
   const response = await api.post("/points/withdraw-requests", data);
   return response.data;

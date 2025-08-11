@@ -106,7 +106,7 @@ export default function BuyerHome() {
               <div>
                 <h3 className="font-medium text-gray-900">{order.title}</h3>
                 <p className="text-sm text-gray-500">
-                  {order.category.name} &gt; {order.subcategory.name}
+                  {(order.category?.name ?? "삭제된 카테고리")} &gt; {(order.subcategory?.name ?? "삭제된 서브카테고리")}
                 </p>
               </div>
               <div className="text-right">

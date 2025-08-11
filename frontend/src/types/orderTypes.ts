@@ -19,12 +19,12 @@ export interface OrderData {
   buyer: {
     username: string;
   };
-  category: {
+  category?: {
     name: string;
-  };
-  subcategory: {
+  } | null;
+  subcategory?: {
     name: string;
-  };
+  } | null;
   applications?: ApplicationData[];
 }
 

@@ -531,13 +531,13 @@ export default function OrderDetail() {
                 <label className="block text-sm font-medium text-gray-700">
                   상위 카테고리
                 </label>
-                <p className="text-gray-900">{order.category.name}</p>
+                <p className="text-gray-900">{order.category?.name ?? "삭제된 카테고리"}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   하위 카테고리
                 </label>
-                <p className="text-gray-900">{order.subcategory.name}</p>
+                <p className="text-gray-900">{order.subcategory?.name ?? "삭제된 하위 카테고리"}</p>
               </div>
             </div>
           </div>
